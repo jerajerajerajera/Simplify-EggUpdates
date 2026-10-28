@@ -15,6 +15,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $found_at
  * @property bool $held true after Put back: automatic updates leave the egg alone until it is updated by hand
  * @property string|null $applied_hash hash of the remote definition that was last installed
+ * @property bool|null $test_ok how the last test of an update ended, null when it was not tested
+ * @property string|null $test_reason
+ * @property \Illuminate\Support\Carbon|null $tested_at
  */
 final class EggUpdate extends Model
 {
@@ -24,13 +27,15 @@ final class EggUpdate extends Model
 
     public $incrementing = false;
 
-    protected $fillable = ['egg_id', 'found_hash', 'found_at', 'held', 'applied_hash'];
+    protected $fillable = ['egg_id', 'found_hash', 'found_at', 'held', 'applied_hash', 'test_ok', 'test_reason', 'tested_at'];
 
     protected function casts(): array
     {
         return [
             'found_at' => 'datetime',
             'held' => 'boolean',
+            'test_ok' => 'boolean',
+            'tested_at' => 'datetime',
         ];
     }
 

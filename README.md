@@ -10,6 +10,9 @@ safely. The previous version of an egg is always kept, so it can be put back.
 - New versions show up in Pelican's notifications for root admins and on **Server → Egg updates**.
 - Update one egg or all of them. Running servers keep running and get the new egg at their next start or reinstall.
 - Put back returns the egg to the version it had before the last update. Automatic updates then leave it alone.
+- **Test first**: before an egg that servers use is updated, a temporary test server is made with the new version on
+  a free port between 45000 and 45999. Only when it installs and starts is the egg updated. The test server, its port
+  and the copy of the egg are removed either way. Do it by hand per egg, or let it happen for every new version.
 - Optionally, eggs that no server uses are updated automatically.
 - Pelican's own Update button on its Eggs page follows the same result.
 
@@ -20,10 +23,13 @@ Simplify's add-on list.
 
 1. Install the plugin from the [Pelican Hub](https://hub.pelican.dev). Updates come from the Hub only.
 2. Open **Server → Egg updates** in the admin area. Under **Settings** choose what happens with new versions:
-   *Ask first* (default), *Update eggs without servers automatically* or *Off*. The same settings are behind the
+   *Ask first* (default), *Update eggs without servers automatically*, *Test first, then update* or *Off*. The same settings are behind the
    gear on Pelican's Plugins page.
 
 Pelican's scheduler must run (`php artisan schedule:run` every minute), as in Pelican's own installation guide.
+
+Test first needs a node with room for 2 GB RAM, 8 GB disk and 200% CPU. The test server belongs to the first root
+admin and is named "Egg update test: <egg>". With Simplify installed it stays out of Simplify's lists.
 
 ## What it sends where
 
@@ -33,8 +39,9 @@ Nothing else leaves the panel.
 
 ## What it stores
 
-Three tables: `simplify_egg_updates` (what was found per egg), `simplify_egg_update_backups` (the last five
-definitions of each updated egg) and `simplify_egg_update_settings`. They are removed with the eggs they belong to.
+Four tables: `simplify_egg_updates` (what was found per egg and how its last test ended),
+`simplify_egg_update_backups` (the last five definitions of each updated egg), `simplify_egg_update_tests` (tests
+that wait or run) and `simplify_egg_update_settings`. They are removed with the eggs they belong to.
 
 ## Development
 

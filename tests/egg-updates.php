@@ -19,10 +19,12 @@ namespace {
 
     require __DIR__.'/../src/Services/Definition.php';
     require __DIR__.'/../src/Enums/Mode.php';
+    require __DIR__.'/../src/Services/EggTester.php';
 
     use App\Enums\EggFormat;
     use Simplify\EggUpdates\Enums\Mode;
     use Simplify\EggUpdates\Services\Definition;
+    use Simplify\EggUpdates\Services\EggTester;
 
     $failures = [];
     $check = function (bool $ok, string $what) use (&$failures) {
@@ -44,8 +46,16 @@ namespace {
     $check(Definition::names(['Paper', 'Forge'], 'en') === 'Paper en Forge', 'two names');
     $check(Definition::names(['Paper', 'Fabric', 'Forge'], 'and') === 'Paper, Fabric and Forge', 'three names');
 
-    $check(array_map(fn (Mode $mode) => $mode->value, Mode::cases()) === ['ask', 'auto', 'off'], 'modes');
-    $check(Mode::tryFrom('nonsense') === null && ! Mode::Ask->updatesUnusedEggs() && Mode::Auto->updatesUnusedEggs(), 'only auto updates unused eggs');
+    $check(array_map(fn (Mode $mode) => $mode->value, Mode::cases()) === ['ask', 'auto', 'test', 'off'], 'modes');
+    $check(Mode::tryFrom('nonsense') === null, 'unknown mode');
+    $check(! Mode::Ask->updatesUnusedEggs() && Mode::Auto->updatesUnusedEggs() && Mode::Test->updatesUnusedEggs() && ! Mode::Off->updatesUnusedEggs(), 'auto and test update unused eggs');
+    $check(Mode::Test->testsUsedEggs() && ! Mode::Auto->testsUsedEggs() && ! Mode::Ask->testsUsedEggs(), 'only test tests used eggs');
+
+    // Test servers take the highest free port of the test range.
+    $check(EggTester::freePort([]) === 45999, 'first test port');
+    $check(EggTester::freePort([45999, '45998']) === 45997, 'taken test ports are skipped');
+    $check(EggTester::freePort(range(45000, 45999)) === null, 'no free test port');
+    $check(str_starts_with(EggTester::MARK, 'simplify-egg-check-'), 'test servers are marked for Simplify');
 
     $check(Definition::reason(new RuntimeException("  <b>Not found</b>\n  at the URL.  ")) === 'Not found at the URL', 'a reason is one plain line');
 
@@ -53,5 +63,5 @@ namespace {
         echo "FAIL egg updates:\n  ".implode("\n  ", $failures)."\n";
         exit(1);
     }
-    echo "PASS egg updates: hash, format, names, modes and reasons\n";
+    echo "PASS egg updates: hash, format, names, modes, reasons and test ports\n";
 }

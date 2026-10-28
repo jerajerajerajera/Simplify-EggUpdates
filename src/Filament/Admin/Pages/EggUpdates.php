@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Simplify\EggUpdates\Models\EggBackup;
 use Simplify\EggUpdates\Models\EggUpdate;
+use Simplify\EggUpdates\Services\EggTester;
 use Simplify\EggUpdates\Services\EggUpdater;
 use Simplify\EggUpdates\Services\Result;
 use Simplify\EggUpdates\Services\Settings;
@@ -88,6 +89,7 @@ final class EggUpdates extends Page implements HasTable
                 ->withCount('servers'))
             ->defaultSort('name')
             ->paginated(false)
+            ->poll(fn () => EggTester::busy() ? '10s' : null)
             ->columns([
                 TextColumn::make('name')
                     ->label(__('simplify-egg-updates::egg-updates.page.egg'))
@@ -102,18 +104,34 @@ final class EggUpdates extends Page implements HasTable
                     ->badge()
                     ->state(fn (Egg $egg) => self::status($egg))
                     ->formatStateUsing(fn (string $state) => __('simplify-egg-updates::egg-updates.status.'.$state))
-                    ->color(fn (string $state) => $state === 'updated' ? 'success' : ($state === 'held' ? 'gray' : 'warning')),
+                    ->description(fn (Egg $egg) => self::testFailure($egg))
+                    ->color(fn (string $state) => match ($state) {
+                        'updated' => 'success',
+                        'held' => 'gray',
+                        'available' => 'warning',
+                        default => 'info',
+                    }),
                 TextColumn::make('since')
                     ->label(__('simplify-egg-updates::egg-updates.page.since'))
                     ->state(fn (Egg $egg) => self::since($egg))
                     ->since(),
             ])
             ->recordActions([
+                Action::make('test')
+                    ->label(__('simplify-egg-updates::egg-updates.actions.test'))
+                    ->icon('tabler-flask')
+                    ->color('gray')
+                    ->button()
+                    ->visible(fn (Egg $egg) => in_array(self::status($egg), ['available', 'held'], true))
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (Egg $egg) => __('simplify-egg-updates::egg-updates.actions.test_heading', ['egg' => $egg->name]))
+                    ->modalDescription(__('simplify-egg-updates::egg-updates.actions.test_description'))
+                    ->action(fn (Egg $egg) => self::send(EggTester::queue($egg))),
                 Action::make('update')
                     ->label(__('simplify-egg-updates::egg-updates.actions.update'))
                     ->icon('tabler-download')
                     ->button()
-                    ->visible(fn (Egg $egg) => self::status($egg) !== 'updated')
+                    ->visible(fn (Egg $egg) => in_array(self::status($egg), ['available', 'held'], true))
                     ->requiresConfirmation()
                     ->modalHeading(fn (Egg $egg) => __('simplify-egg-updates::egg-updates.actions.update_heading', ['egg' => $egg->name]))
                     ->modalDescription(fn (Egg $egg) => __($egg->servers_count > 0
@@ -205,15 +223,30 @@ final class EggUpdates extends Page implements HasTable
         return EggUpdate::query()->whereNotNull('found_hash');
     }
 
-    /** available, held (put back by hand) or updated. */
+    /** available, held (put back by hand), updated, or a test stage: queued, installing, starting. */
     private static function status(Egg $egg): string
     {
+        $stage = EggTester::stage($egg);
+        if ($stage !== null) {
+            return $stage;
+        }
         $state = EggUpdate::query()->find($egg->id);
         if ($state?->found_hash === null) {
             return 'updated';
         }
 
         return $state->held ? 'held' : 'available';
+    }
+
+    /** Why the last test of the listed update failed, while the update is still listed. */
+    private static function testFailure(Egg $egg): ?string
+    {
+        $state = EggUpdate::query()->find($egg->id);
+        if ($state?->found_hash === null || $state->test_ok !== false || EggTester::stage($egg) !== null) {
+            return null;
+        }
+
+        return __('simplify-egg-updates::egg-updates.tests.failed_short', ['reason' => $state->test_reason]);
     }
 
     private static function since(Egg $egg): mixed

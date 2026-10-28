@@ -8,7 +8,7 @@ use App\Models\Egg;
 use App\Models\Server;
 use Simplify\EggUpdates\Enums\Mode;
 
-/** What the scheduler does: check every few hours and act on new updates as the settings say. */
+/** What the scheduler does every minute: check every few hours, act on new updates as the settings say and follow tests. */
 final class Runner
 {
     /** Seconds between two checks of every update URL. */
@@ -18,19 +18,23 @@ final class Runner
     public static function run(bool $force = false): array
     {
         $mode = Settings::mode();
-        if ($mode === Mode::Off && ! $force) {
-            return [];
-        }
+        $lines = [];
         $checked = UpdateChecker::checkedAt();
-        if (! $force && $checked !== null && $checked->diffInSeconds(now()) < self::INTERVAL) {
-            return [];
+        $due = $checked === null || $checked->diffInSeconds(now()) >= self::INTERVAL;
+        if ($force || ($mode !== Mode::Off && $due)) {
+            $lines = self::handle(UpdateChecker::check(), $mode);
+        }
+        // A test that already started is followed to the end, also after egg updates were turned off.
+        if (EggTester::busy()) {
+            $lines = [...$lines, ...EggTester::tick()];
         }
 
-        return self::handle(UpdateChecker::check(), $mode);
+        return $lines;
     }
 
     /**
-     * New updates: eggs no server uses are updated when the mode allows it, root admins hear about the rest.
+     * New updates: eggs no server uses are updated and the others tested when the mode says so; root admins hear
+     * about the rest.
      *
      * @param  list<Egg>  $eggs
      * @return list<string>
@@ -41,7 +45,8 @@ final class Runner
         $updated = [];
         $waiting = [];
         foreach ($eggs as $egg) {
-            if ($mode->updatesUnusedEggs() && ! Server::query()->where('egg_id', $egg->id)->exists()) {
+            $used = Server::query()->where('egg_id', $egg->id)->exists();
+            if ($mode->updatesUnusedEggs() && ! $used) {
                 $result = EggUpdater::update($egg);
                 $lines[] = $result->message;
                 if ($result->ok) {
@@ -49,6 +54,11 @@ final class Runner
 
                     continue;
                 }
+            }
+            if ($mode->testsUsedEggs() && $used) {
+                $lines[] = EggTester::queue($egg)->message;
+
+                continue;
             }
             $waiting[] = $egg->name;
         }

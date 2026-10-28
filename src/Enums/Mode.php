@@ -9,6 +9,7 @@ enum Mode: string
 {
     case Ask = 'ask';
     case Auto = 'auto';
+    case Test = 'test';
     case Off = 'off';
 
     public function label(): string
@@ -30,6 +31,12 @@ enum Mode: string
     /** Eggs that no server uses are updated without asking. */
     public function updatesUnusedEggs(): bool
     {
-        return $this === self::Auto;
+        return $this === self::Auto || $this === self::Test;
+    }
+
+    /** Eggs that servers use are updated once a test server installed and started with the new version. */
+    public function testsUsedEggs(): bool
+    {
+        return $this === self::Test;
     }
 }
