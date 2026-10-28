@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- The settings page title now reads "Egg Updates", the same name as in Simplify's add-on list.
+
 ## 1.0.0
 
 - First version as its own plugin: checks every egg for a new version every six hours, tells root admins in the notifications, and lists updates on Server → Egg updates.
