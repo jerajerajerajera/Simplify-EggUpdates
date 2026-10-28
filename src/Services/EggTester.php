@@ -291,7 +291,8 @@ final class EggTester
     private static function cleanUp(EggTest $test): void
     {
         $server = $test->server_id ? Server::query()->find($test->server_id) : null;
-        if ($server !== null) {
+        // Only ever the test server itself, never a server that took its id.
+        if (self::isTestServer($server)) {
             try {
                 app(DaemonServerRepository::class)->setServer($server)->power('kill');
             } catch (\Throwable) {
