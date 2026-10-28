@@ -26,6 +26,7 @@ use Simplify\EggUpdates\Models\EggTest;
 use Simplify\EggUpdates\Models\EggUpdate;
 use Simplify\EggUpdates\Services\EggTester;
 use Simplify\EggUpdates\Services\EggUpdater;
+use Simplify\EggUpdates\Services\ServerMover;
 use Simplify\EggUpdates\Services\Settings;
 use Simplify\EggUpdates\Services\UpdateChecker;
 
@@ -142,6 +143,12 @@ step('the scheduled command finds a newer version and updates the egg without se
     $remote['name'] = 'Smoke Paper 3';
     must(Artisan::call('simplify-egg-updates:check', ['--force' => true]) === 0, Artisan::output());
     must($egg->fresh()->name === 'Smoke Paper 3', 'not updated automatically: '.trim(Artisan::output()));
+});
+step('Move servers compares with the kept version', function () use ($egg) {
+    must(ServerMover::previous($egg->fresh()) !== null, 'no previous version after the automatic update');
+    must(ServerMover::count($egg->fresh()) === 0, 'an egg without servers has servers to move');
+    $result = ServerMover::move($egg->fresh());
+    must($result->ok, $result->message);
 });
 step('the root admin got notifications', function () use ($admin) {
     must($admin->fresh()->notifications()->count() > 0, 'no notification in the bell');

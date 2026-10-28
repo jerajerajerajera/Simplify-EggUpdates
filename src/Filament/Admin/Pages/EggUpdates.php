@@ -20,6 +20,7 @@ use Simplify\EggUpdates\Models\EggUpdate;
 use Simplify\EggUpdates\Services\EggTester;
 use Simplify\EggUpdates\Services\EggUpdater;
 use Simplify\EggUpdates\Services\Result;
+use Simplify\EggUpdates\Services\ServerMover;
 use Simplify\EggUpdates\Services\Settings;
 use Simplify\EggUpdates\Services\UpdateChecker;
 
@@ -138,6 +139,16 @@ final class EggUpdates extends Page implements HasTable
                         ? 'simplify-egg-updates::egg-updates.actions.update_servers'
                         : 'simplify-egg-updates::egg-updates.actions.update_kept'))
                     ->action(fn (Egg $egg) => self::send(EggUpdater::update($egg))),
+                Action::make('move')
+                    ->label(fn (Egg $egg) => __('simplify-egg-updates::egg-updates.actions.move', ['count' => ServerMover::count($egg)]))
+                    ->icon('tabler-arrows-right')
+                    ->color('gray')
+                    ->button()
+                    ->visible(fn (Egg $egg) => $egg->servers_count > 0 && ServerMover::count($egg) > 0)
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (Egg $egg) => __('simplify-egg-updates::egg-updates.actions.move_heading', ['egg' => $egg->name]))
+                    ->modalDescription(__('simplify-egg-updates::egg-updates.actions.move_description'))
+                    ->action(fn (Egg $egg) => self::send(ServerMover::move($egg))),
                 Action::make('put_back')
                     ->label(__('simplify-egg-updates::egg-updates.actions.put_back'))
                     ->icon('tabler-arrow-back-up')
