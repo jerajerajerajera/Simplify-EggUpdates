@@ -118,10 +118,13 @@ step('the settings save', function () use ($admin) {
     auth()->login($admin);
     Settings::saveForm(['mode' => 'off']);
     must(Settings::mode() === Mode::Off, 'mode not saved directly');
-    $page = Livewire::actingAs($admin)->test(EggUpdates::class)->mountAction('settings')->fillForm(['mode' => 'auto']);
-    $mounted = json_encode($page->get('mountedActions'));
-    $page->callMountedAction()->assertHasNoFormErrors();
-    must(Settings::mode() === Mode::Auto, 'mode not saved from the page: '.Settings::mode()->value.' '.substr($mounted, 0, 300).' '.json_encode($page->errors()->toArray()));
+    // Filament's fillForm() does not reach a header action's form here, so set its state the way the browser does.
+    Livewire::actingAs($admin)->test(EggUpdates::class)
+        ->mountAction('settings')
+        ->set('mountedActions.0.data.mode', 'auto')
+        ->callMountedAction()
+        ->assertHasNoFormErrors();
+    must(Settings::mode() === Mode::Auto, 'mode not saved from the page: '.Settings::mode()->value);
 });
 step('the scheduled command finds a newer version and updates the egg without servers', function () use (&$remote, $egg) {
     $remote['name'] = 'Smoke Paper 3';
