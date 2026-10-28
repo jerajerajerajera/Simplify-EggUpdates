@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Simplify\EggUpdates\Filament\Admin\Pages;
 
-use App\Enums\CustomizationKey;
 use App\Models\Egg;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -35,7 +34,7 @@ final class EggUpdates extends Page implements HasTable
 
     protected static ?string $slug = 'egg-updates';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 20;
 
     protected string $view = 'simplify-egg-updates::egg-updates';
 
@@ -49,14 +48,10 @@ final class EggUpdates extends Page implements HasTable
         return __('simplify-egg-updates::egg-updates.title');
     }
 
-    /** Next to Pelican's Eggs. */
+    /** In the Simplify group of Pelican's menu, with the other Simplify add-ons (Simplify's ADDONS.md, "Admin menu"). */
     public static function getNavigationGroup(): ?string
     {
-        if (user()?->getCustomization(CustomizationKey::TopNavigation) === 'topbar') {
-            return null;
-        }
-
-        return trans('admin/dashboard.server');
+        return 'Simplify';
     }
 
     public static function getNavigationBadge(): ?string

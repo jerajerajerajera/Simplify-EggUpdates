@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2
+
+- Egg Updates now sits in the Simplify group of Pelican's admin menu, together with the other Simplify add-ons,
+  in the same order everywhere. This works with or without the Simplify core.
+
 ## 1.0.1
 
 - The settings page title now reads "Egg Updates", the same name as in Simplify's add-on list.
