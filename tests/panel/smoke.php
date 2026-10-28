@@ -99,7 +99,7 @@ step('updating keeps the previous version', function () use ($egg) {
     must(EggBackup::query()->where('egg_id', $egg->id)->count() === 1, 'no backup kept');
     must(EggUpdate::query()->find($egg->id)->found_hash === null, 'still listed as an update');
 });
-step('a new check does not offer the installed version again', function () use ($egg) {
+step('a new check does not offer the installed version again', function () {
     must(UpdateChecker::check() === [], 'offered again');
 });
 step('Put back returns the previous version, held', function () use ($egg) {

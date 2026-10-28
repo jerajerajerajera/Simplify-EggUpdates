@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Simplify\EggUpdates\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * What Egg Updates knows about one egg, keyed by egg id (an update can change the egg's uuid).
  *
  * @property int $egg_id
  * @property string|null $found_hash hash of a newer definition at the update URL, or null when the egg is current
- * @property \Illuminate\Support\Carbon|null $found_at
+ * @property Carbon|null $found_at
  * @property bool $held true after Put back: automatic updates leave the egg alone until it is updated by hand
  * @property string|null $applied_hash hash of the remote definition that was last installed
  */

@@ -20,7 +20,7 @@ jobs:
         with:
           php-version: '8.3'
           tools: pint
-      - run: pint --test
+      - run: pint --test -v
   # Installs the plugin in a real Pelican panel and opens its pages, so an error that only shows when the panel loads the code blocks the merge.
   panel-smoke:
     runs-on: ubuntu-latest
