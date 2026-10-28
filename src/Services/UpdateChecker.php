@@ -9,6 +9,7 @@ use App\Models\Egg;
 use App\Services\Eggs\Sharing\EggExporterService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Simplify\EggUpdates\Models\EggTest;
 use Simplify\EggUpdates\Models\EggUpdate;
 use Symfony\Component\Yaml\Yaml;
 
@@ -29,7 +30,9 @@ final class UpdateChecker
     public static function check(): array
     {
         $new = [];
-        foreach (Egg::query()->whereNotNull('update_url')->get() as $egg) {
+        // Copies made for a test of an update are not eggs of their own.
+        $copies = EggTest::query()->whereNotNull('copy_egg_id')->select('copy_egg_id');
+        foreach (Egg::query()->whereNotNull('update_url')->whereNotIn('id', $copies)->get() as $egg) {
             try {
                 $remote = RemoteEgg::fetch($egg);
                 $differs = self::localHash($egg, $remote->format) !== $remote->hash;

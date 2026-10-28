@@ -6,6 +6,7 @@ namespace Simplify\EggUpdates\Addon;
 
 use Simplify\Core\Addons\Addon;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
+use Simplify\EggUpdates\Services\EggTester;
 use Simplify\EggUpdates\SimplifyEggUpdatesPlugin;
 
 /** How Egg updates shows up inside Simplify. Only loaded when Simplify asks for it. */
@@ -34,5 +35,11 @@ final class EggUpdatesAddon extends Addon
     public function settingsUrl(): ?string
     {
         return EggUpdates::canAccess() ? EggUpdates::getUrl(panel: 'admin') : null;
+    }
+
+    /** The temporary servers of Test first stay out of Simplify's lists. */
+    public function hiddenServerPrefixes(): array
+    {
+        return [EggTester::MARK];
     }
 }

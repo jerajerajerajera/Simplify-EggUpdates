@@ -22,7 +22,9 @@ use Livewire\Livewire;
 use Simplify\EggUpdates\Enums\Mode;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
 use Simplify\EggUpdates\Models\EggBackup;
+use Simplify\EggUpdates\Models\EggTest;
 use Simplify\EggUpdates\Models\EggUpdate;
+use Simplify\EggUpdates\Services\EggTester;
 use Simplify\EggUpdates\Services\EggUpdater;
 use Simplify\EggUpdates\Services\Settings;
 use Simplify\EggUpdates\Services\UpdateChecker;
@@ -114,6 +116,16 @@ step('Put back returns the previous version, held', function () use ($egg) {
     must(EggUpdate::query()->find($egg->id)->held === true, 'not held');
     must(EggBackup::query()->where('egg_id', $egg->id)->count() === 0, 'the used backup stays');
 });
+step('Test first without a node reports why and leaves nothing behind', function () use ($egg) {
+    $eggs = Egg::query()->count();
+    $result = EggTester::queue($egg->fresh());
+    must($result->ok, $result->message);
+    $state = EggUpdate::query()->find($egg->id);
+    must($state->test_ok === false, 'the failed test is not remembered');
+    must(EggTest::query()->doesntExist(), 'the test is still queued');
+    must(Egg::query()->count() === $eggs, 'the imported copy was not removed');
+    must($egg->fresh()->name === 'Smoke Paper', 'the egg changed without a test');
+});
 step('the settings save', function () use ($admin) {
     auth()->login($admin);
     Settings::saveForm(['mode' => 'off']);
@@ -121,10 +133,10 @@ step('the settings save', function () use ($admin) {
     // Filament's fillForm() does not reach a header action's form here, so set its state the way the browser does.
     Livewire::actingAs($admin)->test(EggUpdates::class)
         ->mountAction('settings')
-        ->set('mountedActions.0.data.mode', 'auto')
+        ->set('mountedActions.0.data.mode', 'test')
         ->callMountedAction()
         ->assertHasNoFormErrors();
-    must(Settings::mode() === Mode::Auto, 'mode not saved from the page: '.Settings::mode()->value);
+    must(Settings::mode() === Mode::Test, 'mode not saved from the page: '.Settings::mode()->value);
 });
 step('the scheduled command finds a newer version and updates the egg without servers', function () use (&$remote, $egg) {
     $remote['name'] = 'Smoke Paper 3';
