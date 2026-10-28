@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $applied_hash hash of the remote definition that was last installed
  * @property bool|null $test_ok how the last test of an update ended, null when it was not tested
  * @property string|null $test_reason
- * @property \Illuminate\Support\Carbon|null $tested_at
+ * @property Carbon|null $tested_at
  */
 final class EggUpdate extends Model
 {

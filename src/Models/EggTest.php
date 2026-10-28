@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Simplify\EggUpdates\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * A test of an egg update: waiting (queued), or running on a temporary server (installing, starting).
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $content the tested definition, installed as is when the test passes
  * @property string|null $format
  * @property string|null $hash
- * @property \Illuminate\Support\Carbon|null $stage_at
+ * @property Carbon|null $stage_at
  */
 final class EggTest extends Model
 {
