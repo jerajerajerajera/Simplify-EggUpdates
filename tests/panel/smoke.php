@@ -118,7 +118,11 @@ step('the settings save', function () use ($admin) {
     auth()->login($admin);
     Settings::saveForm(['mode' => 'off']);
     must(Settings::mode() === Mode::Off, 'mode not saved directly');
-    Livewire::actingAs($admin)->test(EggUpdates::class)->callAction('settings', data: ['mode' => 'auto'])->assertHasNoErrors();
+    Livewire::actingAs($admin)->test(EggUpdates::class)
+        ->mountAction('settings')
+        ->fillForm(['mode' => 'auto'])
+        ->callMountedAction()
+        ->assertHasNoFormErrors();
     must(Settings::mode() === Mode::Auto, 'mode not saved from the page: '.Settings::mode()->value);
 });
 step('the scheduled command finds a newer version and updates the egg without servers', function () use (&$remote, $egg) {
