@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Egg updates',
+    'title' => 'Egg Updates',
     'description' => 'Checks every egg for a new version, tells root admins and keeps the previous version so it can be put back.',
     'and' => 'and',
     'modes' => [
