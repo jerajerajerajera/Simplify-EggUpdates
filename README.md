@@ -13,6 +13,9 @@ safely. The previous version of an egg is always kept, so it can be put back.
 - **Test first**: before an egg that servers use is updated, a temporary test server is made with the new version on
   a free port between 45000 and 45999. Only when it installs and starts is the egg updated. The test server, its port
   and the copy of the egg are removed either way. Do it by hand per egg, or let it happen for every new version.
+- **Move servers**: servers keep their own startup command and Docker image when an egg is updated. Move servers gives
+  servers that still use a command or image the update changed or removed the new one, from their next start. Commands
+  and images set by hand stay.
 - Optionally, eggs that no server uses are updated automatically.
 - Pelican's own Update button on its Eggs page follows the same result.
 
