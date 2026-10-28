@@ -1,7 +1,7 @@
 <?php
 
 // Loads the plugin inside a real Pelican panel: the page renders, a check finds a new version at a (fake) update URL,
-// updating keeps the previous version, Put back returns it, the settings save and the scheduled command runs.
+// updating keeps the previous version, Put back returns it, the settings save and the scheduled command updates an egg.
 // Run from the panel folder after `php artisan p:plugin:install simplify-egg-updates`:
 // php plugins/simplify-egg-updates/tests/panel/smoke.php
 
@@ -75,9 +75,14 @@ $egg = Egg::factory()->create(['name' => 'Smoke Paper', 'update_url' => 'https:/
 // The fake update URL publishes the same egg under a new name: a new version.
 $remote = json_decode(app(EggExporterService::class)->handle($egg->id, EggFormat::JSON), true);
 $remote['name'] = 'Smoke Paper 2';
-Http::fake(['eggs.example.test/*' => Http::response(json_encode($remote))]);
+Http::fake(['eggs.example.test/*' => function () use (&$remote) {
+    return Http::response(json_encode($remote));
+}]);
 Filament::setCurrentPanel(Filament::getPanel('admin'));
 
+step('the smoke user is a root admin', function () use ($admin) {
+    must($admin->fresh()->isRootAdmin(), 'not a root admin');
+});
 step('the page renders without updates', function () use ($admin) {
     $response = http($admin, EggUpdates::getUrl(panel: 'admin'));
     must($response->getStatusCode() === 200, 'HTTP '.$response->getStatusCode().($response->exception ? ': '.$response->exception->getMessage() : ''));
@@ -109,12 +114,17 @@ step('Put back returns the previous version, held', function () use ($egg) {
     must(EggUpdate::query()->find($egg->id)->held === true, 'not held');
     must(EggBackup::query()->where('egg_id', $egg->id)->count() === 0, 'the used backup stays');
 });
-step('the settings save from the page', function () use ($admin) {
+step('the settings save', function () use ($admin) {
+    auth()->login($admin);
+    Settings::saveForm(['mode' => 'off']);
+    must(Settings::mode() === Mode::Off, 'mode not saved directly');
     Livewire::actingAs($admin)->test(EggUpdates::class)->callAction('settings', data: ['mode' => 'auto'])->assertHasNoErrors();
-    must(Settings::mode() === Mode::Auto, 'mode not saved');
+    must(Settings::mode() === Mode::Auto, 'mode not saved from the page: '.Settings::mode()->value);
 });
-step('the scheduled command runs', function () {
+step('the scheduled command finds a newer version and updates the egg without servers', function () use (&$remote, $egg) {
+    $remote['name'] = 'Smoke Paper 3';
     must(Artisan::call('simplify-egg-updates:check', ['--force' => true]) === 0, Artisan::output());
+    must($egg->fresh()->name === 'Smoke Paper 3', 'not updated automatically: '.trim(Artisan::output()));
 });
 step('the root admin got notifications', function () use ($admin) {
     must($admin->fresh()->notifications()->count() > 0, 'no notification in the bell');
