@@ -19,7 +19,7 @@ final class EggUpdatesProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->booted(function () {
-            Schedule::command('simplify-egg-updates:check')->everyMinute()->withoutOverlapping(30);
+            Schedule::command('simplify-eggupdates:check')->everyMinute()->withoutOverlapping(30);
         });
     }
 }

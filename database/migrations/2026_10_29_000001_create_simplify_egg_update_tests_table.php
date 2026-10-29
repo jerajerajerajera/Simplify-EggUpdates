@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Kept when the plugin is reinstalled or takes over an older copy.
+        if (Schema::hasTable('simplify_egg_update_tests')) {
+            return;
+        }
+
         // One row per egg whose update waits for, or is in, a test on a temporary server.
         Schema::create('simplify_egg_update_tests', function (Blueprint $table) {
             $table->id();

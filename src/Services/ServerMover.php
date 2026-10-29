@@ -19,7 +19,7 @@ final class ServerMover
     {
         $previous = self::previous($egg);
         if ($previous === null) {
-            return new Result(false, __('simplify-egg-updates::egg-updates.messages.nothing_to_compare', ['egg' => $egg->name]));
+            return new Result(false, __('simplify-eggupdates::egg-updates.messages.nothing_to_compare', ['egg' => $egg->name]));
         }
         $plan = self::plan($egg, $previous);
         foreach ($plan as $id => $change) {
@@ -28,8 +28,8 @@ final class ServerMover
         $count = count($plan);
 
         return new Result(true, $count === 0
-            ? __('simplify-egg-updates::egg-updates.messages.nothing_to_move', ['egg' => $egg->name])
-            : trans_choice('simplify-egg-updates::egg-updates.messages.moved', $count, ['egg' => $egg->name, 'count' => $count]));
+            ? __('simplify-eggupdates::egg-updates.messages.nothing_to_move', ['egg' => $egg->name])
+            : trans_choice('simplify-eggupdates::egg-updates.messages.moved', $count, ['egg' => $egg->name, 'count' => $count]));
     }
 
     /** How many servers Move servers would change; 0 when there is nothing to compare with. */

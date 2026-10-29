@@ -62,21 +62,21 @@ final class Runner
             }
             $waiting[] = $egg->name;
         }
-        $and = __('simplify-egg-updates::egg-updates.and');
+        $and = __('simplify-eggupdates::egg-updates.and');
         if ($updated !== []) {
             Notifier::rootAdmins(
-                trans_choice('simplify-egg-updates::egg-updates.notifications.updated_title', count($updated), ['egg' => $updated[0], 'count' => count($updated)]),
-                trans_choice('simplify-egg-updates::egg-updates.notifications.updated_body', count($updated), ['eggs' => Definition::names($updated, $and)]),
+                trans_choice('simplify-eggupdates::egg-updates.notifications.updated_title', count($updated), ['egg' => $updated[0], 'count' => count($updated)]),
+                trans_choice('simplify-eggupdates::egg-updates.notifications.updated_body', count($updated), ['eggs' => Definition::names($updated, $and)]),
                 'success',
             );
         }
         if ($waiting !== []) {
             Notifier::rootAdmins(
-                trans_choice('simplify-egg-updates::egg-updates.notifications.available_title', count($waiting), ['egg' => $waiting[0], 'count' => count($waiting)]),
-                trans_choice('simplify-egg-updates::egg-updates.notifications.available_body', count($waiting), ['eggs' => Definition::names($waiting, $and)]),
+                trans_choice('simplify-eggupdates::egg-updates.notifications.available_title', count($waiting), ['egg' => $waiting[0], 'count' => count($waiting)]),
+                trans_choice('simplify-eggupdates::egg-updates.notifications.available_body', count($waiting), ['eggs' => Definition::names($waiting, $and)]),
             );
             foreach ($waiting as $name) {
-                $lines[] = __('simplify-egg-updates::egg-updates.messages.found', ['egg' => $name]);
+                $lines[] = __('simplify-eggupdates::egg-updates.messages.found', ['egg' => $name]);
             }
         }
 

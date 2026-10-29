@@ -20,12 +20,12 @@ final class EggUpdatesAddon extends Addon
 
     public function name(): string
     {
-        return __('simplify-egg-updates::egg-updates.title');
+        return __('simplify-eggupdates::egg-updates.title');
     }
 
     public function description(): string
     {
-        return __('simplify-egg-updates::egg-updates.description');
+        return __('simplify-eggupdates::egg-updates.description');
     }
 
     public function icon(): string

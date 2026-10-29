@@ -21,7 +21,7 @@ final class Notifier
                 ->body($body)
                 ->actions([
                     Action::make('review')
-                        ->label(__('simplify-egg-updates::egg-updates.title'))
+                        ->label(__('simplify-eggupdates::egg-updates.title'))
                         ->url(EggUpdates::getUrl(panel: 'admin')),
                 ]);
             foreach (User::query()->get()->filter(fn (User $user) => $user->isRootAdmin()) as $user) {

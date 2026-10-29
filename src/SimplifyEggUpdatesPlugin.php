@@ -13,7 +13,7 @@ use Simplify\EggUpdates\Services\Settings;
 
 final class SimplifyEggUpdatesPlugin implements HasPluginSettings, Plugin
 {
-    public const ID = 'simplify-egg-updates';
+    public const ID = 'simplify-eggupdates';
 
     public function getId(): string
     {
@@ -44,6 +44,6 @@ final class SimplifyEggUpdatesPlugin implements HasPluginSettings, Plugin
     {
         Settings::saveForm($data);
 
-        Notification::make()->title(__('simplify-egg-updates::egg-updates.settings.saved'))->success()->send();
+        Notification::make()->title(__('simplify-eggupdates::egg-updates.settings.saved'))->success()->send();
     }
 }
