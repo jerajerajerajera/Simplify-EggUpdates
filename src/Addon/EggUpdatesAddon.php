@@ -7,6 +7,7 @@ namespace Simplify\EggUpdates\Addon;
 use Simplify\Core\Addons\Addon;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
 use Simplify\EggUpdates\Services\EggTester;
+use Simplify\EggUpdates\Services\Settings;
 use Simplify\EggUpdates\SimplifyEggUpdatesPlugin;
 
 /** How Egg updates shows up inside Simplify. Only loaded when Simplify asks for it. */
@@ -41,5 +42,23 @@ final class EggUpdatesAddon extends Addon
     public function hiddenServerPrefixes(): array
     {
         return [EggTester::MARK];
+    }
+
+    /** Simplify's setup asks when eggs are updated, for root admins. */
+    public function setupFields(): array
+    {
+        return EggUpdates::canAccess() ? Settings::form() : [];
+    }
+
+    public function setupState(): array
+    {
+        return Settings::formData();
+    }
+
+    public function saveSetup(array $state): void
+    {
+        if (EggUpdates::canAccess()) {
+            Settings::saveForm($state);
+        }
     }
 }

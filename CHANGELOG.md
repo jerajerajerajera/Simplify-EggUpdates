@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3
+
+- Simplify's setup (from Simplify 1.3) now asks when eggs are updated, in its last step "Set up add-ons", so a new
+  panel is set up in one go. Older Simplify versions and panels without Simplify are not affected.
+
 ## 1.0.2
 
 - Egg Updates now sits in the Simplify group of Pelican's admin menu, together with the other Simplify add-ons,
