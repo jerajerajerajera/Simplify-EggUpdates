@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
+use Simplify\EggUpdates\Addon\EggUpdatesAddon;
 use Simplify\EggUpdates\Enums\Mode;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
 use Simplify\EggUpdates\Models\EggBackup;
@@ -143,7 +144,7 @@ step('Simplify\'s setup asks when eggs are updated and saves it', function () us
     if (! class_exists('Simplify\Core\Addons\Addon')) {
         require __DIR__.'/stubs/Addon.php';
     }
-    $addon = app(Simplify\EggUpdates\Addon\EggUpdatesAddon::class);
+    $addon = app(EggUpdatesAddon::class);
     $customer = User::where('email', 'smoke-egg-updates-customer@example.com')->first()
         ?? User::factory()->create(['email' => 'smoke-egg-updates-customer@example.com']);
     auth()->setUser($customer);
