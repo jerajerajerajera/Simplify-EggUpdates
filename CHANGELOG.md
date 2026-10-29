@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+
+- Installing Egg Updates from Admin → Plugins or the Hub now also removes the old copy right away. Those installs run in the
+  panel's queue, where 1.1.0 only removed it once the queue worker restarted.
+
 ## 1.1.0
 
 - The plugin id is now `simplify-eggupdates` (it was `simplify-egg-updates`), like the other Simplify plugins.
