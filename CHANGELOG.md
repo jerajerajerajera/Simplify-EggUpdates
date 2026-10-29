@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- The plugin id is now `simplify-eggupdates` (it was `simplify-egg-updates`), like the other Simplify plugins.
+  Installing this version over the old one keeps every setting and egg backup and removes the old copy, so the panel
+  never shows Egg Updates twice. The check command is now `php artisan simplify-eggupdates:check`.
+
 ## 1.0.3
 
 - Simplify's setup (from Simplify 1.3) now asks when eggs are updated, in its last step "Set up add-ons", so a new

@@ -36,11 +36,11 @@ final class Settings
     {
         return [
             Select::make('mode')
-                ->label(__('simplify-egg-updates::egg-updates.settings.mode'))
+                ->label(__('simplify-eggupdates::egg-updates.settings.mode'))
                 ->options(Mode::options())
                 ->selectablePlaceholder(false)
                 ->required()
-                ->helperText(__('simplify-egg-updates::egg-updates.settings.mode_help')),
+                ->helperText(__('simplify-eggupdates::egg-updates.settings.mode_help')),
         ];
     }
 

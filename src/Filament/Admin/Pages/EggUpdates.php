@@ -36,7 +36,7 @@ final class EggUpdates extends Page implements HasTable
 
     protected static ?int $navigationSort = 20;
 
-    protected string $view = 'simplify-egg-updates::egg-updates';
+    protected string $view = 'simplify-eggupdates::egg-updates';
 
     public static function canAccess(): bool
     {
@@ -45,7 +45,7 @@ final class EggUpdates extends Page implements HasTable
 
     public static function getNavigationLabel(): string
     {
-        return __('simplify-egg-updates::egg-updates.title');
+        return __('simplify-eggupdates::egg-updates.title');
     }
 
     /** In the Simplify group of Pelican's menu, with the other Simplify add-ons (Simplify's ADDONS.md, "Admin menu"). */
@@ -63,7 +63,7 @@ final class EggUpdates extends Page implements HasTable
 
     public function getTitle(): string
     {
-        return __('simplify-egg-updates::egg-updates.title');
+        return __('simplify-eggupdates::egg-updates.title');
     }
 
     public function getSubheading(): ?string
@@ -71,8 +71,8 @@ final class EggUpdates extends Page implements HasTable
         $checked = UpdateChecker::checkedAt();
 
         return $checked === null
-            ? __('simplify-egg-updates::egg-updates.page.not_checked')
-            : __('simplify-egg-updates::egg-updates.page.checked', ['time' => $checked->diffForHumans()]);
+            ? __('simplify-eggupdates::egg-updates.page.not_checked')
+            : __('simplify-eggupdates::egg-updates.page.checked', ['time' => $checked->diffForHumans()]);
     }
 
     public function table(Table $table): Table
@@ -88,18 +88,18 @@ final class EggUpdates extends Page implements HasTable
             ->poll(fn () => EggTester::busy() ? '10s' : null)
             ->columns([
                 TextColumn::make('name')
-                    ->label(__('simplify-egg-updates::egg-updates.page.egg'))
+                    ->label(__('simplify-eggupdates::egg-updates.page.egg'))
                     ->description(fn (Egg $egg) => $egg->author)
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('servers_count')
-                    ->label(__('simplify-egg-updates::egg-updates.page.servers'))
-                    ->formatStateUsing(fn (int $state) => trans_choice('simplify-egg-updates::egg-updates.page.server_count', $state, ['count' => $state])),
+                    ->label(__('simplify-eggupdates::egg-updates.page.servers'))
+                    ->formatStateUsing(fn (int $state) => trans_choice('simplify-eggupdates::egg-updates.page.server_count', $state, ['count' => $state])),
                 TextColumn::make('status')
-                    ->label(__('simplify-egg-updates::egg-updates.page.status'))
+                    ->label(__('simplify-eggupdates::egg-updates.page.status'))
                     ->badge()
                     ->state(fn (Egg $egg) => self::status($egg))
-                    ->formatStateUsing(fn (string $state) => __('simplify-egg-updates::egg-updates.status.'.$state))
+                    ->formatStateUsing(fn (string $state) => __('simplify-eggupdates::egg-updates.status.'.$state))
                     ->description(fn (Egg $egg) => self::testFailure($egg))
                     ->color(fn (string $state) => match ($state) {
                         'updated' => 'success',
@@ -108,63 +108,63 @@ final class EggUpdates extends Page implements HasTable
                         default => 'info',
                     }),
                 TextColumn::make('since')
-                    ->label(__('simplify-egg-updates::egg-updates.page.since'))
+                    ->label(__('simplify-eggupdates::egg-updates.page.since'))
                     ->state(fn (Egg $egg) => self::since($egg))
                     ->since(),
             ])
             ->recordActions([
                 Action::make('test')
-                    ->label(__('simplify-egg-updates::egg-updates.actions.test'))
+                    ->label(__('simplify-eggupdates::egg-updates.actions.test'))
                     ->icon('tabler-flask')
                     ->color('gray')
                     ->button()
                     ->visible(fn (Egg $egg) => in_array(self::status($egg), ['available', 'held'], true))
                     ->requiresConfirmation()
-                    ->modalHeading(fn (Egg $egg) => __('simplify-egg-updates::egg-updates.actions.test_heading', ['egg' => $egg->name]))
-                    ->modalDescription(__('simplify-egg-updates::egg-updates.actions.test_description'))
+                    ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.test_heading', ['egg' => $egg->name]))
+                    ->modalDescription(__('simplify-eggupdates::egg-updates.actions.test_description'))
                     ->action(fn (Egg $egg) => self::send(EggTester::queue($egg))),
                 Action::make('update')
-                    ->label(__('simplify-egg-updates::egg-updates.actions.update'))
+                    ->label(__('simplify-eggupdates::egg-updates.actions.update'))
                     ->icon('tabler-download')
                     ->button()
                     ->visible(fn (Egg $egg) => in_array(self::status($egg), ['available', 'held'], true))
                     ->requiresConfirmation()
-                    ->modalHeading(fn (Egg $egg) => __('simplify-egg-updates::egg-updates.actions.update_heading', ['egg' => $egg->name]))
+                    ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.update_heading', ['egg' => $egg->name]))
                     ->modalDescription(fn (Egg $egg) => __($egg->servers_count > 0
-                        ? 'simplify-egg-updates::egg-updates.actions.update_servers'
-                        : 'simplify-egg-updates::egg-updates.actions.update_kept'))
+                        ? 'simplify-eggupdates::egg-updates.actions.update_servers'
+                        : 'simplify-eggupdates::egg-updates.actions.update_kept'))
                     ->action(fn (Egg $egg) => self::send(EggUpdater::update($egg))),
                 Action::make('move')
-                    ->label(fn (Egg $egg) => __('simplify-egg-updates::egg-updates.actions.move', ['count' => ServerMover::count($egg)]))
+                    ->label(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.move', ['count' => ServerMover::count($egg)]))
                     ->icon('tabler-arrows-right')
                     ->color('gray')
                     ->button()
                     ->visible(fn (Egg $egg) => $egg->servers_count > 0 && ServerMover::count($egg) > 0)
                     ->requiresConfirmation()
-                    ->modalHeading(fn (Egg $egg) => __('simplify-egg-updates::egg-updates.actions.move_heading', ['egg' => $egg->name]))
-                    ->modalDescription(__('simplify-egg-updates::egg-updates.actions.move_description'))
+                    ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.move_heading', ['egg' => $egg->name]))
+                    ->modalDescription(__('simplify-eggupdates::egg-updates.actions.move_description'))
                     ->action(fn (Egg $egg) => self::send(ServerMover::move($egg))),
                 Action::make('put_back')
-                    ->label(__('simplify-egg-updates::egg-updates.actions.put_back'))
+                    ->label(__('simplify-eggupdates::egg-updates.actions.put_back'))
                     ->icon('tabler-arrow-back-up')
                     ->color('gray')
                     ->button()
                     ->visible(fn (Egg $egg) => EggBackup::query()->where('egg_id', $egg->id)->exists())
                     ->requiresConfirmation()
-                    ->modalHeading(fn (Egg $egg) => __('simplify-egg-updates::egg-updates.actions.put_back_heading', ['egg' => $egg->name]))
-                    ->modalDescription(__('simplify-egg-updates::egg-updates.actions.put_back_description'))
+                    ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.put_back_heading', ['egg' => $egg->name]))
+                    ->modalDescription(__('simplify-eggupdates::egg-updates.actions.put_back_description'))
                     ->action(fn (Egg $egg) => self::send(EggUpdater::putBack($egg))),
             ])
             ->emptyStateIcon('tabler-egg')
-            ->emptyStateHeading(__('simplify-egg-updates::egg-updates.page.empty'))
-            ->emptyStateDescription(__('simplify-egg-updates::egg-updates.page.empty_help'));
+            ->emptyStateHeading(__('simplify-eggupdates::egg-updates.page.empty'))
+            ->emptyStateDescription(__('simplify-eggupdates::egg-updates.page.empty_help'));
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('check')
-                ->label(__('simplify-egg-updates::egg-updates.actions.check'))
+                ->label(__('simplify-eggupdates::egg-updates.actions.check'))
                 ->icon('tabler-refresh')
                 ->color('gray')
                 ->action(function () {
@@ -172,28 +172,28 @@ final class EggUpdates extends Page implements HasTable
                     $count = self::available()->count();
                     Notification::make()
                         ->title($count === 0
-                            ? __('simplify-egg-updates::egg-updates.messages.up_to_date')
-                            : trans_choice('simplify-egg-updates::egg-updates.messages.available', $count, ['count' => $count]))
+                            ? __('simplify-eggupdates::egg-updates.messages.up_to_date')
+                            : trans_choice('simplify-eggupdates::egg-updates.messages.available', $count, ['count' => $count]))
                         ->success()
                         ->send();
                 }),
             Action::make('update_all')
-                ->label(__('simplify-egg-updates::egg-updates.actions.update_all'))
+                ->label(__('simplify-eggupdates::egg-updates.actions.update_all'))
                 ->icon('tabler-download')
                 ->visible(fn () => self::available()->count() > 1)
                 ->requiresConfirmation()
-                ->modalHeading(fn () => __('simplify-egg-updates::egg-updates.actions.update_all_heading', ['count' => self::available()->count()]))
-                ->modalDescription(__('simplify-egg-updates::egg-updates.actions.update_all_description'))
+                ->modalHeading(fn () => __('simplify-eggupdates::egg-updates.actions.update_all_heading', ['count' => self::available()->count()]))
+                ->modalDescription(__('simplify-eggupdates::egg-updates.actions.update_all_description'))
                 ->action(fn () => $this->updateAll()),
             Action::make('settings')
-                ->label(__('simplify-egg-updates::egg-updates.settings.title'))
+                ->label(__('simplify-eggupdates::egg-updates.settings.title'))
                 ->icon('tabler-settings')
                 ->color('gray')
                 ->fillForm(fn () => Settings::formData())
                 ->schema(Settings::form())
                 ->action(function (array $data) {
                     Settings::saveForm($data);
-                    Notification::make()->title(__('simplify-egg-updates::egg-updates.settings.saved'))->success()->send();
+                    Notification::make()->title(__('simplify-eggupdates::egg-updates.settings.saved'))->success()->send();
                 }),
         ];
     }
@@ -209,15 +209,15 @@ final class EggUpdates extends Page implements HasTable
         }
         if ($failed === []) {
             Notification::make()
-                ->title(trans_choice('simplify-egg-updates::egg-updates.messages.updated_count', $done, ['count' => $done]))
-                ->body(__('simplify-egg-updates::egg-updates.actions.update_kept'))
+                ->title(trans_choice('simplify-eggupdates::egg-updates.messages.updated_count', $done, ['count' => $done]))
+                ->body(__('simplify-eggupdates::egg-updates.actions.update_kept'))
                 ->success()
                 ->send();
 
             return;
         }
         Notification::make()
-            ->title(__('simplify-egg-updates::egg-updates.messages.some_failed', ['done' => $done, 'failed' => count($failed)]))
+            ->title(__('simplify-eggupdates::egg-updates.messages.some_failed', ['done' => $done, 'failed' => count($failed)]))
             ->body(implode(' ', $failed))
             ->danger()
             ->send();
@@ -252,7 +252,7 @@ final class EggUpdates extends Page implements HasTable
             return null;
         }
 
-        return __('simplify-egg-updates::egg-updates.tests.failed_short', ['reason' => $state->test_reason]);
+        return __('simplify-eggupdates::egg-updates.tests.failed_short', ['reason' => $state->test_reason]);
     }
 
     private static function since(Egg $egg): mixed

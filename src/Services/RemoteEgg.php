@@ -23,7 +23,7 @@ final readonly class RemoteEgg
     {
         $url = (string) $egg->update_url;
         if (! preg_match('#^https://#i', $url)) {
-            throw new RuntimeException(__('simplify-egg-updates::egg-updates.errors.https'));
+            throw new RuntimeException(__('simplify-eggupdates::egg-updates.errors.https'));
         }
         $format = Definition::format($url);
         $content = Http::timeout(10)->connectTimeout(3)->get($url)->throw()->body();
@@ -36,7 +36,7 @@ final readonly class RemoteEgg
     {
         $parsed = $format === EggFormat::YAML ? Yaml::parse($content) : json_decode($content, true);
         if (! is_array($parsed)) {
-            throw new RuntimeException(__('simplify-egg-updates::egg-updates.errors.not_an_egg'));
+            throw new RuntimeException(__('simplify-eggupdates::egg-updates.errors.not_an_egg'));
         }
 
         return $parsed;

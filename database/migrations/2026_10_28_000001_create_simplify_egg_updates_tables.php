@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Kept when the plugin is reinstalled or takes over an older copy, so the settings and backups stay.
+        if (Schema::hasTable('simplify_egg_updates')) {
+            return;
+        }
+
         Schema::create('simplify_egg_updates', function (Blueprint $table) {
             $table->unsignedInteger('egg_id')->primary();
             $table->string('found_hash', 32)->nullable();

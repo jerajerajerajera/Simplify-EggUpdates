@@ -19,7 +19,7 @@ use Symfony\Component\Yaml\Yaml;
  */
 final class UpdateChecker
 {
-    private const CHECKED_AT = 'simplify-egg-updates.checked-at';
+    private const CHECKED_AT = 'simplify-eggupdates.checked-at';
 
     /**
      * Checks every egg with an update URL. A remote definition installed by Egg Updates before counts as current,

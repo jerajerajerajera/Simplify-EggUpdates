@@ -29,7 +29,7 @@ abstract class Addon
      */
     public const API = 3;
 
-    /** The add-on's plugin id, for example "simplify-server-maker". */
+    /** The add-on's plugin id, for example "simplify-servermaker". */
     abstract public function id(): string;
 
     abstract public function name(): string;

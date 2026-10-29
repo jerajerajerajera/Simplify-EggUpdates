@@ -24,9 +24,9 @@ final class EggUpdater
 
     public static function update(Egg $egg, ?RemoteEgg $remote = null): Result
     {
-        $lock = Cache::lock('simplify-egg-updates.update.'.$egg->id, 120);
+        $lock = Cache::lock('simplify-eggupdates.update.'.$egg->id, 120);
         if (! $lock->get()) {
-            return new Result(false, __('simplify-egg-updates::egg-updates.messages.busy', ['egg' => $egg->name]));
+            return new Result(false, __('simplify-eggupdates::egg-updates.messages.busy', ['egg' => $egg->name]));
         }
         try {
             $remote ??= RemoteEgg::fetch($egg);
@@ -40,11 +40,11 @@ final class EggUpdater
             Cache::forget('eggs.'.$egg->uuid.'.update');
             Cache::forget('eggs.'.$egg->fresh()?->uuid.'.update');
 
-            return new Result(true, __('simplify-egg-updates::egg-updates.messages.updated', ['egg' => $egg->name]));
+            return new Result(true, __('simplify-eggupdates::egg-updates.messages.updated', ['egg' => $egg->name]));
         } catch (\Throwable $exception) {
             report($exception);
 
-            return new Result(false, __('simplify-egg-updates::egg-updates.messages.update_failed', [
+            return new Result(false, __('simplify-eggupdates::egg-updates.messages.update_failed', [
                 'egg' => $egg->name,
                 'reason' => Definition::reason($exception),
             ]));
@@ -58,7 +58,7 @@ final class EggUpdater
     {
         $backup = self::latest($egg);
         if ($backup === null) {
-            return new Result(false, __('simplify-egg-updates::egg-updates.messages.nothing_to_put_back', ['egg' => $egg->name]));
+            return new Result(false, __('simplify-eggupdates::egg-updates.messages.nothing_to_put_back', ['egg' => $egg->name]));
         }
         try {
             $hash = null;
@@ -75,11 +75,11 @@ final class EggUpdater
                     ->save();
             });
 
-            return new Result(true, __('simplify-egg-updates::egg-updates.messages.put_back', ['egg' => $egg->name]));
+            return new Result(true, __('simplify-eggupdates::egg-updates.messages.put_back', ['egg' => $egg->name]));
         } catch (\Throwable $exception) {
             report($exception);
 
-            return new Result(false, __('simplify-egg-updates::egg-updates.messages.put_back_failed', [
+            return new Result(false, __('simplify-eggupdates::egg-updates.messages.put_back_failed', [
                 'egg' => $egg->name,
                 'reason' => Definition::reason($exception),
             ]));

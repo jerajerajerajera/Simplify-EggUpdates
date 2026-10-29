@@ -14,7 +14,7 @@ enum Mode: string
 
     public function label(): string
     {
-        return __('simplify-egg-updates::egg-updates.modes.'.$this->value);
+        return __('simplify-eggupdates::egg-updates.modes.'.$this->value);
     }
 
     /** @return array<string, string> */

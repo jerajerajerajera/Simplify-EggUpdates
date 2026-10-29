@@ -60,18 +60,30 @@ jobs:
           php artisan key:generate --force
           php artisan migrate --force
           yarn install --silent
-      - name: Install Simplify Egg Updates
+      # Until 1.1.0 the plugin id was simplify-egg-updates: install that version first, so the job proves the new id
+      # takes over its settings and removes the old folder.
+      - name: Install the old simplify-egg-updates 1.0.3
         run: |
-          mkdir -p panel/plugins/simplify-egg-updates
-          tar -C plugin --exclude=.git --exclude=dist -cf - . | tar -C panel/plugins/simplify-egg-updates -xf -
+          git clone --quiet --depth 1 --branch v1.0.3 "https://github.com/${{ github.repository }}.git" panel/plugins/simplify-egg-updates
+          rm -rf panel/plugins/simplify-egg-updates/.git
           cd panel
           php artisan p:plugin:install simplify-egg-updates
+          php -r '$db = new PDO("sqlite:database/database.sqlite"); $db->exec("INSERT INTO simplify_egg_update_settings (key, value) VALUES (\"ci_takeover\", \"kept\")");'
+      - name: Install Simplify Egg Updates
+        run: |
+          mkdir -p panel/plugins/simplify-eggupdates
+          tar -C plugin --exclude=.git --exclude=dist -cf - . | tar -C panel/plugins/simplify-eggupdates -xf -
+          cd panel
+          php artisan p:plugin:install simplify-eggupdates
           php artisan p:plugin:list | tee plugins.txt
           grep -E 'Simplify Egg Updates .*\| enabled' plugins.txt || { echo 'Simplify Egg Updates did not install'; exit 1; }
+          test ! -e plugins/simplify-egg-updates || { echo 'The old simplify-egg-updates folder is still there'; exit 1; }
+          test "$(grep -c 'Simplify Egg Updates' plugins.txt)" = 1 || { echo 'Simplify Egg Updates is listed twice'; exit 1; }
+          php -r '$db = new PDO("sqlite:database/database.sqlite"); $kept = $db->query("SELECT value FROM simplify_egg_update_settings WHERE key = \"ci_takeover\"")->fetchColumn(); $db->exec("DELETE FROM simplify_egg_update_settings WHERE key = \"ci_takeover\""); exit($kept === "kept" ? 0 : 1);' || { echo 'The old settings were lost'; exit 1; }
       - name: Open the pages
         working-directory: panel
         run: |
-          php plugins/simplify-egg-updates/tests/panel/smoke.php | tee smoke.txt
+          php plugins/simplify-eggupdates/tests/panel/smoke.php | tee smoke.txt
           grep -q '^All steps passed$' smoke.txt
       - name: Laravel log
         if: failure()

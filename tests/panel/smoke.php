@@ -2,8 +2,8 @@
 
 // Loads the plugin inside a real Pelican panel: the page renders, a check finds a new version at a (fake) update URL,
 // updating keeps the previous version, Put back returns it, the settings save and the scheduled command updates an egg.
-// Run from the panel folder after `php artisan p:plugin:install simplify-egg-updates`:
-// php plugins/simplify-egg-updates/tests/panel/smoke.php
+// Run from the panel folder after `php artisan p:plugin:install simplify-eggupdates`:
+// php plugins/simplify-eggupdates/tests/panel/smoke.php
 
 use App\Enums\EggFormat;
 use App\Models\Egg;
@@ -157,7 +157,7 @@ step('Simplify\'s setup asks when eggs are updated and saves it', function () us
 });
 step('the scheduled command finds a newer version and updates the egg without servers', function () use (&$remote, $egg) {
     $remote['name'] = 'Smoke Paper 3';
-    must(Artisan::call('simplify-egg-updates:check', ['--force' => true]) === 0, Artisan::output());
+    must(Artisan::call('simplify-eggupdates:check', ['--force' => true]) === 0, Artisan::output());
     must($egg->fresh()->name === 'Smoke Paper 3', 'not updated automatically: '.trim(Artisan::output()));
 });
 step('Move servers compares with the kept version', function () use ($egg) {
