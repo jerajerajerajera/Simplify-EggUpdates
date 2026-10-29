@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
+use Simplify\EggUpdates\Addon\EggUpdatesAddon;
 use Simplify\EggUpdates\Enums\Mode;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
 use Simplify\EggUpdates\Models\EggBackup;
@@ -138,6 +139,21 @@ step('the settings save', function () use ($admin) {
         ->callMountedAction()
         ->assertHasNoFormErrors();
     must(Settings::mode() === Mode::Test, 'mode not saved from the page: '.Settings::mode()->value);
+});
+step('Simplify\'s setup asks when eggs are updated and saves it', function () use ($admin) {
+    if (! class_exists('Simplify\Core\Addons\Addon')) {
+        require __DIR__.'/stubs/Addon.php';
+    }
+    $addon = app(EggUpdatesAddon::class);
+    $customer = User::where('email', 'smoke-egg-updates-customer@example.com')->first()
+        ?? User::factory()->create(['email' => 'smoke-egg-updates-customer@example.com']);
+    auth()->setUser($customer);
+    must($addon->setupFields() === [], 'a customer gets the setup fields');
+    auth()->setUser($admin);
+    must(count($addon->setupFields()) === 1 && $addon->setupState() === ['mode' => 'test'], 'the setup field or value is missing');
+    $addon->saveSetup(['mode' => 'ask']);
+    must(Settings::mode() === Mode::Ask, 'the setup answer was not saved');
+    $addon->saveSetup(['mode' => 'test']);
 });
 step('the scheduled command finds a newer version and updates the egg without servers', function () use (&$remote, $egg) {
     $remote['name'] = 'Smoke Paper 3';

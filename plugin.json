@@ -2,7 +2,7 @@
     "id": "simplify-egg-updates",
     "name": "Simplify Egg Updates",
     "author": "jera",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Checks every egg for a new version, tells root admins and updates eggs safely. The previous version is always kept.",
     "category": "plugin",
     "namespace": "Simplify\\EggUpdates",
