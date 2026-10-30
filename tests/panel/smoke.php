@@ -222,7 +222,8 @@ step('Off checks nothing, Ask only tells, Auto updates eggs no server uses', fun
     must(count(bell($admin)) > $before, 'Ask did not tell the root admin');
     must(Runner::handle([$egg->fresh()], Mode::Auto) !== [], 'Auto did nothing');
     must($egg->fresh()->name === 'Smoke Modes 2', 'Auto did not update an egg without servers');
-    must(in_array('Smoke Modes egg updated', bell($admin), true), 'no "updated" notification: '.implode(' / ', bell($admin)));
+    // The notification names the egg as it is called after the update.
+    must(in_array('Smoke Modes 2 egg updated', bell($admin), true), 'no "updated" notification: '.implode(' / ', bell($admin)));
 });
 step('the buttons Check now, Update all, Put back and Update on the page', function () use ($admin, &$remotes) {
     $first = remoteEgg('Smoke Alpha', $remotes, ['name' => 'Smoke Alpha 2']);
