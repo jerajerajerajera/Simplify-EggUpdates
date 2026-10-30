@@ -7,7 +7,7 @@ safely. The previous version of an egg is always kept, so it can be put back.
 
 - Every six hours each egg with an update URL is compared with the version published there, the same way Pelican
   compares them. The result is kept until the egg is updated, so nothing is missed.
-- New versions show up in Pelican's notifications for root admins and on **Server → Egg updates**.
+- New versions show up in Pelican's notifications for root admins and on **Simplify → Egg Updates** in the admin menu.
 - Update one egg or all of them. Running servers keep running and get the new egg at their next start or reinstall.
 - Put back returns the egg to the version it had before the last update. Automatic updates then leave it alone.
 - **Test first**: before an egg that servers use is updated, a temporary test server is made with the new version on
@@ -25,7 +25,7 @@ Simplify's add-on list.
 ## Set up
 
 1. Install the plugin from the [Pelican Hub](https://hub.pelican.dev). Updates come from the Hub only.
-2. Open **Server → Egg updates** in the admin area. Under **Settings** choose what happens with new versions:
+2. Open **Simplify → Egg Updates** in the admin menu. Under **Settings** choose what happens with new versions:
    *Ask first* (default), *Update eggs without servers automatically*, *Test first, then update* or *Off*. The same settings are behind the
    gear on Pelican's Plugins page.
 
