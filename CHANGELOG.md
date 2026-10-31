@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Test first no longer says that no node has room when every node is fully allocated on paper. It then uses a node
+  that already runs the egg, or any node that is not in maintenance.
+
 ## 1.1.2
 
 - On a phone the Egg updates list keeps its buttons in view: name, status, servers and date share one cell and the
