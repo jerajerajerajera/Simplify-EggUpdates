@@ -90,6 +90,7 @@ final class EggUpdates extends Page implements HasTable
             ->columns([
                 // On a phone one cell holds name, status and the rest, so the buttons stay in view.
                 ViewColumn::make('summary')
+                    ->label(__('simplify-eggupdates::egg-updates.page.egg'))
                     ->view('simplify-eggupdates::summary')
                     ->state(fn (Egg $egg) => [
                         'name' => $egg->name,
