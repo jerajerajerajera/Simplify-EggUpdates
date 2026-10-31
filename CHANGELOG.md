@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.2
 
 - On a phone the Egg updates list keeps its buttons in view: name, status, servers and date share one cell and the
   buttons show their icon only.
