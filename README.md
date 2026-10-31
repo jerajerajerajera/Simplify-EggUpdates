@@ -22,6 +22,11 @@ safely. The previous version of an egg is always kept, so it can be put back.
 It works on its own. With [Simplify](https://github.com/jerajerajerajera/Simplify) installed it also shows up in
 Simplify's add-on list.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/egg-updates-host-desktop-dark.png">
+  <img src="docs/screenshots/egg-updates-host-desktop-light.png" alt="The Egg Updates page in Simplify" width="720">
+</picture>
+
 ## Set up
 
 1. Install the plugin from the [Pelican Hub](https://hub.pelican.dev). Updates come from the Hub only.
