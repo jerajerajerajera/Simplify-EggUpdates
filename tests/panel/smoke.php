@@ -140,6 +140,8 @@ step('the page lists the update', function () use ($admin) {
     $response = http($admin, EggUpdates::getUrl(panel: 'admin'));
     must($response->getStatusCode() === 200, 'HTTP '.$response->getStatusCode());
     must(str_contains($response->getContent(), 'Smoke Paper'), 'the egg is not listed');
+    // The phone cell: servers and since on one line under the name.
+    must(str_contains($response->getContent(), 'No servers · '), 'the phone summary is missing');
 });
 step('updating keeps the previous version', function () use ($egg) {
     $result = EggUpdater::update($egg);
@@ -265,9 +267,11 @@ step('Move servers on the page moves servers off the removed image and command, 
 $node = Node::factory()->create(['fqdn' => 'wings.smoke.test', 'memory' => 0, 'disk' => 0, 'cpu' => 0]);
 $tested = remoteEgg('Smoke Tested', $remotes, ['name' => 'Smoke Tested 2']);
 Server::factory()->create(['egg_id' => $tested->id]);
-$leftovers = function () {
+// Factory servers get random ports, some in the test range: only ports made after this point count.
+$portsBefore = Allocation::query()->whereBetween('port', EggTester::PORTS)->pluck('id')->all();
+$leftovers = function () use ($portsBefore) {
     $servers = Server::query()->where('external_id', 'like', EggTester::MARK.'%')->count();
-    $ports = Allocation::query()->whereBetween('port', EggTester::PORTS)->count();
+    $ports = Allocation::query()->whereBetween('port', EggTester::PORTS)->whereNotIn('id', $portsBefore)->count();
     $copies = Egg::query()->where('name', 'like', '%(update test)')->count();
 
     return $servers + $ports + $copies + EggTest::query()->count();

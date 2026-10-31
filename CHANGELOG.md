@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- On a phone the Egg updates list keeps its buttons in view: name, status, servers and date share one cell and the
+  buttons show their icon only.
+
 ## 1.1.1
 
 - Installing Egg Updates from Admin → Plugins or the Hub now also removes the old copy right away. Those installs run in the
