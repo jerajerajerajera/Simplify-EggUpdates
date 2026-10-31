@@ -140,6 +140,8 @@ step('the page lists the update', function () use ($admin) {
     $response = http($admin, EggUpdates::getUrl(panel: 'admin'));
     must($response->getStatusCode() === 200, 'HTTP '.$response->getStatusCode());
     must(str_contains($response->getContent(), 'Smoke Paper'), 'the egg is not listed');
+    // The phone cell: servers and since on one line under the name.
+    must(str_contains($response->getContent(), 'No servers · '), 'the phone summary is missing');
 });
 step('updating keeps the previous version', function () use ($egg) {
     $result = EggUpdater::update($egg);
