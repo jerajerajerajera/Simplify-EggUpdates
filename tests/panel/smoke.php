@@ -264,9 +264,12 @@ step('Move servers on the page moves servers off the removed image and command, 
 });
 // Test first on a node with a fake Wings: one test that passes and one whose install fails. Both must leave no test
 // server, no test port and no imported copy behind.
-$node = Node::factory()->create(['fqdn' => 'wings.smoke.test', 'memory' => 0, 'disk' => 0, 'cpu' => 0]);
+$node = Node::factory()->create(['fqdn' => 'wings.smoke.test']);
 $tested = remoteEgg('Smoke Tested', $remotes, ['name' => 'Smoke Tested 2']);
-Server::factory()->create(['egg_id' => $tested->id]);
+Server::factory()->create(['egg_id' => $tested->id, 'node_id' => $node->id]);
+// Like the real panel: every node is fully allocated on paper, without overallocation. A test server only runs a few
+// minutes, so Test first must still find a node instead of saying that no node has room.
+Node::query()->update(['memory' => 1024, 'disk' => 1024, 'cpu' => 100, 'memory_overallocate' => 0, 'disk_overallocate' => 0, 'cpu_overallocate' => 0]);
 // Factory servers get random ports, some in the test range: only ports made after this point count.
 $portsBefore = Allocation::query()->whereBetween('port', EggTester::PORTS)->pluck('id')->all();
 $leftovers = function () use ($portsBefore) {
