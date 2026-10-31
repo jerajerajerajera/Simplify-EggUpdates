@@ -141,7 +141,12 @@ final class EggTester
         if ($owner === null) {
             throw new RuntimeException(__('simplify-eggupdates::egg-updates.tests.no_owner'));
         }
-        $node = Node::query()->get()->first(fn (Node $node) => ! $node->isUnderMaintenance() && $node->isViable(self::MEMORY, self::DISK, self::CPU));
+        // Pelican lets admins place servers beyond a node's limits, so a busy node is often full on paper only. A test
+        // server runs a few minutes, so such a node still takes it, preferably one that already runs this egg.
+        $nodes = Node::query()->get()->reject(fn (Node $node) => $node->isUnderMaintenance());
+        $node = $nodes->first(fn (Node $node) => $node->isViable(self::MEMORY, self::DISK, self::CPU))
+            ?? $nodes->first(fn (Node $node) => $node->servers()->where('egg_id', $egg->id)->exists())
+            ?? $nodes->first();
         if ($node === null) {
             throw new RuntimeException(__('simplify-eggupdates::egg-updates.tests.no_node'));
         }
