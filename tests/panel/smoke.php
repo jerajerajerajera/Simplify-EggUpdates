@@ -276,7 +276,8 @@ $tested = remoteEgg('Smoke Tested', $remotes, ['name' => 'Smoke Tested 2']);
 // Required variables without a default, like the real Paper egg: one the servers already fill in, and one the new
 // version adds (Paper's User Agent). The test server must still be made.
 $level = $tested->variables()->create(['name' => 'Level Name', 'description' => 'Smoke', 'env_variable' => 'LEVEL_NAME', 'default_value' => '', 'user_viewable' => true, 'user_editable' => true, 'rules' => ['required', 'string', 'max:64'], 'sort' => 1]);
-$owned = Server::factory()->create(['egg_id' => $tested->id, 'node_id' => $node->id]);
+// Like a Steam game: the server needs more than the default test size, and unlimited CPU.
+$owned = Server::factory()->create(['egg_id' => $tested->id, 'node_id' => $node->id, 'memory' => 6144, 'disk' => 30720, 'cpu' => 0]);
 ServerVariable::query()->create(['server_id' => $owned->id, 'variable_id' => $level->id, 'variable_value' => 'smoke world']);
 $export = json_decode(app(EggExporterService::class)->handle($tested->id, EggFormat::JSON), true);
 $agent = array_replace(collect($export['variables'])->firstWhere('env_variable', 'LEVEL_NAME'), ['name' => 'User Agent', 'env_variable' => 'USER_AGENT', 'rules' => ['required'], 'user_viewable' => false, 'user_editable' => false, 'sort' => 2]);
@@ -308,6 +309,7 @@ step('Test first on the page makes a test server on a test port from a copy', fu
     must((int) $server->egg_id === (int) $test->copy_egg_id && (int) $test->copy_egg_id !== (int) $tested->id, 'the test server does not use a copy');
     must($tested->fresh()->name === 'Smoke Tested', 'the real egg changed before the test');
     $values = ServerVariable::query()->where('server_id', $server->id)->with('variable')->get()->mapWithKeys(fn (ServerVariable $value) => [$value->variable->env_variable => $value->variable_value]);
+    must((int) $server->memory >= 6144 && (int) $server->disk >= 30720 && (int) $server->cpu === 0, 'the test server is smaller than the egg\'s server: '.$server->memory.' MB, '.$server->disk.' MB disk, '.$server->cpu.'% CPU');
     must($values['LEVEL_NAME'] === 'smoke world', 'the test server does not use the value the servers use: '.$values['LEVEL_NAME']);
     must($values['USER_AGENT'] === TestEnvironment::FILLER, 'the new User Agent has no value: '.$values['USER_AGENT']);
 });
