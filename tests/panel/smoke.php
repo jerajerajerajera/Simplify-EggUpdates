@@ -353,7 +353,7 @@ if ($public !== '' && is_dir($public)) {
     }]);
     step('Test first works for every public egg', function () use ($public, &$published, &$wings, $node, $leftovers) {
         $files = collect(iterator_to_array(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($public, FilesystemIterator::SKIP_DOTS))))
-            ->keys()->filter(fn ($path) => ! str_contains($path, '/.git/') && preg_match('#/egg-[^/]+\.(json|ya?ml)$#', $path))->sort()->values();
+            ->keys()->filter(fn ($path) => ! preg_match('#/\.git(hub)?/#', $path) && preg_match('#/egg-[^/]+\.(json|ya?ml)$#', $path))->sort()->values();
         $failures = $unimportable = [];
         foreach ($files as $i => $path) {
             $name = substr($path, strlen($public) + 1);
@@ -371,6 +371,7 @@ if ($public !== '' && is_dir($public)) {
             $definition['name'] = $real->name.' 2';
             $published[$file] = $format === EggFormat::YAML ? Yaml::dump($definition, 8, 2) : json_encode($definition);
             $used = Server::factory()->create(['egg_id' => $real->id, 'node_id' => $node->id]);
+            $before = $leftovers();
             $wings = 'starting';
             try {
                 EggTester::queue($real->fresh());
@@ -386,9 +387,6 @@ if ($public !== '' && is_dir($public)) {
                 if ($state?->test_ok !== true || $real->fresh()->name !== $definition['name']) {
                     throw new RuntimeException('not passed: '.$state?->test_reason);
                 }
-                if ($leftovers() !== 0) {
-                    throw new RuntimeException('left behind: '.$leftovers());
-                }
             } catch (Throwable $e) {
                 $failures[] = $name.': '.Definition::reason($e);
                 EggTest::query()->where('egg_id', $real->id)->get()->each(function (EggTest $test) {
@@ -396,7 +394,13 @@ if ($public !== '' && is_dir($public)) {
                     $test->delete();
                 });
             }
+            // Passed or failed, Test first itself must leave nothing behind.
+            if ($leftovers() !== $before) {
+                $failures[] = $name.': left behind: '.($leftovers() - $before);
+            }
             app(ServerDeletionService::class)->withForce()->handle($used);
+            // The factory gives the server a random port, sometimes one in the test range.
+            Allocation::query()->whereKey($used->allocation_id)->delete();
             EggBackup::query()->where('egg_id', $real->id)->delete();
             EggUpdate::query()->whereKey($real->id)->delete();
             $real->variables()->delete();
