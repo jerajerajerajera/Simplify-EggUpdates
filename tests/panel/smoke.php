@@ -348,7 +348,9 @@ step('a failing test keeps the egg, says why and cleans up', function () use ($a
 $public = getenv('PUBLIC_EGGS') ?: '';
 if ($public !== '' && is_dir($public)) {
     $published = [];
-    Http::fake(['public-eggs.test/*' => fn ($request) => Http::response($published[basename(parse_url($request->url(), PHP_URL_PATH))] ?? '', 200)]);
+    Http::fake(['public-eggs.test/*' => function ($request) use (&$published) {
+        return Http::response($published[basename((string) parse_url($request->url(), PHP_URL_PATH))] ?? '');
+    }]);
     step('Test first works for every public egg', function () use ($public, &$published, &$wings, $node, $leftovers) {
         $files = collect(iterator_to_array(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($public, FilesystemIterator::SKIP_DOTS))))
             ->keys()->filter(fn ($path) => ! str_contains($path, '/.git/') && preg_match('#/egg-[^/]+\.(json|ya?ml)$#', $path))->sort()->values();
