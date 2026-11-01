@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Test first now also works for eggs with a required variable without a default, such as the User Agent of the
+  current Paper egg. The test server takes the value the egg's servers use, and otherwise a value that names Egg Updates.
+
 ## 1.1.3
 
 - Test first no longer says that no node has room when every node is fully allocated on paper. It then uses a node

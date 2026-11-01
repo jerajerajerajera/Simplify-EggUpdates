@@ -7,7 +7,6 @@ namespace Simplify\EggUpdates\Services;
 use App\Enums\EggFormat;
 use App\Models\Allocation;
 use App\Models\Egg;
-use App\Models\EggVariable;
 use App\Models\Node;
 use App\Models\Server;
 use App\Models\User;
@@ -161,7 +160,7 @@ final class EggTester
             'node_id' => $node->id,
             'allocation_id' => $allocation->id,
             'egg_id' => $copy->id,
-            'environment' => self::environment($copy),
+            'environment' => TestEnvironment::for($copy, $egg),
             'memory' => self::MEMORY,
             'swap' => 0,
             'disk' => self::DISK,
@@ -175,14 +174,6 @@ final class EggTester
             'start_on_completion' => false,
         ]);
         $test->fill(['server_id' => $server->id, 'stage' => EggTest::INSTALLING, 'stage_at' => now()])->save();
-    }
-
-    /** The default value of every variable of the egg, as a new server gets them. */
-    public static function environment(Egg $egg): array
-    {
-        return $egg->variables()->get()
-            ->mapWithKeys(fn (EggVariable $variable) => [$variable->env_variable => (string) ($variable->default_value ?? '')])
-            ->all();
     }
 
     /** A free port in the test range on the node's first address, made for this test only. */
