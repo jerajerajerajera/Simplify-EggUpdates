@@ -32,14 +32,15 @@ final class EggTester
     /** Start of the external id of test servers. Simplify leaves these servers out of its lists. */
     public const MARK = 'simplify-egg-check-';
 
-    private const INSTALL_SECONDS = 15 * 60;
+    /** Large Steam games download tens of gigabytes and take minutes to start the first time. */
+    private const INSTALL_SECONDS = 30 * 60;
 
-    private const START_SECONDS = 3 * 60;
+    private const START_SECONDS = 10 * 60;
 
     /** Temporary test ports: above the usual game ranges, below the ephemeral range. */
     public const PORTS = [45000, 45999];
 
-    /** What a test server gets. */
+    /** What a test server gets at least; more when the egg's servers get more. */
     private const MEMORY = 2048;
 
     private const DISK = 8192;
@@ -144,7 +145,8 @@ final class EggTester
         // Pelican lets admins place servers beyond a node's limits, so a busy node is often full on paper only. A test
         // server runs a few minutes, so such a node still takes it, preferably one that already runs this egg.
         $nodes = Node::query()->get()->reject(fn (Node $node) => $node->isUnderMaintenance());
-        $node = $nodes->first(fn (Node $node) => $node->isViable(self::MEMORY, self::DISK, self::CPU))
+        $size = self::size($egg);
+        $node = $nodes->first(fn (Node $node) => $node->isViable($size['memory'], $size['disk'], $size['cpu']))
             ?? $nodes->first(fn (Node $node) => $node->servers()->where('egg_id', $egg->id)->exists())
             ?? $nodes->first();
         if ($node === null) {
@@ -162,11 +164,11 @@ final class EggTester
             'allocation_id' => $allocation->id,
             'egg_id' => $copy->id,
             'environment' => TestEnvironment::for($copy, $egg),
-            'memory' => self::MEMORY,
+            'memory' => $size['memory'],
             'swap' => 0,
-            'disk' => self::DISK,
+            'disk' => $size['disk'],
             'io' => 500,
-            'cpu' => self::CPU,
+            'cpu' => $size['cpu'],
             'database_limit' => 0,
             'allocation_limit' => 0,
             'backup_limit' => 0,
@@ -175,6 +177,22 @@ final class EggTester
             'start_on_completion' => false,
         ]);
         $test->fill(['server_id' => $server->id, 'stage' => EggTest::INSTALLING, 'stage_at' => now()])->save();
+    }
+
+    /**
+     * The largest memory, disk and CPU of the egg's servers, and at least the defaults, so a game that needs 30 GB
+     * fits. Unlimited (0) on any server stays unlimited.
+     *
+     * @return array{memory: int, disk: int, cpu: int}
+     */
+    private static function size(Egg $egg): array
+    {
+        $servers = $egg->servers()->get(['memory', 'disk', 'cpu']);
+        $largest = fn (string $field, int $least) => $servers->contains(fn (Server $server) => (int) $server->{$field} === 0) && $servers->isNotEmpty()
+            ? 0
+            : max($least, (int) $servers->max($field));
+
+        return ['memory' => $largest('memory', self::MEMORY), 'disk' => $largest('disk', self::DISK), 'cpu' => $largest('cpu', self::CPU)];
     }
 
     /** A free port in the test range on the node's first address, made for this test only. */

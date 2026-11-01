@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The Test first server gets the memory, disk and CPU of the egg's largest server (at least 2 GB, 8 GB and 200%),
+  so large games such as Steam games fit. The install may take 30 minutes and the first start 10.
 - Test first accepts the EULA on its temporary test server, so eggs that ask for it, such as Paper, can pass the test.
   Real servers still ask for it at their first start.
 - Test first now also works for eggs with a required variable without a default, such as the User Agent of the
