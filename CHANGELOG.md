@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.4
 
 - The Test first server gets the memory, disk and CPU of the egg's largest server (at least 2 GB, 8 GB and 200%),
   so large games such as Steam games fit. The install may take 30 minutes and the first start 10.
