@@ -14,6 +14,7 @@ use App\Models\Egg;
 use App\Models\Node;
 use App\Models\Role;
 use App\Models\Server;
+use App\Models\ServerVariable;
 use App\Models\User;
 use App\Services\Eggs\Sharing\EggExporterService;
 use Filament\Actions\Testing\TestAction;
@@ -38,6 +39,7 @@ use Simplify\EggUpdates\Services\EggUpdater;
 use Simplify\EggUpdates\Services\Runner;
 use Simplify\EggUpdates\Services\ServerMover;
 use Simplify\EggUpdates\Services\Settings;
+use Simplify\EggUpdates\Services\TestEnvironment;
 use Simplify\EggUpdates\Services\UpdateChecker;
 
 define('LARAVEL_START', microtime(true));
@@ -266,7 +268,14 @@ step('Move servers on the page moves servers off the removed image and command, 
 // server, no test port and no imported copy behind.
 $node = Node::factory()->create(['fqdn' => 'wings.smoke.test']);
 $tested = remoteEgg('Smoke Tested', $remotes, ['name' => 'Smoke Tested 2']);
-Server::factory()->create(['egg_id' => $tested->id, 'node_id' => $node->id]);
+// Required variables without a default, like the real Paper egg: one the servers already fill in, and one the new
+// version adds (Paper's User Agent). The test server must still be made.
+$level = $tested->variables()->create(['name' => 'Level Name', 'description' => 'Smoke', 'env_variable' => 'LEVEL_NAME', 'default_value' => '', 'user_viewable' => true, 'user_editable' => true, 'rules' => ['required', 'string', 'max:64'], 'sort' => 1]);
+$owned = Server::factory()->create(['egg_id' => $tested->id, 'node_id' => $node->id]);
+ServerVariable::query()->create(['server_id' => $owned->id, 'variable_id' => $level->id, 'variable_value' => 'smoke world']);
+$export = json_decode(app(EggExporterService::class)->handle($tested->id, EggFormat::JSON), true);
+$agent = array_replace(collect($export['variables'])->firstWhere('env_variable', 'LEVEL_NAME'), ['name' => 'User Agent', 'env_variable' => 'USER_AGENT', 'rules' => ['required'], 'user_viewable' => false, 'user_editable' => false, 'sort' => 2]);
+$remotes['smoke-tested'] = array_replace($export, ['name' => 'Smoke Tested 2', 'variables' => [...$export['variables'], $agent]]);
 // Like the real panel: every node is fully allocated on paper, without overallocation. A test server only runs a few
 // minutes, so Test first must still find a node instead of saying that no node has room.
 Node::query()->update(['memory' => 1024, 'disk' => 1024, 'cpu' => 100, 'memory_overallocate' => 0, 'disk_overallocate' => 0, 'cpu_overallocate' => 0]);
@@ -293,6 +302,9 @@ step('Test first on the page makes a test server on a test port from a copy', fu
     must($port >= EggTester::PORTS[0] && $port <= EggTester::PORTS[1], 'port '.$port.' is outside the test range');
     must((int) $server->egg_id === (int) $test->copy_egg_id && (int) $test->copy_egg_id !== (int) $tested->id, 'the test server does not use a copy');
     must($tested->fresh()->name === 'Smoke Tested', 'the real egg changed before the test');
+    $values = ServerVariable::query()->where('server_id', $server->id)->with('variable')->get()->mapWithKeys(fn (ServerVariable $value) => [$value->variable->env_variable => $value->variable_value]);
+    must($values['LEVEL_NAME'] === 'smoke world', 'the test server does not use the value the servers use: '.$values['LEVEL_NAME']);
+    must($values['USER_AGENT'] === TestEnvironment::FILLER, 'the new User Agent has no value: '.$values['USER_AGENT']);
 });
 step('a passing test updates the egg, cleans up and tells the root admin', function () use ($admin, $tested, $leftovers, &$wings) {
     $test = EggTest::query()->where('egg_id', $tested->id)->firstOrFail();
