@@ -68,6 +68,13 @@ final class TestEnvironment
             };
         }
 
+        // A value with the start, end and length the rules ask for, such as a token that ends in "==".
+        $parts = collect($rules)->mapWithKeys(fn ($rule) => [explode(':', (string) $rule, 2)[0] => trim(explode(',', explode(':', (string) $rule, 2)[1] ?? '')[0])]);
+        $start = (string) $parts->get('starts_with', '');
+        $end = (string) $parts->get('ends_with', '');
+        $length = max((int) $parts->get('size', $parts->get('min', 0)), strlen($start.$end) + 1);
+        $values[] = $start.str_repeat('A', $length - strlen($start.$end)).$end;
+
         return [...$values, '1', '0', 'true'];
     }
 
