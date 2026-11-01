@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Validator;
 
 /**
  * The variables of a Test first server. A variable keeps its default when that is valid. A required variable without
- * a valid default (such as Paper's User Agent) gets the value the egg's own servers use, and otherwise a value that
- * names this plugin. Pelican then says which variable still has no valid value.
+ * a valid default (such as Paper's User Agent, a bot token or an admin password) gets the value the egg's own servers
+ * use, and otherwise the first of a few neutral values that its own rules accept.
  */
 final class TestEnvironment
 {
@@ -25,15 +25,57 @@ final class TestEnvironment
         $used = self::usedValues($egg);
 
         return $copy->variables()->get()->mapWithKeys(function (EggVariable $variable) use ($used) {
-            $candidates = [(string) ($variable->default_value ?? ''), ...($used[$variable->env_variable] ?? []), self::FILLER];
+            $rules = $variable->rules ?: [];
+            $candidates = [(string) ($variable->default_value ?? ''), ...($used[$variable->env_variable] ?? []), ...self::fillers($rules)];
             foreach ($candidates as $value) {
-                if (Validator::make(['value' => $value], ['value' => $variable->rules ?: []])->passes()) {
+                if (self::valid($value, $rules)) {
                     return [$variable->env_variable => $value];
                 }
             }
 
             return [$variable->env_variable => $candidates[0]];
         })->all();
+    }
+
+    /** Whether Pelican will accept the value; a rule that cannot be checked (a broken pattern) counts as a no. */
+    private static function valid(string $value, array $rules): bool
+    {
+        try {
+            return Validator::make(['value' => $value], ['value' => $rules])->passes();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * Neutral values to try, the plugin's name first, then what the rules themselves name: the first allowed choice,
+     * the lowest number or length.
+     *
+     * @param  list<string>  $rules
+     * @return list<string>
+     */
+    private static function fillers(array $rules): array
+    {
+        $values = [self::FILLER, 'SimplifyEggUpdates', 'simplify-egg-updates', 'https://github.com/jerajerajerajera/Simplify-EggUpdates'];
+        foreach ($rules as $rule) {
+            [$name, $argument] = array_pad(explode(':', (string) $rule, 2), 2, '');
+            $first = trim(explode(',', $argument)[0]);
+            match ($name) {
+                'in' => array_push($values, ...array_filter(explode(',', $argument), fn ($choice) => $choice !== '')),
+                'between', 'min', 'gte', 'gt' => array_push($values, $first, (string) ((int) $first + 1)),
+                'digits', 'digits_between', 'size' => array_push($values, str_repeat('1', max(1, (int) $first)), str_repeat('s', max(1, (int) $first))),
+                default => null,
+            };
+        }
+
+        // A value with the start, end and length the rules ask for, such as a token that ends in "==".
+        $parts = collect($rules)->mapWithKeys(fn ($rule) => [explode(':', (string) $rule, 2)[0] => trim(explode(',', explode(':', (string) $rule, 2)[1] ?? '')[0])]);
+        $start = (string) $parts->get('starts_with', '');
+        $end = (string) $parts->get('ends_with', '');
+        $length = max((int) $parts->get('size', $parts->get('min', 0)), strlen($start.$end) + 1);
+        $values[] = $start.str_repeat('A', $length - strlen($start.$end)).$end;
+
+        return [...$values, '1', '0', 'true'];
     }
 
     /** @return array<string, list<string>> the values the egg's servers use, per variable, most used first */

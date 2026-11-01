@@ -17,6 +17,8 @@ use App\Models\Server;
 use App\Models\ServerVariable;
 use App\Models\User;
 use App\Services\Eggs\Sharing\EggExporterService;
+use App\Services\Eggs\Sharing\EggImporterService;
+use App\Services\Servers\ServerDeletionService;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Console\Kernel;
@@ -34,13 +36,16 @@ use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
 use Simplify\EggUpdates\Models\EggBackup;
 use Simplify\EggUpdates\Models\EggTest;
 use Simplify\EggUpdates\Models\EggUpdate;
+use Simplify\EggUpdates\Services\Definition;
 use Simplify\EggUpdates\Services\EggTester;
 use Simplify\EggUpdates\Services\EggUpdater;
+use Simplify\EggUpdates\Services\RemoteEgg;
 use Simplify\EggUpdates\Services\Runner;
 use Simplify\EggUpdates\Services\ServerMover;
 use Simplify\EggUpdates\Services\Settings;
 use Simplify\EggUpdates\Services\TestEnvironment;
 use Simplify\EggUpdates\Services\UpdateChecker;
+use Symfony\Component\Yaml\Yaml;
 
 define('LARAVEL_START', microtime(true));
 require getcwd().'/vendor/autoload.php';
@@ -337,5 +342,80 @@ step('a failing test keeps the egg, says why and cleans up', function () use ($a
     must($leftovers() === 0, 'left behind after the failed test: '.$leftovers());
     must(count(bell($admin)) > $before, 'no notification about the failed test');
 });
+// Test first on every public egg (pelican-eggs, cloned by CI into PUBLIC_EGGS): each one as the installed egg, used
+// by a server without any own values, and a new version at its update URL. Test first must make the test server,
+// start it and update the egg, and leave nothing behind. Eggs Pelican itself cannot import are listed, not failed.
+$public = getenv('PUBLIC_EGGS') ?: '';
+if ($public !== '' && is_dir($public)) {
+    $published = [];
+    Http::fake(['public-eggs.test/*' => function ($request) use (&$published) {
+        return Http::response($published[basename((string) parse_url($request->url(), PHP_URL_PATH))] ?? '');
+    }]);
+    step('Test first works for every public egg', function () use ($public, &$published, &$wings, $node, $leftovers) {
+        $files = collect(iterator_to_array(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($public, FilesystemIterator::SKIP_DOTS))))
+            ->keys()->filter(fn ($path) => ! preg_match('#/\.git(hub)?/#', $path) && preg_match('#/egg-[^/]+\.(json|ya?ml)$#', $path))->sort()->values();
+        $failures = $unimportable = [];
+        foreach ($files as $i => $path) {
+            $name = substr($path, strlen($public) + 1);
+            $format = Definition::format($path);
+            try {
+                $real = app(EggImporterService::class)->fromContent((string) file_get_contents($path), $format, new Egg);
+            } catch (Throwable $e) {
+                $unimportable[] = $name.': '.Definition::reason($e);
+
+                continue;
+            }
+            $file = $i.'.'.($format === EggFormat::YAML ? 'yaml' : 'json');
+            $real->forceFill(['update_url' => 'https://public-eggs.test/'.$file])->save();
+            $definition = RemoteEgg::parse((string) file_get_contents($path), $format);
+            $definition['name'] = $real->name.' 2';
+            $published[$file] = $format === EggFormat::YAML ? Yaml::dump($definition, 8, 2) : json_encode($definition);
+            $used = Server::factory()->create(['egg_id' => $real->id, 'node_id' => $node->id]);
+            $before = $leftovers();
+            $wings = 'starting';
+            try {
+                EggTester::queue($real->fresh());
+                $test = EggTest::query()->where('egg_id', $real->id)->first();
+                if ($test === null) {
+                    throw new RuntimeException('not made: '.EggUpdate::query()->find($real->id)?->test_reason);
+                }
+                Server::query()->whereKey($test->server_id)->update(['status' => null]);
+                EggTester::tick();
+                $wings = 'running';
+                EggTester::tick();
+                $state = EggUpdate::query()->find($real->id);
+                if ($state?->test_ok !== true || $real->fresh()->name !== $definition['name']) {
+                    throw new RuntimeException('not passed: '.$state?->test_reason);
+                }
+            } catch (Throwable $e) {
+                $failures[] = $name.': '.Definition::reason($e);
+                EggTest::query()->where('egg_id', $real->id)->get()->each(function (EggTest $test) {
+                    (new ReflectionMethod(EggTester::class, 'cleanUp'))->invoke(null, $test);
+                    $test->delete();
+                });
+            }
+            // Passed or failed, Test first itself must leave nothing behind.
+            if ($leftovers() !== $before) {
+                $failures[] = $name.': left behind: '.($leftovers() - $before);
+            }
+            app(ServerDeletionService::class)->withForce()->handle($used);
+            // The factory gives the server a random port, sometimes one in the test range.
+            Allocation::query()->whereKey($used->allocation_id)->delete();
+            EggBackup::query()->where('egg_id', $real->id)->delete();
+            EggUpdate::query()->whereKey($real->id)->delete();
+            $real->variables()->delete();
+            $real->delete();
+        }
+        echo '     '.$files->count().' public eggs, '.count($unimportable)." that Pelican cannot import:\n";
+        foreach ($unimportable as $line) {
+            echo "       $line\n";
+        }
+        foreach ($failures as $line) {
+            echo "     FAILED $line\n";
+        }
+        must($files->count() > 500, 'too few public eggs: '.$files->count());
+        must($failures === [], count($failures).' of '.$files->count().' public eggs fail Test first');
+    });
+}
 echo $failed ? "Some steps failed\n" : "All steps passed\n";
 exit($failed ? 1 : 0);

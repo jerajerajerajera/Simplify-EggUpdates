@@ -82,8 +82,28 @@ jobs:
           test ! -e plugins/simplify-egg-updates || { echo 'The old simplify-egg-updates folder is still there'; exit 1; }
           test "$(grep -c 'Simplify Egg Updates' plugins.txt)" = 1 || { echo 'Simplify Egg Updates is listed twice'; exit 1; }
           php -r '$db = new PDO("sqlite:database/database.sqlite"); $kept = $db->query("SELECT value FROM simplify_egg_update_settings WHERE key = \"ci_takeover\"")->fetchColumn(); $db->exec("DELETE FROM simplify_egg_update_settings WHERE key = \"ci_takeover\""); exit($kept === "kept" ? 0 : 1);' || { echo 'The old settings were lost'; exit 1; }
+      # Every public egg, at a fixed commit so a change upstream never turns a pull request red by itself.
+      - name: Get the public eggs
+        run: |
+          while read -r repo sha; do
+            git init --quiet "public-eggs/$repo"
+            git -C "public-eggs/$repo" fetch --quiet --depth 1 "https://github.com/pelican-eggs/$repo.git" "$sha"
+            git -C "public-eggs/$repo" checkout --quiet FETCH_HEAD
+          done <<'EOF'
+          chatbots 7019bbaf35883b27c52532bc29bc1f090659a074
+          database efd5983aa52aa0446c11bc6d8f696f788cdfc8e7
+          games-standalone e1b52607397c0de9d6918d0659f1ff95721d3b49
+          games-steamcmd 388329b516753e8217a9c7a09b342a0626ac56b4
+          generic eec3d4b153ccb8b901905b486f29d4d199154f5b
+          minecraft c6f2262eb351054d1be44d3f6a3a605ae163d682
+          monitoring 3ebb141a8dd7d3eccb4aebf9aaee7f749a3d4529
+          software adc324f7f23fad7a57644fd4595411501fda0f39
+          voice b25c93abbacbfc8162a4035d2944995d47288444
+          EOF
       - name: Open the pages
         working-directory: panel
+        env:
+          PUBLIC_EGGS: ${{ github.workspace }}/public-eggs
         run: |
           php plugins/simplify-eggupdates/tests/panel/smoke.php | tee smoke.txt
           grep -q '^All steps passed$' smoke.txt
