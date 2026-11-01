@@ -5,7 +5,8 @@
 - Test first accepts the EULA on its temporary test server, so eggs that ask for it, such as Paper, can pass the test.
   Real servers still ask for it at their first start.
 - Test first now also works for eggs with a required variable without a default, such as the User Agent of the
-  current Paper egg. The test server takes the value the egg's servers use, and otherwise a value that names Egg Updates.
+  current Paper egg, a bot token or an admin password. The test server takes the value the egg's servers use, and
+  otherwise a neutral value that the variable's own rules accept. Checked against every public egg.
 
 ## 1.1.3
 
