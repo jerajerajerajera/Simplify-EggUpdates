@@ -275,7 +275,7 @@ $owned = Server::factory()->create(['egg_id' => $tested->id, 'node_id' => $node-
 ServerVariable::query()->create(['server_id' => $owned->id, 'variable_id' => $level->id, 'variable_value' => 'smoke world']);
 $export = json_decode(app(EggExporterService::class)->handle($tested->id, EggFormat::JSON), true);
 $agent = array_replace(collect($export['variables'])->firstWhere('env_variable', 'LEVEL_NAME'), ['name' => 'User Agent', 'env_variable' => 'USER_AGENT', 'rules' => ['required'], 'user_viewable' => false, 'user_editable' => false, 'sort' => 2]);
-$remotes['smoke-tested'] = array_replace($export, ['name' => 'Smoke Tested 2', 'variables' => [...$export['variables'], $agent]]);
+$remotes['smoke-tested'] = array_replace($export, ['name' => 'Smoke Tested 2', 'features' => ['eula'], 'variables' => [...$export['variables'], $agent]]);
 // Like the real panel: every node is fully allocated on paper, without overallocation. A test server only runs a few
 // minutes, so Test first must still find a node instead of saying that no node has room.
 Node::query()->update(['memory' => 1024, 'disk' => 1024, 'cpu' => 100, 'memory_overallocate' => 0, 'disk_overallocate' => 0, 'cpu_overallocate' => 0]);
@@ -311,6 +311,9 @@ step('a passing test updates the egg, cleans up and tells the root admin', funct
     Server::query()->whereKey($test->server_id)->update(['status' => null]);
     EggTester::tick();
     must(EggTester::stage($tested) === 'starting', 'not starting after the install: '.EggTester::stage($tested));
+    // Like Paper: the egg asks for the EULA. Only the temporary test server accepts it, before its first start.
+    $eula = Http::recorded(fn ($request) => str_contains($request->url(), '/files/write') && str_contains(urldecode($request->url()), 'eula.txt') && trim($request->body()) === 'eula=true');
+    must($eula->isNotEmpty(), 'the test server did not accept the EULA before it started');
     $wings = 'running';
     EggTester::tick();
     must($tested->fresh()->name === 'Smoke Tested 2', 'not updated after a passing test');

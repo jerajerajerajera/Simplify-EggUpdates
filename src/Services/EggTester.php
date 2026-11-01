@@ -10,6 +10,7 @@ use App\Models\Egg;
 use App\Models\Node;
 use App\Models\Server;
 use App\Models\User;
+use App\Repositories\Daemon\DaemonFileRepository;
 use App\Repositories\Daemon\DaemonServerRepository;
 use App\Services\Eggs\Sharing\EggImporterService;
 use App\Services\Servers\ServerCreationService;
@@ -216,6 +217,7 @@ final class EggTester
                 return self::finish($test, false, __('simplify-eggupdates::egg-updates.tests.not_installed'), $server);
             }
             if ($status === null || $status === '') {
+                self::acceptEula($server);
                 app(DaemonServerRepository::class)->setServer($server)->power('start')->throw();
                 $test->fill(['stage' => EggTest::STARTING, 'stage_at' => now()])->save();
 
@@ -233,6 +235,17 @@ final class EggTester
         }
 
         return $age > self::START_SECONDS ? self::finish($test, false, __('simplify-eggupdates::egg-updates.tests.start_slow'), $server) : [];
+    }
+
+    /**
+     * An egg with the EULA feature (such as Paper) stops on its first start until the EULA is accepted. Real servers
+     * ask for it at their first start; this temporary test server, which nobody plays on, accepts it itself.
+     */
+    private static function acceptEula(Server $server): void
+    {
+        if (in_array('eula', $server->egg?->inherit_features ?? [], true)) {
+            app(DaemonFileRepository::class)->setServer($server)->putContent('eula.txt', "eula=true\n")->throw();
+        }
     }
 
     /**
