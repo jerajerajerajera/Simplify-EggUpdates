@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.4
 
 - Test first accepts the EULA on its temporary test server, so eggs that ask for it, such as Paper, can pass the test.
   Real servers still ask for it at their first start.
