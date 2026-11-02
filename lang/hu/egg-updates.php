@@ -114,4 +114,11 @@ return [
         'https' => 'A frissítési URL-nek https:// kezdetűnek kell lennie',
         'not_an_egg' => 'A frissítési URL nem egget ad vissza',
     ],
+    'debug' => [
+        'title' => 'Napló másolása',
+        'heading' => 'Napló a támogatásnak',
+        'description' => 'Másold ki, és illeszd be oda, ahol kérték. A címek, e-mail-címek, tokenek és jelszavak kimaradnak.',
+        'copy' => 'Másolás',
+        'copied' => 'Másolva',
+    ],
 ];

@@ -114,4 +114,11 @@ return [
         'https' => 'URL cập nhật phải bắt đầu bằng https://',
         'not_an_egg' => 'URL cập nhật không trả về egg',
     ],
+    'debug' => [
+        'title' => 'Sao chép nhật ký',
+        'heading' => 'Nhật ký cho hỗ trợ',
+        'description' => 'Sao chép và dán vào nơi được yêu cầu. Địa chỉ, email, token và mật khẩu đã được loại bỏ.',
+        'copy' => 'Sao chép',
+        'copied' => 'Đã sao chép',
+    ],
 ];

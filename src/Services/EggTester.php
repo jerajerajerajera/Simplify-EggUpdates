@@ -177,6 +177,7 @@ final class EggTester
             'start_on_completion' => false,
         ]);
         $test->fill(['server_id' => $server->id, 'stage' => EggTest::INSTALLING, 'stage_at' => now()])->save();
+        DebugLog::add("Test first {$egg->name}: installing on node {$node->id}, port {$allocation->port}, {$size['memory']} MB, {$size['disk']} MB disk, {$size['cpu']}% CPU");
     }
 
     /**
@@ -287,6 +288,7 @@ final class EggTester
             return [];
         }
         self::remember($egg, $ok, $reason);
+        DebugLog::add("Test first {$egg->name}: ".($ok ? 'passed, egg updated' : 'failed: '.$reason.($log !== '' ? ' | last lines: '.$log : '')));
         if ($ok) {
             Notifier::rootAdmins(
                 __('simplify-eggupdates::egg-updates.tests.passed_title', ['egg' => $egg->name]),

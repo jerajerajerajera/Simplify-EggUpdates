@@ -114,4 +114,11 @@ return [
         'https' => 'Adres URL aktualizacji musi zaczynać się od https://',
         'not_an_egg' => 'Adres URL aktualizacji nie zwraca egga',
     ],
+    'debug' => [
+        'title' => 'Kopiuj log',
+        'heading' => 'Log dla wsparcia',
+        'description' => 'Skopiuj to i wklej tam, gdzie poproszono. Adresy, e-maile, tokeny i hasła są pominięte.',
+        'copy' => 'Kopiuj',
+        'copied' => 'Skopiowano',
+    ],
 ];

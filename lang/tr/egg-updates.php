@@ -114,4 +114,11 @@ return [
         'https' => 'Güncelleme URL\'si https:// ile başlamalı',
         'not_an_egg' => 'Güncelleme URL\'si bir egg döndürmüyor',
     ],
+    'debug' => [
+        'title' => 'Günlüğü kopyala',
+        'heading' => 'Destek için günlük',
+        'description' => 'Bunu kopyalayıp istendiği yere yapıştırın. Adresler, e-postalar, tokenlar ve parolalar çıkarılır.',
+        'copy' => 'Kopyala',
+        'copied' => 'Kopyalandı',
+    ],
 ];
