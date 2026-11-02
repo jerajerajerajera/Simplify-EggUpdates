@@ -129,7 +129,7 @@ Http::fake([
     },
     'wings.smoke.test*' => function ($request) use (&$wings) {
         if (str_ends_with($request->url(), '/install-logs')) {
-            return Http::response(['data' => "Pulling image\nInstall failed"]);
+            return Http::response(['data' => "Pulling image from 10.20.30.40 for smoke@example.com token=s3cr3t-smoke\nInstall failed"]);
         }
 
         return $request->method() === 'GET' ? Http::response(['state' => $wings, 'utilization' => []]) : Http::response([], 204);
@@ -396,6 +396,16 @@ step('a failing test keeps the egg, says why and cleans up', function () use ($a
     must($state->found_hash !== null, 'the update is no longer listed');
     must($leftovers() === 0, 'left behind after the failed test: '.$leftovers());
     must(count(bell($admin)) > $before, 'no notification about the failed test');
+});
+step('Copy log shows the failed test and its last lines, without addresses, e-mail or tokens', function () use ($admin) {
+    $page = Livewire::actingAs($admin)->test(EggUpdates::class)
+        ->assertActionVisible('copy_log')
+        ->mountAction('copy_log')
+        ->assertSee('Smoke Tested')
+        ->assertSee('Install failed');
+    foreach (['10.20.30.40', 'smoke@example.com', 's3cr3t-smoke'] as $secret) {
+        $page->assertDontSee($secret);
+    }
 });
 // Test first on every public egg (pelican-eggs, cloned by CI into PUBLIC_EGGS): each one as the installed egg, used
 // by a server without any own values, and a new version at its update URL. Test first must make the test server,
