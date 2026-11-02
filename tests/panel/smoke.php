@@ -36,6 +36,7 @@ use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
 use Simplify\EggUpdates\Models\EggBackup;
 use Simplify\EggUpdates\Models\EggTest;
 use Simplify\EggUpdates\Models\EggUpdate;
+use Simplify\EggUpdates\Services\DebugLog;
 use Simplify\EggUpdates\Services\Definition;
 use Simplify\EggUpdates\Services\EggTester;
 use Simplify\EggUpdates\Services\EggUpdater;
@@ -403,9 +404,11 @@ step('Copy log shows the failed test and its last lines, without addresses, e-ma
         ->assertActionVisible('copy_log')
         ->mountAction('copy_log')
         ->html();
-    must(str_contains($html, 'Smoke Tested') && str_contains($html, 'Install failed'), 'the failed test or its last lines are missing');
+    $log = DebugLog::report();
+    must(str_contains($log, 'Smoke Tested') && str_contains($log, 'Install failed'), 'the failed test or its last lines are missing: '.str_replace("\n", ' / ', $log));
+    must(str_contains($html, 'Install failed'), 'the modal does not show the log');
     foreach (['10.20.30.40', 'smoke@example.com', 's3cr3t-smoke'] as $secret) {
-        must(! str_contains($html, $secret), 'the log shows '.$secret);
+        must(! str_contains($log, $secret) && ! str_contains($html, $secret), 'the log shows '.$secret);
     }
 });
 // Test first on every public egg (pelican-eggs, cloned by CI into PUBLIC_EGGS): each one as the installed egg, used
