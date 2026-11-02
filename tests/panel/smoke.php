@@ -398,13 +398,14 @@ step('a failing test keeps the egg, says why and cleans up', function () use ($a
     must(count(bell($admin)) > $before, 'no notification about the failed test');
 });
 step('Copy log shows the failed test and its last lines, without addresses, e-mail or tokens', function () use ($admin) {
-    $page = Livewire::actingAs($admin)->test(EggUpdates::class)
+    // Livewire's assertSee needs a PHPUnit run, so read the rendered page with its open modal directly.
+    $html = Livewire::actingAs($admin)->test(EggUpdates::class)
         ->assertActionVisible('copy_log')
         ->mountAction('copy_log')
-        ->assertSee('Smoke Tested')
-        ->assertSee('Install failed');
+        ->html();
+    must(str_contains($html, 'Smoke Tested') && str_contains($html, 'Install failed'), 'the failed test or its last lines are missing');
     foreach (['10.20.30.40', 'smoke@example.com', 's3cr3t-smoke'] as $secret) {
-        $page->assertDontSee($secret);
+        must(! str_contains($html, $secret), 'the log shows '.$secret);
     }
 });
 // Test first on every public egg (pelican-eggs, cloned by CI into PUBLIC_EGGS): each one as the installed egg, used
