@@ -35,6 +35,23 @@
 | V38 | 2-11 | Ja: de 22 functies uit 0.7.0 die in `docs/REFERENCE-070.md` nog op `ontbreekt` staan, blijven op de bouwlijst als gewone wensen; ze houden geen release tegen | kern, P-5 |
 | V39 | 2-11 | CI-onderzoek door de CI-thread (uitwerking volgt) | CI |
 | V40 | 2-11 | Ja: alle zeven voorstellen uit het werkwijze-advies: (1) vragen in twee beslisrondes per dag; (2) `plannen/besluiten.md` is de enige bron, bugs krijgen een repo-prefix; (3) `plannen/stand-regisseur.md`; (4) threads stellen de eigenaar geen vragen in hun eigen thread; (5) licht mergen, zwaar releasen, releasetrein; (6) voorbeeld alleen als er iets te kiezen valt; (7) korte CLAUDE.md's en een CI-check op de kopieën in `docs/` | alle repo's, WR-1, WR-8, WR-9, WR-10 |
+| V41 | 2-11 | Ja: de CI-thread pusht de V39-branch als kern-PR #127 met twee bewijsruns (de kern merget); de checks-gate voor de add-ons via de add-on-threads, niet voor Hosting (pauze) | CI, kern, add-ons |
+| V42 | 2-11 | Ja: opschoonronde zonder zichtbare wijziging (V-a t/m V-h uit het rapport interface en codestructuur): verborgen widgets weglaten, lazy laden, bundelen, één Games\Egg, de MOTD-editor één keer, add-on-kennis uit de kern via de API | kern, add-ons, P-35 |
+| V43 | 2-11 | Ja: knoppen opruimen, één plek per actie; eerst een artifact-voorbeeld | kern, WR-10 |
+| V44 | 2-11 | Niet aangenomen; vervangen door V49 | kern |
+| V45 | 2-11 | Niet aangenomen; vervangen door V49 | kern |
+| V46 | 2-11 | Ja: People & roles van Simplify eruit; Pelicans Users en Roles in de Simplify-schil | kern, P-6, P-24 |
+| V47 | 2-11 | Ja: seizoensversiering alleen laden op de dag zelf | kern, P-23 |
+| V48 | 2-11 | Ja: Browse Hub blijft tot Pelican het zelf heeft | kern |
+| V49 | 2-11 | Open: hostmodus verhuist naar Hosting en wordt daarbij zonder iframes herbouwd, zodra Hosting weer verdergaat | kern, Hosting |
+| V50 | 2-11 | A: terwijl een server start of stopt, wordt de hoofdknop een rode Force stop | kern |
+| V51 | 2-11 | Ja: één Settings-pagina met tabs, Pelican als één link; opslaan volgens V57 (de autosave uit dit besluit vervalt) | kern |
+| V52 | 2-11 | Voorzichtig ja: Admin wordt een vaste pagina met een menu links, zonder iframe; eerst een proefscherm, en één ontwerp met de hostmodus van V49 | kern, Hosting |
+| V53 | 2-11 | Ja: Appearance alleen nog thema, kleur, logo en menu | kern |
+| V54 | 2-11 | Vervallen, vervangen door V57 (was: autosave blijft, met "Saved · tijd" of "Saving…" in de titelbalk) | kern, alle add-ons |
+| V55 | 2-11 | Ja: één bottom nav op de telefoon met Servers · New · Admin · Sections; Customize naar de chiprij, Delete alleen in ⋯ | kern, P-22 |
+| V56 | 2-11 | Ja: de serversecties worden één tab met een blad | kern, P-22 |
+| V57 | 2-11 | Nergens autosave. Na een wijziging verschijnt "Changes made" met een Save-knop; wie de pagina verlaat met niet-opgeslagen wijzigingen kiest Save of Discard. Vervangt V54 en de autosave in V51; "Toolkit MC-instellingen zonder Discard" (30-10) vervalt | kern, alle add-ons, P-38 |
 
 ## Zonder nummer (uit projectnotities, 27-10 t/m 2-11)
 
@@ -49,7 +66,7 @@
 | 30-10 | Screenshots bij testen in `docs/screenshots/` | WR-15 |
 | 30-10 | Alleen de regisseur nummert (V, R, W) | WR-8 |
 | 30-10 | Backlog: R = requests (GitHub, Discord), W = wensen eigenaar | WR-16 |
-| 30-10 | Toolkit: Minecraft-instellingen direct wegschrijven, zonder Discard | Toolkit |
+| 30-10 | Vervallen door V57 (was: Toolkit: Minecraft-instellingen direct wegschrijven, zonder Discard) | Toolkit |
 | 30-10 | Explain: "Open a ticket" alleen met Hosting geladen en een supportlink | Explain |
 | 30-10 | Explain: Ollama ja (R1) | Explain |
 | 30-10 | Server Maker: MOTD-maker van Toolkit bij aanmaken; Steam-banner en -icoon ja | Server Maker |
@@ -68,3 +85,4 @@
 | 2-11 | Telefoon: trekken om te verversen alleen op het overzicht; een blad dichttrekken ververst nooit | P-22 |
 | 2-11 | Add-on-pagina's in het Simplify-accountmenu, niet in Pelicans profiel | P-6, kern API 4 |
 | 2-11 | Serverbanners en groepen op het overzicht houden | P-18 |
+| 2-11 | Hosting staat op pauze: eerst de kern en de add-ons goed | Hosting |
