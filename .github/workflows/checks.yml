@@ -4,6 +4,25 @@ on:
     branches: [main]
   pull_request: {}
 jobs:
+  # A change to text only (docs, Markdown) skips the panel: tests and pint still run, so the check stays green.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        run: |
+          case "${{ github.event_name }}" in
+            pull_request) base="origin/${{ github.base_ref }}" ;;
+            push) base="${{ github.event.before }}" ;;
+            *) echo "code=true" >> "$GITHUB_OUTPUT"; exit 0 ;;
+          esac
+          files=$(git diff --name-only "$base" HEAD 2>/dev/null) || files=unknown
+          printf 'Changed:\n%s\n' "$files"
+          if printf '%s\n' "$files" | grep -qvE '^(docs/|LICENSE|.*\.md$)'; then echo "code=true" >> "$GITHUB_OUTPUT"; else echo "code=false" >> "$GITHUB_OUTPUT"; echo "::notice::Text only: the panel smoke is skipped"; fi
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -23,6 +42,8 @@ jobs:
       - run: pint --test -v
   # Installs the plugin in a real Pelican panel and opens its pages, so an error that only shows when the panel loads the code blocks the merge.
   panel-smoke:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:

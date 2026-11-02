@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Checks: a change to docs or Markdown only skips the panel smoke; tests and pint still run.
+
 ## 1.1.5
 
 - Move servers also fills a field that an update made required, such as the User Agent of the current Paper egg. It
