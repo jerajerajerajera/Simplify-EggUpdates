@@ -323,7 +323,9 @@ Eén frame: bovenin naam, bel en account; onderin één balk. Menu's openen als 
 Nergens autosave, in de kern en in elke add-on, ook op de telefoon. Zodra iets gewijzigd is, verschijnt de melding
 "Changes made" met een Save-knop. Wie de pagina verlaat (menu, tab, terug, blad sluiten, tabblad sluiten) terwijl er
 niet-opgeslagen wijzigingen zijn, kiest eerst Save of Discard; niets gaat stil verloren en niets wordt stil
-opgeslagen.
+opgeslagen. Eén gedeeld mechanisme in de kern (`resources/js/unsaved.js`, attribuut `data-simplify-unsaved`, zie
+ADDONS.md); add-ons gebruiken hetzelfde.
+*Bewaakt door:* `tests/unsaved.cjs`, audit `phone-unsaved`.
 *Besluit:* V57 (vervangt V54 en de autosave in V51).
 
 ## Teksten
