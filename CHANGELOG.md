@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.5
 
 - Move servers also fills a field that an update made required, such as the User Agent of the current Paper egg. It
   asks for the value once and gives it to every server of the egg that has none. Values a server already has stay.
