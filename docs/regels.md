@@ -163,8 +163,8 @@ CLAUDE.md, docs of output. Demo's en tests met verzonnen data.
 #### WR-13 Melden aan de eigenaar
 Eerst een volledige lijst, dan één ja/nee-vraag met aanbeveling. Teksten voor de eigenaar (Discord, Hub, GitHub,
 release) als Engels codeblok. Commando's in één codeblok met erboven op welk systeem (Beelink, VPS, Windows). Op het
-paneel altijd `sudo -u www-data php artisan …`; plugins bijwerken met `sudo /opt/deckzwabbers-site/deploy/simplify-plugins.sh`
-(`--check` = alleen plan). Eerlijk zeggen wat niet getest is. De eigenaar zo min mogelijk zelf laten doen.
+paneel altijd `sudo -u www-data php artisan …`; plugins bijwerken met het updatescript van het paneel (naam en pad
+staan in project-files, niet in de repo). Eerlijk zeggen wat niet getest is. De eigenaar zo min mogelijk zelf laten doen.
 *Vervangt:* R50–R55.
 
 #### WR-14 Vaste threads, hulpthreads, controle, opruimen
