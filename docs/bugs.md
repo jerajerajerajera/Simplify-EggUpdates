@@ -1,8 +1,8 @@
 # Bugregister Simplify Egg Updates
 
 > Elke gefikste bug staat hier, met de test die hem bewaakt (WR-11). Een terugkerende bug is een regressie: zoek
-> eerst uit waarom de test hem niet ving. Een rij weghalen mag niet, de test weghalen ook niet. Nummers (B-n) geeft
-> alleen de regisseur; Startvulling 2-11 (V35): de
+> eerst uit waarom de test hem niet ving. Een rij weghalen mag niet, de test weghalen ook niet. Nieuwe nummers geeft de
+> repo-thread zelf met het prefix van deze repo (WR-8); Startvulling 2-11 (V35): de
 > bugs die twee keer of vaker terugkwamen, uit CHANGELOG en projectnotities. "Nog geen test" is een open punt voor
 > de repo-thread.
 

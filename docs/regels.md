@@ -3,7 +3,8 @@
 > Eén bron voor alle regels van Simplify (kern en vijf add-ons). De kernrepo is de bron; elke add-on-repo heeft een
 > identieke kopie die de documentatie-thread gelijk houdt. Wijzigen alleen via een besluit van de eigenaar (WR-9);
 > besluiten staan in `besluiten.md`, bugs in `bugs.md`. Deze lijst vervangt de regels R1–R70 uit
-> `plannen/werkwijze/werkwijze.md` (tabel "Oud → nieuw" onderaan). De CLAUDE.md in elke repo is hiervan de korte vorm.
+> `plannen/werkwijze/werkwijze.md` (tabel "Oud → nieuw" onderaan). De CLAUDE.md in elke repo verwijst hiernaar en bevat
+> geen kopie van de regels (V40).
 
 ## Principes (in volgorde van voorrang)
 
@@ -22,7 +23,7 @@ Botsen twee principes, dan wint de bovenste.
 | V-n | besluit of vraag van de eigenaar | regisseur |
 | R-n | request van buiten (GitHub, Discord) | regisseur |
 | W-n | wens van de eigenaar (backlog) | regisseur |
-| B-n | bug | regisseur |
+| B-n | bug (B1–B17); nieuwe bugs met repo-prefix: K-B, TK-B, SM-B, EX-B, EU-B, HO-B | repo-thread zelf |
 | WR-n | werkwijzeregel (dit bestand) | via besluit |
 | P-n | productregel (dit bestand) | via besluit |
 
@@ -39,9 +40,9 @@ Threads geven zelf geen nummers; ze melden ongenummerd aan de regisseur.
 | WR-5 | Akkoord en mandaat | Werkwijze |
 | WR-6 | Releases verzameld, weinig pushes | Werkwijze |
 | WR-7 | Overdracht via branch @ commit | Werkwijze |
-| WR-8 | Nummers alleen van de regisseur | Werkwijze |
+| WR-8 | Nummers: V/R/W van de regisseur, bugs van de repo-thread | Werkwijze |
 | WR-9 | Afwijking eerst melden, regel zelf aanpassen | Werkwijze |
-| WR-10 | Zichtbaar = eerst een voorbeeld | Werkwijze |
+| WR-10 | Zichtbaar: voorbeeld als er iets te kiezen valt | Werkwijze |
 | WR-11 | Elke bug wordt een test | Werkwijze |
 | WR-12 | Niets geheims in Git of chat | Werkwijze |
 | WR-13 | Melden aan de eigenaar | Werkwijze |
@@ -92,7 +93,9 @@ Threads geven zelf geen nummers; ze melden ongenummerd aan de regisseur.
 De eigenaar praat alleen met de regisseur (projectchat). Threads stellen de eigenaar geen vragen; ze sturen vragen,
 blokkades en keuzes ongenummerd naar de regisseur. Threads mogen onderling overleggen en melden (afhankelijkheid,
 fout in andermans repo, gedeelde functie, documentatie, releases), maar opdrachten geeft alleen de regisseur.
-Maakt een thread toch rechtstreeks een keuze met de eigenaar, dan meldt hij die meteen aan regisseur en documentatie.
+Nooit een beslissingskaart of vraag aan de eigenaar in je eigen thread; alleen een bericht aan de regisseur: "Vraag
+voor Jeroen: … advies: …". Antwoordt de eigenaar toch in een thread, dan meldt de thread dat in dezelfde beurt aan
+de regisseur (V40).
 *Vervangt:* R49, R68.
 
 #### WR-2 Eén opdracht tegelijk, volledig gemeld
@@ -132,20 +135,27 @@ Werk wordt overgedragen als "branch X @ commit abc1234", nooit als losse patch o
 voor je "klaar" meldt. Vóór een sessie stopt: overdracht invullen (`docs/prompts/overdracht-template.md`) en opslaan
 als `/mnt/project-files/plannen/plugins/<repo>/overdracht-<datum>.md`, naast `stand.md`.
 
-#### WR-8 Nummers alleen van de regisseur
-V-, R-, W- en B-nummers geeft alleen de regisseur, doorlopend. Overal naar het nummer verwijzen.
+#### WR-8 Nummers: V/R/W van de regisseur, bugs van de repo-thread
+V-, R- en W-nummers geeft alleen de regisseur, doorlopend, en een nummer bestaat pas als het besluit in
+`plannen/besluiten.md` staat. Een nieuwe bug nummert de repo-thread zelf, doorlopend per repo met het prefix van zijn
+repo: K-B (kern), TK-B (Toolkit), SM-B (Server Maker), EX-B (Explain), EU-B (Egg Updates), HO-B (Hosting), te beginnen
+bij 1. De bestaande B1–B17 houden hun nummer. Nummers nooit in CLAUDE.md of projectinstructies, alleen in
+`besluiten.md` en `bugs.md`. Overal naar het nummer verwijzen (V40).
 *Vervangt:* R69.
 
 #### WR-9 Afwijking eerst melden, regel zelf aanpassen
 Wijkt een verzoek af van een regel: eerst zeggen welke regel en wat het verschil is. Kiest de eigenaar de afwijking,
 dan wordt de regel zelf aangepast en overal doorgevoerd (code, CLAUDE.md, docs, startbrieven). Geen stille
-uitzonderingen, geen losse regel naast een bestaande. Bij verschil tussen chat en repo geldt de repo; een nieuw
-besluit staat binnen dezelfde dag in `besluiten.md`.
+uitzonderingen, geen losse regel naast een bestaande. Bij verschil tussen chat en repo geldt de repo. Een nieuw
+besluit schrijft de regisseur in `plannen/besluiten.md` in project-files (de enige bron) zodra de eigenaar antwoordt;
+de documentatie-thread zet het één keer per dag in `docs/besluiten.md` van alle repo's (V40).
 
-#### WR-10 Zichtbaar = eerst een voorbeeld
-Elke wijziging die iets zichtbaar verandert, ook een kleine: eerst een voorbeeld (artifact of demo, vóór/na, nepdata,
-telefoon en desktop, licht en donker). Bij een keuze twee of drie varianten naast elkaar. De eigenaar beslist op wat
-hij ziet; pas na akkoord bouwen. Bron van een voorbeeld in project-files, niet in Git.
+#### WR-10 Zichtbaar: voorbeeld als er iets te kiezen valt
+Eerst een voorbeeld (artifact of demo, vóór/na, nepdata, telefoon en desktop, licht en donker) bij een nieuw scherm,
+een gewijzigde indeling, een nieuwe knop of nieuw menu-item, of een keuze tussen varianten (dan twee of drie naast
+elkaar). De eigenaar beslist op wat hij ziet; pas na akkoord bouwen. Geen voorbeeld bij een fix die iets terugzet naar
+een bestaande regel of een eerder goedgekeurd voorbeeld: dan volstaan vóór/na-screenshots van het echte scherm bij
+"Klaar". Bij twijfel beslist de regisseur, zonder de eigenaar (V40). Bron van een voorbeeld in project-files, niet in Git.
 *Vervangt:* R26, R66.
 
 #### WR-11 Elke bug wordt een test
