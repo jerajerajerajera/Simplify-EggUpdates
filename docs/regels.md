@@ -86,6 +86,7 @@ Threads geven zelf geen nummers; ze melden ongenummerd aan de regisseur.
 | P-35 | Zo klein mogelijk | Product |
 | P-36 | Veiligheid voorop | Product |
 | P-37 | Testfase | Release |
+| P-38 | Opslaan met Save, nooit vanzelf | UI |
 
 ## Werkwijze
 
@@ -314,9 +315,16 @@ Alle meldingsopties (dit apparaat, berichten, updates, Pelican, scheduler, appar
 *Besluit:* V12.
 
 #### P-22 Telefoon
-Eén frame: bovenin naam, bel en account; onderin één balk. Menu's openen als blad van onderaf. Instellingen slaan
-vanzelf op. Trekken om te verversen alleen op het overzicht; een blad dichttrekken ververst nooit.
+Eén frame: bovenin naam, bel en account; onderin één balk. Menu's openen als blad van onderaf. Opslaan zoals overal
+(P-38). Trekken om te verversen alleen op het overzicht; een blad dichttrekken ververst nooit.
 *Bewaakt door:* audit `phone-*`, `pull-*`.
+
+#### P-38 Opslaan met Save, nooit vanzelf
+Nergens autosave, in de kern en in elke add-on, ook op de telefoon. Zodra iets gewijzigd is, verschijnt de melding
+"Changes made" met een Save-knop. Wie de pagina verlaat (menu, tab, terug, blad sluiten, tabblad sluiten) terwijl er
+niet-opgeslagen wijzigingen zijn, kiest eerst Save of Discard; niets gaat stil verloren en niets wordt stil
+opgeslagen.
+*Besluit:* V57 (vervangt V54 en de autosave in V51).
 
 ## Teksten
 
