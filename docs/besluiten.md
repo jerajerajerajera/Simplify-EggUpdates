@@ -13,10 +13,13 @@
 | V7–V10 | | niet teruggevonden | |
 | V11 | | Ja: alleen de tijdelijke Test first-server accepteert de EULA | Egg Updates |
 | V12 | | Servericoon: … > egg-icoon > icoon per soort egg > kubus; alle meldingsopties in het bel-blad | kern, P-12, P-21 |
-| V13–V15 | | niet teruggevonden | |
+| V13 | 1-11 | Ja: release Egg Updates 1.1.4 | Egg Updates |
+| V14–V15 | | niet teruggevonden | |
 | V16 | 2-11 | Kern 1.5.4 uitbrengen (uit) | kern |
 | V17 | | niet teruggevonden | |
-| V18–V26 | 2-11 | Ja (inhoud niet afzonderlijk teruggevonden) | |
+| V18–V23 | 2-11 | Ja (inhoud niet afzonderlijk teruggevonden) | |
+| V24 | 2-11 | Ja: Egg Updates B4 (Move servers vult een nieuw verplicht veld in) en B6 ("Can't check" bij een kapotte update-link) bouwen; in 1.1.5 | Egg Updates |
+| V25–V26 | 2-11 | Ja (inhoud niet afzonderlijk teruggevonden) | |
 | V27 | 2-11 | Nee: geen live demopaneel op de Beelink; demo = "dood" paneel, statische doorklikbare shell op Cloudflare Pages | W2, demo |
 | V28 | 2-11 | Ja | kern #114 (Browse Hub) |
 | V29 | 2-11 | Ja: eigen Steam Web API-sleutel en GSLT-token via het Simplify-accountmenu | Server Maker, kern API 4 |
