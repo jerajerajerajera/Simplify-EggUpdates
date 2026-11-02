@@ -216,7 +216,8 @@ Groep "Simplify", volgorde: kern 1/2, Egg Updates 20, Explain 40, Hosting 50, Se
 *Principe:* 4. Simplify 1.5.5 is de basis waarop verder gebouwd en vergeleken wordt; 0.7.0 is geen referentie meer
 (V37). Kleiner is minder code, nooit minder functies: een functie van 1.5.5 weghalen of anders laten werken alleen met
 akkoord van de eigenaar. Een aangeraakt scherm vergelijken met 1.5.5, maten niet groter dan 1.5.5 + 10%. De
-functielijst `docs/REFERENCE-070.md` (kern) blijft met de status per functie; `aanwezig` alleen met test.
+functielijst `docs/REFERENCE-070.md` (kern) blijft met de status per functie; `aanwezig` alleen met test. Functies
+die nog `ontbreekt` zijn, zijn gewone wensen en houden geen release tegen (V38).
 *Bewaakt door:* audit `section=compare` (vergelijkt met 1.5.5), `diff-inventory.py`.
 *Vervangt:* R7, R8, R9.
 

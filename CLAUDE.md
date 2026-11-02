@@ -26,7 +26,8 @@ Simplify 1.5.5 is de basis waarop verder gebouwd en vergeleken wordt (V37); 0.7.
 - Raak je een scherm, vergelijk dan met 1.5.5 vóór je "klaar" zegt: dezelfde knoppen, menu-items, tabbladen en
   instellingen, en maten niet groter dan 1.5.5 + 10%.
 - De functielijst in de kernrepo (`docs/REFERENCE-070.md`) blijft bestaan met de status per functie. Een functie is
-  pas `aanwezig` met een test die hem echt gebruikt (kolom **test**).
+  pas `aanwezig` met een test die hem echt gebruikt (kolom **test**). Wat nog `ontbreekt`, is een gewone wens en
+  houdt geen release tegen (V38).
 - Bouw je iets opnieuw, maak dan eerst de lijst van wat het oude scherm kon, en pas dan de code.
 
 ## 2. Definitie van klaar

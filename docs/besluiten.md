@@ -31,6 +31,7 @@
 | V35 | 2-11 | Ja: nieuwe werkwijze (regisseur + rollen, regels.md, besluiten.md, bugs.md, startbrieven, overdracht); projectinstructies vervangen | alle repo's, WR-1..WR-16 |
 | V36 | | niet teruggevonden | |
 | V37 | 2-11 | 0.7.0 is niet langer de referentie: 1.5.5 is de basis waarop verder gebouwd en vergeleken wordt (audit `compare`, maten 1.5.5 + 10%). De upgradetest vanaf 0.7.0-bestanden draait niet meer standaard, alleen nog één keer als volledige test vóór de 2.0-release naar de Hub | alle repo's, P-5, P-18, P-28 |
+| V38 | 2-11 | Ja: de 22 functies uit 0.7.0 die in `docs/REFERENCE-070.md` nog op `ontbreekt` staan, blijven op de bouwlijst als gewone wensen; ze houden geen release tegen | kern, P-5 |
 
 ## Zonder nummer (uit projectnotities, 27-10 t/m 2-11)
 
