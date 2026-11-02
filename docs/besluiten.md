@@ -1,8 +1,9 @@
 # Besluiten
 
-> Wat de eigenaar besliste, met nummer als de regisseur er een gaf. Nieuw besluit staat hier binnen dezelfde dag
-> (WR-9). Zoek hier eerst voor je zelf iets kiest (WR-3). De kernrepo is de bron; add-on-repo's hebben een identieke
-> kopie. Ontbrekende nummers zijn niet teruggevonden in de projectnotities en zijn niet verzonnen.
+> Wat de eigenaar besliste, met nummer als de regisseur er een gaf. De bron is `plannen/besluiten.md` in
+> project-files: daar schrijft de regisseur een besluit zodra de eigenaar antwoordt. Dit bestand is een kopie die de
+> documentatie-thread één keer per dag bijwerkt, gelijk in alle zes repo's (WR-9, V40). Zoek hier eerst voor je zelf
+> iets kiest (WR-3). Ontbrekende nummers zijn niet teruggevonden in de projectnotities en zijn niet verzonnen.
 
 ## Genummerd
 
@@ -32,6 +33,8 @@
 | V36 | | niet teruggevonden | |
 | V37 | 2-11 | 0.7.0 is niet langer de referentie: 1.5.5 is de basis waarop verder gebouwd en vergeleken wordt (audit `compare`, maten 1.5.5 + 10%). De upgradetest vanaf 0.7.0-bestanden draait niet meer standaard, alleen nog één keer als volledige test vóór de 2.0-release naar de Hub | alle repo's, P-5, P-18, P-28 |
 | V38 | 2-11 | Ja: de 22 functies uit 0.7.0 die in `docs/REFERENCE-070.md` nog op `ontbreekt` staan, blijven op de bouwlijst als gewone wensen; ze houden geen release tegen | kern, P-5 |
+| V39 | 2-11 | CI-onderzoek door de CI-thread (uitwerking volgt) | CI |
+| V40 | 2-11 | Ja: alle zeven voorstellen uit het werkwijze-advies: (1) vragen in twee beslisrondes per dag; (2) `plannen/besluiten.md` is de enige bron, bugs krijgen een repo-prefix; (3) `plannen/stand-regisseur.md`; (4) threads stellen de eigenaar geen vragen in hun eigen thread; (5) licht mergen, zwaar releasen, releasetrein; (6) voorbeeld alleen als er iets te kiezen valt; (7) korte CLAUDE.md's en een CI-check op de kopieën in `docs/` | alle repo's, WR-1, WR-8, WR-9, WR-10 |
 
 ## Zonder nummer (uit projectnotities, 27-10 t/m 2-11)
 
