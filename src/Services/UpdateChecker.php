@@ -7,6 +7,8 @@ namespace Simplify\EggUpdates\Services;
 use App\Enums\EggFormat;
 use App\Models\Egg;
 use App\Services\Eggs\Sharing\EggExporterService;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Simplify\EggUpdates\Models\EggTest;
@@ -33,14 +35,23 @@ final class UpdateChecker
         // Copies made for a test of an update are not eggs of their own.
         $copies = EggTest::query()->whereNotNull('copy_egg_id')->select('copy_egg_id');
         foreach (Egg::query()->whereNotNull('update_url')->whereNotIn('id', $copies)->get() as $egg) {
+            $state = EggUpdate::for($egg->id);
             try {
                 $remote = RemoteEgg::fetch($egg);
                 $differs = self::localHash($egg, $remote->format) !== $remote->hash;
-            } catch (\Throwable) {
-                // An update URL that cannot be read keeps what was known.
+            } catch (\Throwable $e) {
+                // An update URL that cannot be read keeps what was known, and is listed once it keeps failing.
+                $state->fill([
+                    'link_failures' => $state->link_failures + 1,
+                    'link_failed_at' => $state->link_failed_at ?? now(),
+                    'link_error' => self::linkError($e),
+                ])->save();
+
                 continue;
             }
-            $state = EggUpdate::for($egg->id);
+            if ($state->link_failures > 0) {
+                $state->fill(['link_failures' => 0, 'link_failed_at' => null, 'link_error' => null])->save();
+            }
             if (! $differs || $state->applied_hash === $remote->hash) {
                 if ($state->exists && $state->found_hash !== null) {
                     $state->update(['found_hash' => null, 'found_at' => null, 'held' => false]);
@@ -62,6 +73,16 @@ final class UpdateChecker
         $at = Cache::get(self::CHECKED_AT);
 
         return is_int($at) ? Carbon::createFromTimestamp($at) : null;
+    }
+
+    /** Why an update URL failed: its HTTP status ("404 Not Found"), "network" or "invalid". */
+    private static function linkError(\Throwable $e): string
+    {
+        if ($e instanceof RequestException) {
+            return trim($e->response->status().' '.$e->response->reason());
+        }
+
+        return $e instanceof ConnectionException ? 'network' : 'invalid';
     }
 
     private static function localHash(Egg $egg, EggFormat $format): string

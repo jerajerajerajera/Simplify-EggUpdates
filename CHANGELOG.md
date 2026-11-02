@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Move servers also fills a field that an update made required, such as the User Agent of the current Paper egg. It
+  asks for the value once and gives it to every server of the egg that has none. Values a server already has stay.
+- An egg whose update link stopped working (for example a 404) is listed as "Can't check", with the reason, after two
+  checks in a row. Only eggs that servers use are listed, and the row goes away once the link works again.
+
 ## 1.1.4
 
 - The Test first server gets the memory, disk and CPU of the egg's largest server (at least 2 GB, 8 GB and 200%),

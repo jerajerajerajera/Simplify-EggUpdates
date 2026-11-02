@@ -18,6 +18,9 @@ use Illuminate\Support\Carbon;
  * @property bool|null $test_ok how the last test of an update ended, null when it was not tested
  * @property string|null $test_reason
  * @property Carbon|null $tested_at
+ * @property int $link_failures checks in a row on which the update URL failed
+ * @property Carbon|null $link_failed_at
+ * @property string|null $link_error an HTTP status such as "404 Not Found", or "network" or "invalid"
  */
 final class EggUpdate extends Model
 {
@@ -27,7 +30,10 @@ final class EggUpdate extends Model
 
     public $incrementing = false;
 
-    protected $fillable = ['egg_id', 'found_hash', 'found_at', 'held', 'applied_hash', 'test_ok', 'test_reason', 'tested_at'];
+    protected $fillable = ['egg_id', 'found_hash', 'found_at', 'held', 'applied_hash', 'test_ok', 'test_reason', 'tested_at', 'link_failures', 'link_failed_at', 'link_error'];
+
+    /** Checks in a row an update URL must fail before the egg is listed as one that cannot be checked. */
+    public const LINK_FAILURES = 2;
 
     protected function casts(): array
     {
@@ -36,6 +42,8 @@ final class EggUpdate extends Model
             'held' => 'boolean',
             'test_ok' => 'boolean',
             'tested_at' => 'datetime',
+            'link_failures' => 'integer',
+            'link_failed_at' => 'datetime',
         ];
     }
 
