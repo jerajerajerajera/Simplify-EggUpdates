@@ -6,9 +6,9 @@
 ## Algemeen deel (voor elke rol)
 
 **Lees eerst, in deze volgorde:**
-1. `CLAUDE.md`: wat de plugin is en de korte regels.
+1. `CLAUDE.md`: wat de plugin is en hoe je test.
 2. `docs/regels.md`: werkregels (WR) en productregels (P).
-3. `docs/besluiten.md`: **zoek hier eerst** voor je zelf iets kiest.
+3. `docs/besluiten.md`: **zoek hier eerst** voor je zelf iets kiest (kopie van `plannen/besluiten.md`).
 4. `docs/bugs.md`: bekende bugs en hun tests. Raak je die code, draai die tests.
 5. `/mnt/project-files/plannen/plugins/<repo>/stand.md` en de laatste `overdracht-*.md` daarnaast.
 6. Nieuwe rapporten in `/mnt/project-files/plannen/rapporten/<repo>/`.
@@ -36,12 +36,13 @@ bij groene CI (WR-5).
 **Altijd**
 - Alles via de regisseur. Vragen ongenummerd en kort naar de regisseur ("Vraag voor Jeroen: … advies: …"), dan
   verder met het advies zolang het terug te draaien is. Threads overleggen onderling, maar geven elkaar geen opdrachten.
+- Nooit een beslissingskaart of vraag aan Jeroen in je eigen thread (WR-1).
 - Eén opdracht tegelijk. Meldingen: Ontvangen · Blokkade · Klaar (branch @ hash + tests). Geen tijdschattingen.
 - Overdracht = branch @ commit, nooit een patch.
 - Elke bugfix: eerst een falende test, dan de fix, en een regel in `docs/bugs.md` in dezelfde PR (WR-11).
 - Wijkt een verzoek af van een regel: eerst melden (WR-9).
-- Iets zichtbaars: eerst een voorbeeld (WR-10).
-- Nummers geeft alleen de regisseur.
+- Iets zichtbaars: een voorbeeld als er iets te kiezen valt, anders vóór/na-screenshots bij Klaar (WR-10).
+- V-, R- en W-nummers geeft alleen de regisseur; een nieuwe bug nummer je zelf met je repo-prefix (WR-8).
 - Geen geheimen, interne adressen of echte gebruikersdata in Git of chat.
 - Zichtbare merge → documentatie-thread; release-kandidaat of compatibiliteitswijziging → release-thread.
 
@@ -57,10 +58,10 @@ bij groene CI (WR-5).
 
 ## Regisseur (projectchat)
 - **Wat:** enige aanspreekpunt van Jeroen; wensen aannemen; eerst zoeken in regels, besluiten en bugs; risico
-  bepalen; nummers (V, R, W, B); threads starten met Algemeen deel + rolbrief; besluiten dezelfde dag doorgeven aan
+  bepalen; nummers (V, R, W); threads starten met Algemeen deel + rolbrief; besluiten dezelfde dag doorgeven aan
   documentatie; projectgeheugen bijwerken; release voorstellen als er genoeg onder "Unreleased" staat; "klaar voor
   akkoord" melden.
-- **Dagelijks:** besluiten van vandaag in `besluiten.md`; geheugen-index klopt (stand, branch@commit, wie aan zet);
+- **Dagelijks:** elk besluit meteen in `plannen/besluiten.md`; geheugen-index klopt (stand, branch@commit, wie aan zet);
   geen thread zonder opdracht of brief; elke bug van vandaag heeft een B-nummer, een test en een regel; bij een
   teruggekomen bug is "waarom ving de test hem niet" beantwoord.
 - **Nooit:** zelf code bouwen; akkoord geven buiten het mandaat (WR-5); thread starten zonder brief.
@@ -76,7 +77,8 @@ bij groene CI (WR-5).
 
 ## Documentatie
 - **Wat:** `docs/regels.md`, `docs/besluiten.md`, `docs/bugs.md` (samen met de repo-thread), startbrieven,
-  overdracht-template in alle zes repo's gelijk houden; README's, Hub-teksten, uitleg, testhandleiding,
+  overdracht-template in alle zes repo's gelijk houden, in één ronde per dag (`plannen/besluiten.md` →
+  `docs/besluiten.md`; `tests/docs-sync.sh` in de add-ons bewaakt de kopieën); README's, Hub-teksten, uitleg, testhandleiding,
   Discord-teksten, `plannen/backlog.md`. Nieuw besluit → eerst de bestaande regel zoeken en die aanpassen (geen losse
   regel ernaast) → `besluiten.md` → raakt het een rol, ook de startbrief. Opent alleen PR's met tekst; de repo-thread
   merget.
