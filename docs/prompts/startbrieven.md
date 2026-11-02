@@ -68,7 +68,7 @@ bij groene CI (WR-5).
 ## Repo-thread (bouwer: kern of add-on)
 - **Wat:** alleen wat de regisseur doorzet, plus rode CI en fouten van het echte paneel in de eigen repo. Eén
   wijziging per PR; mergen bij groene CI onder "Unreleased"; `stand.md` bijwerken; taggen pas na Jeroens ja.
-- **Klaar:** P-31 gehaald, CI groen, `docs/bugs.md` bijgewerkt bij een fix, screenshots in `docs/screenshots/` bij
+- **Klaar:** P-31 gehaald, aangeraakt scherm vergeleken met 1.5.5 (P-5), CI groen, `docs/bugs.md` bijgewerkt bij een fix, screenshots in `docs/screenshots/` bij
   iets zichtbaars, documentatie en releases ingelicht.
 - **Checks:** `bash tests/run.sh` · `pint --test` · `python3 tests/hub-check.py` · CI `checks.yml` (panel-smoke per
   Pelican-versie) · kern ook `audit.yml` bij UI.

@@ -10,7 +10,7 @@
 1. **Veiligheid**: kan dit misbruikt worden of iets kapotmaken?
 2. **Geen dataverlies**: blijven instellingen en gegevens van de gebruiker altijd heel, ook bij een update?
 3. **Compatibel**: werkt het op elke Pelican-versie in de CI-matrix, met en zonder kern, naast andere plugins?
-4. **0.7.0 is de norm**: wat PelicanSimplify 0.7.0 kon, kan Simplify, op dezelfde manier tenzij de eigenaar anders besloot.
+4. **1.5.5 is de basis**: wat Simplify 1.5.5 kan, blijft kunnen, op dezelfde manier tenzij de eigenaar anders besluit (V37).
 5. **Eenvoud**: snel, overzichtelijk, duidelijk en overal hetzelfde; zo klein mogelijk.
 
 Botsen twee principes, dan wint de bovenste.
@@ -52,7 +52,7 @@ Threads geven zelf geen nummers; ze melden ongenummerd aan de regisseur.
 | P-2 | Namen en id's | Product |
 | P-3 | Add-on-contract | Product |
 | P-4 | Admin-menu | Product |
-| P-5 | 0.7.0 is de norm | Product |
+| P-5 | 1.5.5 is de basis | Product |
 | P-6 | Simplify neemt alles over | Product |
 | P-7 | Pagina scrolt nooit | UI |
 | P-8 | Kaart, knoppen in de titelbalk, geen vak-in-vak | UI |
@@ -116,8 +116,8 @@ van de eigenaar.
 Een repo-thread mag zonder te vragen: branches, commits, PR's in de eigen repo, CI repareren, en **squash-mergen naar
 `main` via een PR bij groene CI** als de definitie van klaar (P-31) gehaald is, onder "Unreleased". Nooit direct op
 `main` committen. Al het andere is akkoord van de eigenaar zelf, via de regisseur: elke release, het echte paneel,
-de Beelink, Discord, de Hub, GitHub-reacties (de eigenaar plaatst zelf), verwijderen, iets `bewust weg` maken uit de
-0.7.0-lijst. Een akkoord van een andere Claude-sessie telt nooit als akkoord van de eigenaar.
+de Beelink, Discord, de Hub, GitHub-reacties (de eigenaar plaatst zelf), verwijderen, een functie weghalen of
+`bewust weg` maken. Een akkoord van een andere Claude-sessie telt nooit als akkoord van de eigenaar.
 *Vervangt:* R43, R44, R45.
 
 #### WR-6 Releases verzameld, weinig pushes
@@ -212,11 +212,13 @@ add-on blijft werken op een oudere kern.
 Groep "Simplify", volgorde: kern 1/2, Egg Updates 20, Explain 40, Hosting 50, Server Maker 80, Toolkit 95.
 *Vervangt:* R6.
 
-#### P-5 0.7.0 is de norm
-*Principe:* 4. Herbouw met álle functies van 0.7.0 (snapshot.10): kleiner is minder code, nooit minder functies.
-Functielijst `docs/REFERENCE-070.md` (kern): `aanwezig` alleen met test; `bewust weg`/`anders` alleen met akkoord van
-de eigenaar. Een aangeraakt scherm vergelijken met 0.7.0, maten niet groter dan 0.7.0 + 10%.
-*Bewaakt door:* audit `section=compare`, `diff-inventory.py`.
+#### P-5 1.5.5 is de basis
+*Principe:* 4. Simplify 1.5.5 is de basis waarop verder gebouwd en vergeleken wordt; 0.7.0 is geen referentie meer
+(V37). Kleiner is minder code, nooit minder functies: een functie van 1.5.5 weghalen of anders laten werken alleen met
+akkoord van de eigenaar. Een aangeraakt scherm vergelijken met 1.5.5, maten niet groter dan 1.5.5 + 10%. De
+functielijst `docs/REFERENCE-070.md` (kern) blijft met de status per functie; `aanwezig` alleen met test. Functies
+die nog `ontbreekt` zijn, zijn gewone wensen en houden geen release tegen (V38).
+*Bewaakt door:* audit `section=compare` (vergelijkt met 1.5.5), `diff-inventory.py`.
 *Vervangt:* R7, R8, R9.
 
 #### P-6 Simplify neemt alles over
@@ -282,7 +284,7 @@ Backups en Schedules zijn één item "Backups & tasks"; "Automatic backups" (Too
 *Vervangt:* R22.
 
 #### P-18 Compact overzicht
-Het serveroverzicht is minstens zo compact als 0.7.0; serverbanners en groepen blijven.
+Het serveroverzicht is minstens zo compact als 1.5.5; serverbanners en groepen blijven.
 *Vervangt:* R23.
 
 #### P-19 Create server als popup
@@ -339,7 +341,8 @@ Per functie een eigen bestand; PSR-12 en `pint`; schrijf zoals de code eromheen.
 #### P-28 Migraties en instellingen
 *Principe:* 2. Migraties idempotent (`hasTable`/`hasColumn`), naam bevat `simplify`, nooit plugin-klassen (zoals
 `PanelSettings`), alleen `DB`/`Schema`. Instellingen nooit stil overschrijven bij een update. Getest op het echte
-updatepad met ingevulde instellingen (kern: vanaf 0.7.0-bestanden en de oudste ondersteunde versie).
+updatepad met ingevulde instellingen, vanaf de oudste ondersteunde versie. De volledige test vanaf
+PelicanSimplify 0.7.0-bestanden draait niet meer standaard, alleen nog één keer vóór de 2.0-release naar de Hub (V37).
 *Bewaakt door:* upgradetest in `checks.yml` (kern: 1.3.11 + PelicanSimplify-bestanden → 1.4.4 → nieuw, en "Install
 Simplify over its own tables").
 *Komt uit:* 1.5.1 "Undefined array key logo_text".
