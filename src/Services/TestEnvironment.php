@@ -24,21 +24,31 @@ final class TestEnvironment
     {
         $used = self::usedValues($egg);
 
-        return $copy->variables()->get()->mapWithKeys(function (EggVariable $variable) use ($used) {
-            $rules = $variable->rules ?: [];
-            $candidates = [(string) ($variable->default_value ?? ''), ...($used[$variable->env_variable] ?? []), ...self::fillers($rules)];
-            foreach ($candidates as $value) {
-                if (self::valid($value, $rules)) {
-                    return [$variable->env_variable => $value];
-                }
-            }
+        return $copy->variables()->get()
+            ->mapWithKeys(fn (EggVariable $variable) => [$variable->env_variable => self::value($variable, $used[$variable->env_variable] ?? [])])
+            ->all();
+    }
 
-            return [$variable->env_variable => $candidates[0]];
-        })->all();
+    /**
+     * The default when it is valid, else the first valid one of $used and the neutral fillers.
+     *
+     * @param  list<string>  $used
+     */
+    public static function value(EggVariable $variable, array $used = []): string
+    {
+        $rules = $variable->rules ?: [];
+        $candidates = [(string) ($variable->default_value ?? ''), ...$used, ...self::fillers($rules)];
+        foreach ($candidates as $value) {
+            if (self::valid($value, $rules)) {
+                return $value;
+            }
+        }
+
+        return $candidates[0];
     }
 
     /** Whether Pelican will accept the value; a rule that cannot be checked (a broken pattern) counts as a no. */
-    private static function valid(string $value, array $rules): bool
+    public static function valid(string $value, array $rules): bool
     {
         try {
             return Validator::make(['value' => $value], ['value' => $rules])->passes();

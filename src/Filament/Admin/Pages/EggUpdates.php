@@ -7,6 +7,7 @@ namespace Simplify\EggUpdates\Filament\Admin\Pages;
 use App\Models\Egg;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
@@ -22,6 +23,7 @@ use Simplify\EggUpdates\Services\EggUpdater;
 use Simplify\EggUpdates\Services\Result;
 use Simplify\EggUpdates\Services\ServerMover;
 use Simplify\EggUpdates\Services\Settings;
+use Simplify\EggUpdates\Services\TestEnvironment;
 use Simplify\EggUpdates\Services\UpdateChecker;
 
 /**
@@ -82,7 +84,9 @@ final class EggUpdates extends Page implements HasTable
             ->query(fn () => Egg::query()
                 ->where(fn (Builder $query) => $query
                     ->whereIn('id', self::available()->select('egg_id'))
-                    ->orWhereIn('id', EggBackup::query()->select('egg_id')))
+                    ->orWhereIn('id', EggBackup::query()->select('egg_id'))
+                    // An update URL that keeps failing, for eggs that servers use.
+                    ->orWhere(fn (Builder $query) => $query->has('servers')->whereIn('id', self::unreachable()->select('egg_id'))))
                 ->withCount('servers'))
             ->defaultSort('name')
             ->paginated(false)
@@ -99,7 +103,7 @@ final class EggUpdates extends Page implements HasTable
                         'meta' => implode(' · ', array_filter([
                             trans_choice('simplify-eggupdates::egg-updates.page.server_count', $egg->servers_count, ['count' => $egg->servers_count]),
                             self::since($egg)?->diffForHumans(),
-                            self::testFailure($egg),
+                            self::note($egg),
                         ])),
                     ])
                     ->hiddenFrom('sm'),
@@ -118,7 +122,7 @@ final class EggUpdates extends Page implements HasTable
                     ->badge()
                     ->state(fn (Egg $egg) => self::status($egg))
                     ->formatStateUsing(fn (string $state) => __('simplify-eggupdates::egg-updates.status.'.$state))
-                    ->description(fn (Egg $egg) => self::testFailure($egg))
+                    ->description(fn (Egg $egg) => self::note($egg))
                     ->color(fn (string $state) => self::color($state))
                     ->visibleFrom('sm'),
                 TextColumn::make('since')
@@ -161,7 +165,14 @@ final class EggUpdates extends Page implements HasTable
                     ->requiresConfirmation()
                     ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.move_heading', ['egg' => $egg->name]))
                     ->modalDescription(__('simplify-eggupdates::egg-updates.actions.move_description'))
-                    ->action(fn (Egg $egg) => self::send(ServerMover::move($egg))),
+                    // A field the update made required, for the servers without a value.
+                    ->schema(fn (Egg $egg) => array_map(fn (array $field) => TextInput::make($field['variable']->env_variable)
+                        ->label($field['variable']->name)
+                        ->helperText(__('simplify-eggupdates::egg-updates.actions.move_field_help', ['count' => count($field['servers'])]))
+                        ->rules($field['variable']->rules ?: [])
+                        ->required(), array_values(ServerMover::fields($egg))))
+                    ->fillForm(fn (Egg $egg) => array_map(fn (array $field) => TestEnvironment::value($field['variable']), ServerMover::fields($egg)))
+                    ->action(fn (Egg $egg, array $data) => self::send(ServerMover::move($egg, $data))),
                 Action::make('put_back')
                     ->label(__('simplify-eggupdates::egg-updates.actions.put_back'))
                     ->icon('tabler-arrow-back-up')
@@ -248,7 +259,13 @@ final class EggUpdates extends Page implements HasTable
         return EggUpdate::query()->whereNotNull('found_hash');
     }
 
-    /** available, held (put back by hand), updated, or a test stage: queued, installing, starting. */
+    /** @return Builder<EggUpdate> */
+    private static function unreachable(): Builder
+    {
+        return EggUpdate::query()->where('link_failures', '>=', EggUpdate::LINK_FAILURES);
+    }
+
+    /** available, held (put back by hand), updated, unreachable, or a test stage: queued, installing, starting. */
     private static function status(Egg $egg): string
     {
         $stage = EggTester::stage($egg);
@@ -257,7 +274,7 @@ final class EggUpdates extends Page implements HasTable
         }
         $state = EggUpdate::query()->find($egg->id);
         if ($state?->found_hash === null) {
-            return 'updated';
+            return ($state?->link_failures ?? 0) >= EggUpdate::LINK_FAILURES ? 'unreachable' : 'updated';
         }
 
         return $state->held ? 'held' : 'available';
@@ -267,15 +284,22 @@ final class EggUpdates extends Page implements HasTable
     {
         return match ($status) {
             'updated' => 'success',
-            'held' => 'gray',
+            'held', 'unreachable' => 'gray',
             'available' => 'warning',
             default => 'info',
         };
     }
 
-    /** Why the last test of the listed update failed, while the update is still listed. */
-    private static function testFailure(Egg $egg): ?string
+    /** Why the last test of the listed update failed, or why its update URL cannot be checked. */
+    private static function note(Egg $egg): ?string
     {
+        if (self::status($egg) === 'unreachable') {
+            $error = (string) EggUpdate::query()->find($egg->id)?->link_error;
+
+            return in_array($error, ['network', 'invalid'], true)
+                ? __('simplify-eggupdates::egg-updates.page.link_'.$error)
+                : __('simplify-eggupdates::egg-updates.page.link_http', ['status' => $error]);
+        }
         $state = EggUpdate::query()->find($egg->id);
         if ($state?->found_hash === null || $state->test_ok !== false || EggTester::stage($egg) !== null) {
             return null;
@@ -289,6 +313,9 @@ final class EggUpdates extends Page implements HasTable
         $state = EggUpdate::query()->find($egg->id);
         if ($state?->found_at !== null) {
             return $state->found_at;
+        }
+        if (self::status($egg) === 'unreachable') {
+            return $state->link_failed_at;
         }
 
         return EggUpdater::latest($egg)?->created_at;
