@@ -115,10 +115,16 @@ $remote = json_decode(app(EggExporterService::class)->handle($egg->id, EggFormat
 $remote['name'] = 'Smoke Paper 2';
 // Further eggs publish their own definition under their slug; Smoke Paper uses $remote.
 $remotes = [];
+// Update URLs (by slug) that answer 404, like an egg whose maker moved or removed it.
+$broken = [];
 // A fake Wings for the test node: it accepts every call and reports the state set in $wings.
 $wings = 'running';
 Http::fake([
-    'eggs.example.test/*' => function ($request) use (&$remote, &$remotes) {
+    'eggs.example.test/*' => function ($request) use (&$remote, &$remotes, &$broken) {
+        if (in_array(basename($request->url(), '.json'), $broken, true)) {
+            return Http::response('Not Found', 404);
+        }
+
         return Http::response(json_encode($remotes[basename($request->url(), '.json')] ?? $remote));
     },
     'wings.smoke.test*' => function ($request) use (&$wings) {
@@ -268,6 +274,53 @@ step('Move servers on the page moves servers off the removed image and command, 
     $own->refresh();
     must($own->startup === 'java -jar mine.jar' && $own->image === 'ghcr.io/me/java:17', 'a server\'s own command or image changed');
     must(ServerMover::count($egg->fresh()) === 0, 'still servers to move');
+});
+step('Move servers asks for a field the update made required and fills it on servers without a value', function () use ($admin, &$remotes) {
+    $egg = remoteEgg('Smoke Fields', $remotes, []);
+    $export = json_decode(app(EggExporterService::class)->handle($egg->id, EggFormat::JSON), true);
+    $field = fn (string $env, string $default) => ['name' => Str::headline(strtolower($env)), 'description' => 'Smoke', 'env_variable' => $env, 'default_value' => $default, 'user_viewable' => true, 'user_editable' => true, 'rules' => ['required', 'string', 'max:40'], 'sort' => 1];
+    // Like Paper's User Agent: required, without a default. And one with a good default, which needs nothing.
+    $remotes['smoke-fields'] = array_replace($export, ['variables' => [...$export['variables'], $field('USER_AGENT', ''), $field('WORLD_TYPE', 'normal')]]);
+    $empty = Server::factory()->create(['egg_id' => $egg->id, 'startup' => 'java -jar old.jar', 'image' => 'ghcr.io/smoke/java:17']);
+    $own = Server::factory()->create(['egg_id' => $egg->id, 'startup' => 'java -jar old.jar', 'image' => 'ghcr.io/smoke/java:17']);
+    Settings::saveForm(['mode' => 'ask']);
+    Runner::run(true);
+    $result = EggUpdater::update($egg->fresh());
+    must($result->ok, $result->message);
+    $agent = $egg->fresh()->variables()->where('env_variable', 'USER_AGENT')->firstOrFail();
+    ServerVariable::query()->create(['server_id' => $own->id, 'variable_id' => $agent->id, 'variable_value' => 'mine']);
+    must(array_keys(ServerMover::fields($egg->fresh())) === ['USER_AGENT'], 'asked for: '.implode(', ', array_keys(ServerMover::fields($egg->fresh()))));
+    must(ServerMover::count($egg->fresh()) === 1, 'expected one server without a value, got '.ServerMover::count($egg->fresh()));
+    Livewire::actingAs($admin)->test(EggUpdates::class)
+        ->assertActionVisible(TestAction::make('move')->table($egg->fresh()))
+        ->mountAction(TestAction::make('move')->table($egg->fresh()))
+        ->set('mountedActions.0.data.USER_AGENT', 'smoke agent')
+        ->callMountedAction()
+        ->assertHasNoFormErrors();
+    $value = fn (Server $server) => ServerVariable::query()->where('server_id', $server->id)->where('variable_id', $agent->id)->value('variable_value');
+    must($value($empty) === 'smoke agent', 'not filled: '.var_export($value($empty), true));
+    must($value($own) === 'mine', 'a server\'s own value changed: '.var_export($value($own), true));
+    must(ServerMover::count($egg->fresh()) === 0, 'still servers to move');
+});
+step('an egg whose update link stopped working shows as Can\'t check, after two checks, and goes away when it works', function () use ($admin, &$remotes, &$broken) {
+    $egg = remoteEgg('Smoke Broken', $remotes, []);
+    remoteEgg('Smoke Broken Unused', $remotes, []);
+    Server::factory()->create(['egg_id' => $egg->id]);
+    $broken = ['smoke-broken', 'smoke-broken-unused'];
+    $badge = EggUpdates::getNavigationBadge();
+    $bell = count(bell($admin));
+    $page = fn () => http($admin, EggUpdates::getUrl(panel: 'admin'))->getContent();
+    UpdateChecker::check();
+    must(! str_contains($page(), 'Smoke Broken'), 'listed after one failed check');
+    UpdateChecker::check();
+    $html = $page();
+    must(str_contains($html, 'Smoke Broken') && str_contains($html, '404'), 'not listed with the reason after two failed checks');
+    must(! str_contains($html, 'Smoke Broken Unused'), 'an egg without servers is listed');
+    must(EggUpdates::getNavigationBadge() === $badge, 'counted in the menu badge');
+    must(count(bell($admin)) === $bell, 'a notification was sent');
+    $broken = [];
+    UpdateChecker::check();
+    must(! str_contains($page(), 'Smoke Broken'), 'still listed after the link works again');
 });
 // Test first on a node with a fake Wings: one test that passes and one whose install fails. Both must leave no test
 // server, no test port and no imported copy behind.
