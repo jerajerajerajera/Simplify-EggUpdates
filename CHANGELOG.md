@@ -6,6 +6,9 @@
   asks for the value once and gives it to every server of the egg that has none. Values a server already has stay.
 - An egg whose update link stopped working (for example a 404) is listed as "Can't check", with the reason, after two
   checks in a row. Only eggs that servers use are listed, and the row goes away once the link works again.
+- Copy log in the title bar shows a short log for support: versions, the mode, the eggs in the list and the last 50
+  events, such as Test first steps and failures with their last lines. Addresses, e-mail addresses, internal links,
+  tokens and passwords are left out. Only in this version, to help testing.
 
 ## 1.1.4
 

@@ -114,4 +114,11 @@ return [
         'https' => '更新 URL 必須以 https:// 開頭',
         'not_an_egg' => '更新 URL 傳回的不是 egg',
     ],
+    'debug' => [
+        'title' => '複製日誌',
+        'heading' => '支援用日誌',
+        'description' => '複製此內容並貼到要求的位置。位址、電子郵件、權杖和密碼已省略。',
+        'copy' => '複製',
+        'copied' => '已複製',
+    ],
 ];

@@ -114,4 +114,11 @@ return [
         'https' => 'URL za ažuriranje mora da počinje sa https://',
         'not_an_egg' => 'URL za ažuriranje ne vraća egg',
     ],
+    'debug' => [
+        'title' => 'Копирај лог',
+        'heading' => 'Лог за подршку',
+        'description' => 'Копирајте ово и налепите где је тражено. Адресе, е-адресе, токени и лозинке су изостављени.',
+        'copy' => 'Копирај',
+        'copied' => 'Копирано',
+    ],
 ];
