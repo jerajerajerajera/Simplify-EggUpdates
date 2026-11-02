@@ -8,7 +8,7 @@ Schrijf met de eigenaar in het Nederlands; code, README, CHANGELOG, commits en P
 ## 0. Designfilosofie en doel
 
 - Simplify heeft een designfilosofie: snel, overzichtelijk, duidelijk en overal hetzelfde. §4 zijn die regels.
-- De werking van 0.7.0 is leidend. Bij twijfel: vragen aan de eigenaar (via de regisseur), niet raden.
+- De werking van 1.5.5 is leidend (V37). Bij twijfel: vragen aan de eigenaar (via de regisseur), niet raden.
 - Simplify neemt alle functies over: niemand hoeft terug naar Pelicans admin, tenzij er echt iets breekt.
 - Iconen: alleen Tabler. Servericoon: eigen server-icon.png > Pelican-servericoon > egg-icoon > grasblok (Minecraft) > kubus.
 - Zo klein mogelijk: geen dubbele of onnodige functies, niet meer code dan nodig. Na een aantal wijzigingen een
@@ -16,18 +16,17 @@ Schrijf met de eigenaar in het Nederlands; code, README, CHANGELOG, commits en P
 - Veiligheid staat voorop: rechten server-side, invoer valideren, geen secrets, geen open routes zonder controle.
 - Testfase: de eerste Hub-versie moet echt goed zijn, zodat er daarna weinig updates nodig zijn.
 
-## 1. De opdracht: 0.7.0 is de norm
+## 1. De basis: 1.5.5
 
-Simplify is een herbouw van PelicanSimplify 0.7.0 (snapshot.10) **met alle functionaliteit**. "Kleiner geschreven"
-betekent minder code, nooit minder functies.
+Simplify 1.5.5 is de basis waarop verder gebouwd en vergeleken wordt (V37); 0.7.0 is geen referentie meer.
+"Kleiner geschreven" betekent minder code, nooit minder functies.
 
-- De functielijst staat in de kernrepo: `docs/REFERENCE-070.md`. Elke regel is een functie uit 0.7.0, met de repo die
-  hem levert en een status: `aanwezig`, `bewust weg (datum, akkoord eigenaar)` of `ontbreekt`.
-- Deze lijst is de norm voor wat er moet bestaan. Een functie is pas `aanwezig` met een test die hem echt
-  gebruikt (kolom **test**); zonder test is hij niet af.
-- Een functie mag alleen `bewust weg` of `anders` zijn met het akkoord van de eigenaar erbij. Jij beslist dat nooit zelf.
-- Raakt je wijziging een scherm of functie uit die lijst, vergelijk dan met 0.7.0 vóór je "klaar" zegt: dezelfde
-  knoppen, menu-items, tabbladen en instellingen, en maten niet groter dan 0.7.0 + 10%.
+- Geen functie die 1.5.5 heeft stil weghalen: weghalen of anders werken alleen met het akkoord van de eigenaar.
+  Jij beslist dat nooit zelf.
+- Raak je een scherm, vergelijk dan met 1.5.5 vóór je "klaar" zegt: dezelfde knoppen, menu-items, tabbladen en
+  instellingen, en maten niet groter dan 1.5.5 + 10%.
+- De functielijst in de kernrepo (`docs/REFERENCE-070.md`) blijft bestaan met de status per functie. Een functie is
+  pas `aanwezig` met een test die hem echt gebruikt (kolom **test**).
 - Bouw je iets opnieuw, maak dan eerst de lijst van wat het oude scherm kon, en pas dan de code.
 
 ## 2. Definitie van klaar
@@ -37,13 +36,13 @@ Een wijziging is pas klaar als alles hieronder waar is. Meld nooit "gebouwd" of 
 1. **Lokale checks groen:** `bash tests/run.sh`, `pint --test`, `python3 tests/hub-check.py`.
 2. **CI groen:** `checks.yml` met panel-smoke op elke Pelican-versie in de matrix.
 3. **Updatepad getest** als er een migratie of instelling verandert: vanaf de oudste ondersteunde versie
-   (en vanaf 0.7.0-bestanden voor de kern) naar de nieuwe, met ingevulde instellingen, niet alleen een verse installatie.
+   naar de nieuwe, met ingevulde instellingen, niet alleen een verse installatie.
 4. **Doorgeklikt in een echt paneel**, met data die op het echte paneel lijkt (veel servers, lange namen, een plugin die
    niet van Simplify is, een server die nooit gestart is, een draaiende console). Elke knop die je aanraakte is echt
    **geklikt**, niet alleen bekeken: het gevolg van de klik klopt, er ligt niets overheen (ook niet boven de console),
    en een klik in het menu laadt alleen het contentvak.
 5. **Stijlaudit groen** (kernrepo, `audit.yml`) als je UI raakt, op d1440, laag1366 en phone390, licht én donker.
-   Met `section=compare` geen scherm groter dan 0.7.0 + 10%.
+   Met `section=compare` geen scherm groter dan 1.5.5 + 10%.
 6. **Screenshot van het echte scherm** na de wijziging, bij de melding. Een mock-up of demo is geen bewijs.
 
 Kan een stap niet (geen toegang, CI-minuten op), zeg dan precies welke stap ontbreekt. Nooit "zou moeten werken".
@@ -76,7 +75,7 @@ Een fix zonder test die eerst rood was, is niet af. Zo komt dezelfde fout niet t
 - **Create server** opent vanaf elke ingang (servermenu, overzicht, admin Servers) de Server Maker als Simplify-popup,
   nooit het formulier van Pelican.
 - Groepen in het admin-menu (zoals "Simplify" en "Other plugins") klappen uit; een losse pagina draagt de pluginnaam.
-- Serveroverzicht minstens zo compact als 0.7.0.
+- Serveroverzicht minstens zo compact als 1.5.5.
 - Nieuwe UI of een gewijzigd scherm: eerst een proefscherm (artifact of demo) laten zien, pas bouwen na akkoord.
 
 ## 5. Code
@@ -130,8 +129,8 @@ Een fix zonder test die eerst rood was, is niet af. Zo komt dezelfde fout niet t
 - Screenshots en Hub: nooit Pelicans gewone beheerschermen (zoals People & roles in Filament-stijl); add-ons in
   hostmodus; elke add-on-banner "Works best with Simplify"; eerste Hub-changelog "First version on the Hub".
 - Een check heeft altijd de uitkomst ok of fout tegen een regel, nooit alleen informatie. De vaste controles staan in
-  de kernrepo (`tests/audit`): functielijst tegenover 0.7.0, klik-test op elke knop, navigatie zonder herlaad, maten
-  tegenover 0.7.0 + 10%, een testpaneel dat op het echte paneel lijkt, en het updatepad met echte instellingen.
+  de kernrepo (`tests/audit`): functielijst, klik-test op elke knop, navigatie zonder herlaad, maten
+  tegenover 1.5.5 + 10%, een testpaneel dat op het echte paneel lijkt, en het updatepad met echte instellingen.
 - Bij testen meteen screenshots van de kernfuncties die je raakte in `docs/screenshots/` van de repo (vaste naam per
   scherm, licht en donker, desktop en telefoon), zodat documentatie en releases ze hergebruiken.
 - Werk dat een andere repo raakt: vraag de thread van die repo; bouw het nooit zelf daar. Overleg onderling als er

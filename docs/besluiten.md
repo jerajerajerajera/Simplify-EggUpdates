@@ -29,6 +29,8 @@
 | V33 | 2-11 | Ja: kern 1.5.5 (na audit en upgradetest), daarna Hosting-release | kern, Hosting |
 | V34 | 2-11 | Nee: eerst de oude auditpunten fixen vóór kern 1.5.5 | kern |
 | V35 | 2-11 | Ja: nieuwe werkwijze (regisseur + rollen, regels.md, besluiten.md, bugs.md, startbrieven, overdracht); projectinstructies vervangen | alle repo's, WR-1..WR-16 |
+| V36 | | niet teruggevonden | |
+| V37 | 2-11 | 0.7.0 is niet langer de referentie: 1.5.5 is de basis waarop verder gebouwd en vergeleken wordt (audit `compare`, maten 1.5.5 + 10%). De upgradetest vanaf 0.7.0-bestanden draait niet meer standaard, alleen nog één keer als volledige test vóór de 2.0-release naar de Hub | alle repo's, P-5, P-18, P-28 |
 
 ## Zonder nummer (uit projectnotities, 27-10 t/m 2-11)
 
@@ -38,7 +40,7 @@
 | 30-10 | 1.x is pre-Hub testen; de eerste Hub-versie wordt 2.0.0 voor alle zes | WR-6, P-37 |
 | 30-10 | Eén vaste thread per repo; hulpthreads alleen voor extra controles | WR-14 |
 | 30-10 | Simplify is één product; add-ons openen met kern altijd binnen Simplify; altijd Simplify-design | P-1 |
-| 30-10 | Designfilosofie: snel, overzichtelijk, duidelijk, overal hetzelfde; werking van 0.7.0 leidend; Simplify neemt alles over; zo klein mogelijk; veiligheid voorop; testfase | Principes, P-5, P-6, P-35–P-37 |
+| 30-10 | Designfilosofie: snel, overzichtelijk, duidelijk, overal hetzelfde; werking van 0.7.0 leidend (sinds V37: 1.5.5); Simplify neemt alles over; zo klein mogelijk; veiligheid voorop; testfase | Principes, P-5, P-6, P-35–P-37 |
 | 30-10 | Weinig pushes; zichtbare wijziging eerst als voorbeeld; regisseur doet alle communicatie | WR-1, WR-6, WR-10 |
 | 30-10 | Screenshots bij testen in `docs/screenshots/` | WR-15 |
 | 30-10 | Alleen de regisseur nummert (V, R, W) | WR-8 |
