@@ -114,11 +114,4 @@ return [
         'https' => 'URL-ul de actualizare trebuie să înceapă cu https://',
         'not_an_egg' => 'URL-ul de actualizare nu returnează un egg',
     ],
-    'debug' => [
-        'title' => 'Copiază jurnalul',
-        'heading' => 'Jurnal pentru suport',
-        'description' => 'Copiază asta și lipește-o unde ți s-a cerut. Adresele, e-mailurile, tokenurile și parolele sunt omise.',
-        'copy' => 'Copiază',
-        'copied' => 'Copiat',
-    ],
 ];

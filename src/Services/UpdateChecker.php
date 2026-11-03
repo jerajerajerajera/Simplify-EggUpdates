@@ -46,9 +46,6 @@ final class UpdateChecker
                     'link_failed_at' => $state->link_failed_at ?? now(),
                     'link_error' => self::linkError($e),
                 ])->save();
-                if ($state->link_failures === 1) {
-                    DebugLog::add("Check {$egg->name}: update link fails: {$state->link_error}");
-                }
 
                 continue;
             }

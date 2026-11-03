@@ -114,11 +114,4 @@ return [
         'https' => 'Päivitys-URL:n täytyy alkaa https://',
         'not_an_egg' => 'Päivitys-URL ei palauta eggiä',
     ],
-    'debug' => [
-        'title' => 'Kopioi loki',
-        'heading' => 'Loki tukea varten',
-        'description' => 'Kopioi tämä ja liitä se sinne, missä sitä pyydettiin. Osoitteet, sähköpostiosoitteet, tunnisteet ja salasanat jätetään pois.',
-        'copy' => 'Kopioi',
-        'copied' => 'Kopioitu',
-    ],
 ];

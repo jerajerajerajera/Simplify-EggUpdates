@@ -114,11 +114,4 @@ return [
         'https' => 'Oppdaterings-URL-en må starte med https://',
         'not_an_egg' => 'Oppdaterings-URL-en gir ikke et egg',
     ],
-    'debug' => [
-        'title' => 'Kopier logg',
-        'heading' => 'Logg for støtte',
-        'description' => 'Kopier dette og lim det inn der du ble bedt om det. Adresser, e-postadresser, tokens og passord er utelatt.',
-        'copy' => 'Kopier',
-        'copied' => 'Kopiert',
-    ],
 ];
