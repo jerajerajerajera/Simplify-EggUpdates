@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Checks: a change to docs or Markdown only skips the panel smoke; tests and pint still run.
+- The repository download (the Hub's zip) holds only the plugin: docs, tests, scripts and .github are left out.
 
 ## 1.1.5
 

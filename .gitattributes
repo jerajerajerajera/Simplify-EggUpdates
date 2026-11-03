@@ -1,0 +1,5 @@
+# The Pelican Hub packs the repository itself: the plugin's own files only, without the docs, tests and scripts.
+/docs export-ignore
+/.github export-ignore
+/tests export-ignore
+/scripts export-ignore
