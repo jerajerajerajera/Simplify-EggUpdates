@@ -44,7 +44,7 @@ jobs:
             code=$(curl -sS -o hub.json -w '%{http_code}' -X POST "https://hub.pelican.dev/api/plugins/$slug/versions/sync" \
               -H "Authorization: Bearer $HUB_API_KEY" -H 'Accept: application/json' -H 'Content-Type: application/json' \
               -d "{\"commit\":\"$commit\",\"channel\":\"beta\"}") || code=${code:-000}
-            echo "Hub sync of $slug $version ($commit), try $try: HTTP $code $(python3 -c "import json; d=json.load(open('hub.json')); print(d.get('code') or d.get('message') or '')" 2>/dev/null)"
+            echo "Hub sync of $slug $version ($commit), try $try: HTTP $code $(python3 -c "import json; d=json.load(open('hub.json')); d=d.get('data', d); print(' '.join(str(d.get(k)) for k in ('code', 'message', 'id', 'version', 'status', 'channel', 'published_to_channel_at') if d.get(k)))" 2>/dev/null)"
             case "$code" in 200|201) exit 0;; 5*|000) sleep 60;; *) exit 1;; esac
           done
           echo "::warning::The Hub did not answer: run this workflow by hand later to sync $version."
