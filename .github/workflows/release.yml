@@ -13,6 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build and publish the release
+        id: release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -24,3 +25,26 @@ jobs:
           case "$version" in *-*) kind=--prerelease;; *) kind=--latest;; esac
           awk -v head="## $version" 'index($0, head) == 1 {on = 1; next} on && /^## / {exit} on' CHANGELOG.md > notes.md
           gh release create "v$version" "$zip" --target "$GITHUB_SHA" --title "Simplify Egg Updates $version" --notes-file notes.md "$kind"
+          echo "created=1" >> "$GITHUB_OUTPUT"
+      # A beta goes to the Hub's beta channel by itself (V63). Never "submit": that sends it to stable review.
+      # Run the workflow by hand to sync the current version's tag again, for example after a Hub timeout.
+      - name: Publish the beta on the Hub
+        if: always() && (steps.release.outputs.created == '1' || github.event_name == 'workflow_dispatch')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HUB_API_KEY: ${{ secrets.HUB_API_KEY }}
+        run: |
+          version=$(python3 -c "import json; print(json.load(open('plugin.json'))['version'])")
+          slug=$(python3 -c "import json; print(json.load(open('plugin.json'))['id'])")
+          case "$version" in *-beta*) ;; *) echo "Version $version is not a beta: submit stable versions on the Hub yourself."; exit 0;; esac
+          if [ -z "$HUB_API_KEY" ]; then echo "::warning::No HUB_API_KEY secret: sync $version on the Hub yourself."; exit 0; fi
+          commit=$(gh api "repos/$GITHUB_REPOSITORY/commits/v$version" --jq .sha)
+          for try in 1 2 3; do
+            rm -f hub.json
+            code=$(curl -sS -o hub.json -w '%{http_code}' -X POST "https://hub.pelican.dev/api/plugins/$slug/versions/sync" \
+              -H "Authorization: Bearer $HUB_API_KEY" -H 'Accept: application/json' -H 'Content-Type: application/json' \
+              -d "{\"commit\":\"$commit\",\"channel\":\"beta\"}") || code=${code:-000}
+            echo "Hub sync of $slug $version ($commit), try $try: HTTP $code $(python3 -c "import json; d=json.load(open('hub.json')); print(d.get('code') or d.get('message') or '')" 2>/dev/null)"
+            case "$code" in 200|201) exit 0;; 5*|000) sleep 60;; *) exit 1;; esac
+          done
+          exit 1
