@@ -27,7 +27,7 @@ jobs:
           gh release create "v$version" "$zip" --target "$GITHUB_SHA" --title "Simplify Egg Updates $version" --notes-file notes.md "$kind"
           echo "created=1" >> "$GITHUB_OUTPUT"
       # A beta goes to the Hub's beta channel by itself (V63). Never "submit": that sends it to stable review.
-      # Run the workflow by hand to sync the current version's tag again, for example after a Hub timeout.
+      # A Hub timeout is a warning, not a red run: run the workflow by hand later to sync the current version's tag again.
       - name: Publish the beta on the Hub
         if: always() && (steps.release.outputs.created == '1' || github.event_name == 'workflow_dispatch')
         env:
@@ -47,4 +47,4 @@ jobs:
             echo "Hub sync of $slug $version ($commit), try $try: HTTP $code $(python3 -c "import json; d=json.load(open('hub.json')); print(d.get('code') or d.get('message') or '')" 2>/dev/null)"
             case "$code" in 200|201) exit 0;; 5*|000) sleep 60;; *) exit 1;; esac
           done
-          exit 1
+          echo "::warning::The Hub did not answer: run this workflow by hand later to sync $version."
