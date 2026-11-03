@@ -18,7 +18,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Simplify\EggUpdates\Models\EggBackup;
 use Simplify\EggUpdates\Models\EggUpdate;
-use Simplify\EggUpdates\Services\DebugLog;
 use Simplify\EggUpdates\Services\EggTester;
 use Simplify\EggUpdates\Services\EggUpdater;
 use Simplify\EggUpdates\Services\Result;
@@ -216,15 +215,6 @@ final class EggUpdates extends Page implements HasTable
                 ->modalHeading(fn () => __('simplify-eggupdates::egg-updates.actions.update_all_heading', ['count' => self::available()->count()]))
                 ->modalDescription(__('simplify-eggupdates::egg-updates.actions.update_all_description'))
                 ->action(fn () => $this->updateAll()),
-            // Only in 1.1.5, to help testing.
-            Action::make('copy_log')
-                ->label(__('simplify-eggupdates::egg-updates.debug.title'))
-                ->icon('tabler-clipboard-text')
-                ->color('gray')
-                ->modalHeading(__('simplify-eggupdates::egg-updates.debug.heading'))
-                ->modalDescription(__('simplify-eggupdates::egg-updates.debug.description'))
-                ->modalContent(fn () => view('simplify-eggupdates::debug-log', ['log' => DebugLog::report()]))
-                ->modalSubmitAction(false),
             Action::make('settings')
                 ->label(__('simplify-eggupdates::egg-updates.settings.title'))
                 ->icon('tabler-settings')
@@ -333,7 +323,6 @@ final class EggUpdates extends Page implements HasTable
 
     private static function send(Result $result): void
     {
-        DebugLog::add(($result->ok ? '' : 'failed: ').$result->message);
         Notification::make()->title($result->message)->status($result->ok ? 'success' : 'danger')->send();
     }
 }

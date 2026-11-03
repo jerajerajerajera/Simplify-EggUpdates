@@ -114,11 +114,4 @@ return [
         'https' => 'Atnaujinimo URL turi prasidėti https://',
         'not_an_egg' => 'Atnaujinimo URL negrąžina egg',
     ],
-    'debug' => [
-        'title' => 'Kopijuoti žurnalą',
-        'heading' => 'Žurnalas pagalbai',
-        'description' => 'Nukopijuokite ir įklijuokite ten, kur buvo prašyta. Adresai, el. paštai, prieigos raktai ir slaptažodžiai praleidžiami.',
-        'copy' => 'Kopijuoti',
-        'copied' => 'Nukopijuota',
-    ],
 ];

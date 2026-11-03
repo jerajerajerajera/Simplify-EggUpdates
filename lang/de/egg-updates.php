@@ -114,11 +114,4 @@ return [
         'https' => 'Die Update-URL muss mit https:// beginnen',
         'not_an_egg' => 'Die Update-URL liefert kein Egg',
     ],
-    'debug' => [
-        'title' => 'Log kopieren',
-        'heading' => 'Log für den Support',
-        'description' => 'Kopiere dies und füge es dort ein, wo du darum gebeten wurdest. Adressen, E-Mail-Adressen, Tokens und Passwörter werden weggelassen.',
-        'copy' => 'Kopieren',
-        'copied' => 'Kopiert',
-    ],
 ];

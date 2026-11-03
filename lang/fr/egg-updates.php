@@ -114,11 +114,4 @@ return [
         'https' => 'L\'URL de mise à jour doit commencer par https://',
         'not_an_egg' => 'L\'URL de mise à jour ne renvoie pas un egg',
     ],
-    'debug' => [
-        'title' => 'Copier le journal',
-        'heading' => 'Journal pour le support',
-        'description' => 'Copiez ceci et collez-le là où on vous l\'a demandé. Les adresses, adresses e-mail, jetons et mots de passe sont omis.',
-        'copy' => 'Copier',
-        'copied' => 'Copié',
-    ],
 ];

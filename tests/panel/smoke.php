@@ -36,7 +36,6 @@ use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
 use Simplify\EggUpdates\Models\EggBackup;
 use Simplify\EggUpdates\Models\EggTest;
 use Simplify\EggUpdates\Models\EggUpdate;
-use Simplify\EggUpdates\Services\DebugLog;
 use Simplify\EggUpdates\Services\Definition;
 use Simplify\EggUpdates\Services\EggTester;
 use Simplify\EggUpdates\Services\EggUpdater;
@@ -398,19 +397,11 @@ step('a failing test keeps the egg, says why and cleans up', function () use ($a
     must($leftovers() === 0, 'left behind after the failed test: '.$leftovers());
     must(count(bell($admin)) > $before, 'no notification about the failed test');
 });
-step('Copy log shows the failed test and its last lines, without addresses, e-mail or tokens', function () use ($admin) {
-    Livewire::actingAs($admin)->test(EggUpdates::class)
-        ->assertActionVisible('copy_log')
-        ->mountAction('copy_log')
-        ->assertHasNoErrors();
-    $log = DebugLog::report();
-    must(str_contains($log, 'Smoke Tested') && str_contains($log, 'Install failed'), 'the failed test or its last lines are missing: '.str_replace("\n", ' / ', $log));
-    // The modal itself is rendered outside this test component, so render its view with the same text.
-    $html = view('simplify-eggupdates::debug-log', ['log' => $log])->render();
-    must(str_contains($html, 'Install failed'), 'the modal does not show the log');
-    foreach (['10.20.30.40', 'smoke@example.com', 's3cr3t-smoke'] as $secret) {
-        must(! str_contains($html, $secret), 'the log shows '.$secret);
-    }
+step('Copy log is gone again after 1.1.5 (B7)', function () use ($admin) {
+    $html = Livewire::actingAs($admin)->test(EggUpdates::class)->assertHasNoErrors()->html();
+    must(str_contains($html, 'Check now') && ! str_contains($html, 'Copy log'), 'the Copy log button is still in the title bar');
+    must(! view()->exists('simplify-eggupdates::debug-log'), 'the Copy log view is still there');
+    must(! class_exists('Simplify\EggUpdates\Services\DebugLog'), 'the DebugLog class is still there');
 });
 // Test first on every public egg (pelican-eggs, cloned by CI into PUBLIC_EGGS): each one as the installed egg, used
 // by a server without any own values, and a new version at its update URL. Test first must make the test server,

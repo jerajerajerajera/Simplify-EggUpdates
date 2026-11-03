@@ -114,11 +114,4 @@ return [
         'https' => '更新 URL 必须以 https:// 开头',
         'not_an_egg' => '更新 URL 返回的不是 egg',
     ],
-    'debug' => [
-        'title' => '复制日志',
-        'heading' => '支持日志',
-        'description' => '复制此内容并粘贴到要求的位置。地址、电子邮件、令牌和密码已省略。',
-        'copy' => '复制',
-        'copied' => '已复制',
-    ],
 ];

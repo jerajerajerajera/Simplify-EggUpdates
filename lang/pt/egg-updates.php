@@ -114,11 +114,4 @@ return [
         'https' => 'O URL de atualização tem de começar por https://',
         'not_an_egg' => 'O URL de atualização não devolve um egg',
     ],
-    'debug' => [
-        'title' => 'Copiar registo',
-        'heading' => 'Registo para suporte',
-        'description' => 'Copie isto e cole onde lhe foi pedido. Endereços, e-mails, tokens e palavras-passe são omitidos.',
-        'copy' => 'Copiar',
-        'copied' => 'Copiado',
-    ],
 ];

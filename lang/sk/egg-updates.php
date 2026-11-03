@@ -114,11 +114,4 @@ return [
         'https' => 'URL na aktualizácie musí začínať https://',
         'not_an_egg' => 'URL na aktualizácie nevracia egg',
     ],
-    'debug' => [
-        'title' => 'Kopírovať log',
-        'heading' => 'Log pre podporu',
-        'description' => 'Skopírujte to a vložte tam, kde vás o to požiadali. Adresy, e-maily, tokeny a heslá sú vynechané.',
-        'copy' => 'Kopírovať',
-        'copied' => 'Skopírované',
-    ],
 ];

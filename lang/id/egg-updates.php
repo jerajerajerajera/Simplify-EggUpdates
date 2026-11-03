@@ -114,11 +114,4 @@ return [
         'https' => 'URL pembaruan harus diawali https://',
         'not_an_egg' => 'URL pembaruan tidak mengembalikan egg',
     ],
-    'debug' => [
-        'title' => 'Salin log',
-        'heading' => 'Log untuk dukungan',
-        'description' => 'Salin ini dan tempel di tempat yang diminta. Alamat, email, token, dan kata sandi dihilangkan.',
-        'copy' => 'Salin',
-        'copied' => 'Disalin',
-    ],
 ];
