@@ -305,8 +305,10 @@ Pelican-formulier. Zonder Server Maker opent Pelicans formulier in die popup.
 *Vervangt:* R24.
 
 #### P-20 Uitklapgroepen
-Groepen in het admin-menu ("Simplify", "Other plugins") klappen uit; een losse pagina draagt de pluginnaam.
-*Bewaakt door:* audit `other-plugins`, `other-plugins-toggle`.
+Groepen in het admin-menu klappen uit en blijven per browser open of dicht. Bovenaan staan Health, Servers, Nodes,
+People & roles, Integrations, Simplify settings en Pelican settings; apart daaronder "Simplify add-ons" en daarna
+"Pelican plugins" (heette "Other plugins"). Een losse pagina draagt de pluginnaam.
+*Bewaakt door:* audit `other-plugins`, `other-plugins-toggle`, `admin-menu-order`; `tests/admin-tree.php`.
 *Vervangt:* R25.
 
 #### P-21 Meldingen in het bel-blad
