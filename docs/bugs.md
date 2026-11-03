@@ -11,6 +11,7 @@
 | B15 | 1.1.3, 1.1.4 | Test first faalt op het echte paneel: "geen node met ruimte" bij volle allocatie (1.1.3); eggs die de EULA vragen of een verplichte variabele zonder default hebben (1.1.4) | Testserver nabootsing week af van het echte paneel en de echte Paper-egg | 1.1.3, 1.1.4 | `tests/panel/smoke.php` (volle nodes zonder overallocatie, EULA alleen op de testserver, verplichte variabelen zonder default) | 1× | P-31 |
 | B4 | 2-11 | Move servers liet servers zonder waarde voor een veld dat de update verplicht maakte | Nieuw verplicht veld zonder default werd niet ingevuld | 1.1.5 (V24) | `tests/panel/smoke.php` "Move servers asks for a field the update made required…" (rood 8c3cc7a, groen 61f8b26) | 0× | P-28 |
 | B6 | 2-11 | Een egg met een kapotte update-link bleef stil | Geen status voor een link die niet meer werkt | 1.1.5 (V24) | `tests/panel/smoke.php` "an egg whose update link stopped working…" (rood 8c3cc7a, groen 61f8b26) | 0× | P-32 |
+| EU-B1 | 3-11 | Alleen Egg Updates had "View" en een tandwiel in Pelicans Plugins-lijst | De plugin-klasse implementeerde Pelicans `HasPluginSettings`; instellingen horen alleen op de Egg updates-pagina in Simplify | 2.0.0-beta.4 | `tests/egg-updates.php` "no Pelican settings gear" (rood f7c46ef, groen in deze PR) en smoke-stap "No settings gear on Pelican's Plugins page" | 0× | P-1 |
 | B7 | 2-11 | Tijdelijke "Copy log"-knop (V31) moet weer weg | Tijdelijke hulp voor support | weg vóór 2.0.0-beta.1 | `tests/panel/smoke.php` "Copy log is gone again after 1.1.5 (B7)" | 0× | V31 |
 
 ## Patronen

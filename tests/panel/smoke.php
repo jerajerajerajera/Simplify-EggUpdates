@@ -7,6 +7,7 @@
 // Run from the panel folder after `php artisan p:plugin:install simplify-eggupdates`:
 // php plugins/simplify-eggupdates/tests/panel/smoke.php
 
+use App\Contracts\Plugins\HasPluginSettings;
 use App\Enums\EggFormat;
 use App\Enums\ServerState;
 use App\Models\Allocation;
@@ -45,6 +46,7 @@ use Simplify\EggUpdates\Services\ServerMover;
 use Simplify\EggUpdates\Services\Settings;
 use Simplify\EggUpdates\Services\TestEnvironment;
 use Simplify\EggUpdates\Services\UpdateChecker;
+use Simplify\EggUpdates\SimplifyEggUpdatesPlugin;
 use Symfony\Component\Yaml\Yaml;
 
 define('LARAVEL_START', microtime(true));
@@ -396,6 +398,9 @@ step('a failing test keeps the egg, says why and cleans up', function () use ($a
     must($state->found_hash !== null, 'the update is no longer listed');
     must($leftovers() === 0, 'left behind after the failed test: '.$leftovers());
     must(count(bell($admin)) > $before, 'no notification about the failed test');
+});
+step('No settings gear on Pelican\'s Plugins page: settings live on the Egg updates page (EU-B1)', function () {
+    must(! is_subclass_of(SimplifyEggUpdatesPlugin::class, HasPluginSettings::class), 'the plugin still implements HasPluginSettings');
 });
 step('Copy log is gone again after 1.1.5 (B7)', function () use ($admin) {
     $html = Livewire::actingAs($admin)->test(EggUpdates::class)->assertHasNoErrors()->html();
