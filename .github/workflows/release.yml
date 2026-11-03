@@ -20,5 +20,7 @@ jobs:
           case "$version" in *-dev*) echo "Version $version is still in development."; exit 0;; esac
           if gh release view "v$version" >/dev/null 2>&1; then echo "Release v$version already exists."; exit 0; fi
           zip=$(python3 scripts/build-package.py)
+          # A version with a dash (2.0.0-beta.1) is a prerelease: never marked as the latest release.
+          case "$version" in *-*) kind=--prerelease;; *) kind=--latest;; esac
           awk -v head="## $version" 'index($0, head) == 1 {on = 1; next} on && /^## / {exit} on' CHANGELOG.md > notes.md
-          gh release create "v$version" "$zip" --target "$GITHUB_SHA" --title "Simplify Egg Updates $version" --notes-file notes.md --latest
+          gh release create "v$version" "$zip" --target "$GITHUB_SHA" --title "Simplify Egg Updates $version" --notes-file notes.md "$kind"

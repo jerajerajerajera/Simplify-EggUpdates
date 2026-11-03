@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## 2.0.0-beta.1
 
+- First version on the Hub (beta).
 - The temporary Copy log from 1.1.5 is removed again.
 - Checks: a change to docs or Markdown only skips the panel smoke; tests and pint still run.
 - The repository download (the Hub's zip) holds only the plugin: docs, tests, scripts and .github are left out.
