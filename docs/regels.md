@@ -203,9 +203,9 @@ ziet, meldt die aan de regisseur en bouwt hem niet zonder ja van de eigenaar. Do
 
 #### P-1 Eén product, add-ons binnen Simplify
 *Principe:* 5. Simplify is één product; de splitsing in plugins is alleen verpakking. Add-ons werken los, maar met de
-kern geïnstalleerd openen ze altijd binnen Simplify (frame, servermenu, hostmodus, Simplify-popup, accountmenu), nooit
+kern geïnstalleerd openen ze altijd binnen Simplify (servermenu, Admin-pagina, Simplify-popup, accountmenu), nooit
 als losse Pelican-pagina. Altijd het Simplify-design. Testen met én zonder kern.
-*Bewaakt door:* panel-smoke per add-on (met en zonder kern); audit `account-page`, `other-plugins`.
+*Bewaakt door:* panel-smoke per add-on (met en zonder kern); audit `account-page`, `other-plugins`, `admin-page`.
 *Vervangt:* R1, R2, R3.
 
 #### P-2 Namen en id's
@@ -335,7 +335,7 @@ Seizoensversiering nooit in CHANGELOG, releasenotes, README of Hub-teksten, en v
 *Vervangt:* R27.
 
 #### P-24 Screenshots en Hub-teksten
-Nooit Pelicans gewone beheerschermen (legacy) in screenshots, bundel of Hub; add-ons in hostmodus. Elke
+Nooit Pelicans gewone beheerschermen (legacy) in screenshots, bundel of Hub; add-ons op de Admin-pagina. Elke
 add-on-banner "Works best with Simplify". Eerste Hub-changelog "First version on the Hub". README en Hub-teksten
 beschrijven alleen wat in een uitgebrachte versie zit.
 *Vervangt:* R28, R29.

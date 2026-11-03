@@ -52,6 +52,7 @@
 | V55 | 2-11 | Ja: één bottom nav op de telefoon met Servers · New · Admin · Sections; Customize naar de chiprij, Delete alleen in ⋯ | kern, P-22 |
 | V56 | 2-11 | Ja: de serversecties worden één tab met een blad | kern, P-22 |
 | V57 | 2-11 | Nergens autosave. Na een wijziging verschijnt "Changes made" met een Save-knop; wie de pagina verlaat met niet-opgeslagen wijzigingen kiest Save of Discard. Vervangt V54 en de autosave in V51; "Toolkit MC-instellingen zonder Discard" (30-10) vervalt | kern, alle add-ons, P-38 |
+| V58 | 2-11 | Ja: het gecombineerde V52-proefscherm wordt gebouwd: Admin-pagina, Settings met Changes made/Save/Discard (V57), één bottom nav (V55), de Filter-dropdown; de host-mode-schakelaar vervalt | kern, Hosting, P-38 |
 
 ## Zonder nummer (uit projectnotities, 27-10 t/m 2-11)
 
