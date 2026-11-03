@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Pelican's Plugins page no longer shows a settings gear for Egg Updates; its settings are on the Egg updates page.
+
 ## 2.0.0-beta.1
 
 - First version on the Hub (beta).

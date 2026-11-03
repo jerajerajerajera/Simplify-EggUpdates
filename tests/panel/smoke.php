@@ -397,6 +397,9 @@ step('a failing test keeps the egg, says why and cleans up', function () use ($a
     must($leftovers() === 0, 'left behind after the failed test: '.$leftovers());
     must(count(bell($admin)) > $before, 'no notification about the failed test');
 });
+step('No settings gear on Pelican\'s Plugins page: settings live on the Egg updates page (EU-B1)', function () {
+    must(! is_subclass_of(Simplify\EggUpdates\SimplifyEggUpdatesPlugin::class, App\Contracts\Plugins\HasPluginSettings::class), 'the plugin still implements HasPluginSettings');
+});
 step('Copy log is gone again after 1.1.5 (B7)', function () use ($admin) {
     $html = Livewire::actingAs($admin)->test(EggUpdates::class)->assertHasNoErrors()->html();
     must(str_contains($html, 'Check now') && ! str_contains($html, 'Copy log'), 'the Copy log button is still in the title bar');

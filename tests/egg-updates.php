@@ -76,9 +76,13 @@ namespace {
 
     $check(Definition::reason(new RuntimeException("  <b>Not found</b>\n  at the URL.  ")) === 'Not found at the URL', 'a reason is one plain line');
 
+    // Settings live on the Egg updates page in Simplify, never behind a gear on Pelican's Plugins page.
+    $plugin = file_get_contents(__DIR__.'/../src/SimplifyEggUpdatesPlugin.php');
+    $check(! str_contains($plugin, 'HasPluginSettings'), "the plugin class has Pelican's own settings gear (HasPluginSettings)");
+
     if ($failures !== []) {
         echo "FAIL egg updates:\n  ".implode("\n  ", $failures)."\n";
         exit(1);
     }
-    echo "PASS egg updates: hash, format, names, modes, reasons, test ports and server moves\n";
+    echo "PASS egg updates: hash, format, names, modes, reasons, test ports, server moves and no Pelican settings gear\n";
 }
