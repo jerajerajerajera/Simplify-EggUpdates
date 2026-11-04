@@ -111,8 +111,13 @@ function eggsTable(User $user): Table
 {
     auth()->setUser($user);
     $page = new EggsList;
+    $table = $page->table(Table::make($page));
+    // A page made by hand is not one of Livewire's; this keeps the next Livewire::test from seeing it.
+    if (method_exists(app('livewire'), 'flushState')) {
+        app('livewire')->flushState();
+    }
 
-    return $page->table(Table::make($page));
+    return $table;
 }
 
 /** Runs one of Egg Updates' buttons in an egg's row of Pelican's Eggs table, as its confirmation does. */
@@ -204,7 +209,7 @@ step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' but
     $names = array_map(fn (string $snapshot) => json_decode(html_entity_decode($snapshot), true)['memo']['name'] ?? '', $snapshots[1]);
     $name = collect($names)->first(fn (string $name) => str_contains($name, 'eggs-list') || str_contains($name, 'list-eggs'));
     must($name !== null, 'no snapshot of the Eggs page: '.implode(', ', $names));
-    must(app('livewire')->new($name) instanceof EggsList, 'a click on the Eggs page would reach Pelican\'s own page: '.$name);
+    must($name === 'simplify-eggupdates.eggs-list', 'a click on the Eggs page would reach Pelican\'s own page: '.$name);
     $names = collect(eggsTable($admin)->getRecordActions())->map(fn ($action) => $action->getName());
     must($names->contains('egg_updates_update') && $names->contains('egg_updates_test') && $names->contains('egg_updates_put_back'), 'Egg Updates\' buttons are not in the row: '.$names->implode(', '));
     must(collect(eggsTable($admin)->getRecordActions())->filter(fn ($action) => EggsTable::isPelicansUpdate($action))->isEmpty(), 'Pelican\'s own Update button is still in the row');
