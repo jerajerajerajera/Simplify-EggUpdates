@@ -29,7 +29,7 @@ final class SimplifyEggUpdatesPlugin implements Plugin
         }
         // The settings page, without a menu item.
         $panel->pages([EggUpdates::class]);
-        // The updates live on Pelican's own Eggs page: in its table (EggsTableListener, EggsTable), and Check now and
+        // The updates live on Pelican's own Eggs page: in its table (EggsList, EggsTable), and Check now and
         // Update all in its title bar. The Updates block above the list only shows when the table could not get them.
         ListEggs::registerCustomHeaderWidgets(HeaderWidgetPosition::Before, EggUpdatesWidget::class);
         ListEggs::registerCustomHeaderActions(HeaderActionPosition::Before, ...UpdatesTable::headerActions());
