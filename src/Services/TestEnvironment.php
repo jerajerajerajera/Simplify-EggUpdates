@@ -58,6 +58,30 @@ final class TestEnvironment
         return $default === '' ? [...$used, $default] : [$default, ...$used];
     }
 
+    /**
+     * The image the egg's servers use most that the new version still offers, else its first (Pelican's default).
+     * CurseForge, for one, lists Java 8 first: a modern modpack would stop at once on it.
+     *
+     * @param  array<string, string>  $images
+     * @param  list<string>  $used  most used first
+     */
+    public static function image(array $images, array $used): ?string
+    {
+        foreach ($used as $image) {
+            if (in_array($image, $images, true)) {
+                return $image;
+            }
+        }
+
+        return array_values($images)[0] ?? null;
+    }
+
+    /** @return list<string> the images the egg's servers use, most used first */
+    public static function usedImages(Egg $egg): array
+    {
+        return $egg->servers()->pluck('image')->filter()->countBy()->sortDesc()->keys()->map(fn ($image) => (string) $image)->all();
+    }
+
     /** Whether Pelican will accept the value; a rule that cannot be checked (a broken pattern) counts as a no. */
     public static function valid(string $value, array $rules): bool
     {

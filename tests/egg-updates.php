@@ -83,6 +83,12 @@ namespace {
     $check(TestEnvironment::order('latest', ['1.20']) === ['latest', '1.20'], 'a filled default stays first');
     $check(TestEnvironment::order('', []) === [''], 'without servers the empty default stays');
 
+    // EU-B3: the test server runs on the image the egg's servers use (CurseForge lists Java 8 first), if the new version still has it.
+    $images = ['Java 8' => 'yolks:java_8', 'Java 21' => 'yolks:java_21'];
+    $check(TestEnvironment::image($images, ['yolks:java_21', 'yolks:java_8']) === 'yolks:java_21', 'the test server does not use the image the servers use');
+    $check(TestEnvironment::image($images, ['yolks:java_16']) === 'yolks:java_8', 'an image the new version dropped is not replaced by its default');
+    $check(TestEnvironment::image($images, []) === 'yolks:java_8', 'without servers the default image is not used');
+
     // Settings live on the Egg updates page in Simplify, never behind a gear on Pelican's Plugins page.
     $plugin = file_get_contents(__DIR__.'/../src/SimplifyEggUpdatesPlugin.php');
     $check(! str_contains($plugin, 'HasPluginSettings'), "the plugin class has Pelican's own settings gear (HasPluginSettings)");
