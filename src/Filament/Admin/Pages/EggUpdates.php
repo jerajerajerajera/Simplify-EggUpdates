@@ -16,6 +16,8 @@ use Simplify\EggUpdates\Services\Settings;
  * The settings of Egg Updates. The updates themselves are a block on Pelican's Eggs page, so this page has no menu
  * item: Simplify opens it under Simplify settings › Add-ons, and without Simplify the gear on the Eggs page does.
  * It keeps the address egg-updates, so a link in an older notification still lands in Egg Updates.
+ *
+ * @property-read Schema $form the settings form, which Filament makes from form()
  */
 final class EggUpdates extends Page
 {
