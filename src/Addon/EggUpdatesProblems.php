@@ -39,7 +39,7 @@ final class EggUpdatesProblems
             'title' => __('simplify-eggupdates::egg-updates.tests.problem_title', ['egg' => $egg->name]),
             'context' => 'Egg Updates tested a new version of the Pelican egg "'.$egg->name.'" on a temporary server, and the test failed: '
                 .$state->test_reason.' The lines are the end of that server\'s install log or console, read before the server was removed.',
-            'lines' => array_values(array_map('strval', $state->test_log ?? [])),
+            'lines' => array_map('strval', $state->test_log ?? []),
         ];
     }
 

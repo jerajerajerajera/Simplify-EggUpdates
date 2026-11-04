@@ -47,8 +47,12 @@ final class EggUpdatesAddon extends Addon
             : EggUpdates::getUrl(panel: 'admin');
     }
 
-    /** The settings, shown in Egg Updates' section of Simplify settings › Add-ons (API 8). */
-    public function settingsForm(): ?string
+    /**
+     * The settings, shown in Egg Updates' section of Simplify settings › Add-ons (API 8).
+     *
+     * @return class-string<EggUpdatesSettings>
+     */
+    public function settingsForm(): string
     {
         return EggUpdatesSettings::class;
     }

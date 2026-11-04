@@ -55,7 +55,11 @@ jobs:
             php: '8.3'
           - pelican: '1.0.0-rc.2'
             php: '8.4'
-    name: panel-smoke (Pelican ${{ matrix.pelican }})
+          # With the real Simplify core (main), not a stub: the add-on opens inside Simplify (P-1).
+          - pelican: '1.0.0-rc.2'
+            php: '8.4'
+            simplify: 'main'
+    name: panel-smoke (Pelican ${{ matrix.pelican }}${{ matrix.simplify && format(', Simplify {0}', matrix.simplify) || '' }})
     steps:
       - uses: actions/checkout@v4
         with:
@@ -84,6 +88,14 @@ jobs:
           yarn install --silent
       # Until 1.1.0 the plugin id was simplify-egg-updates: install that version first, so the job proves the new id
       # takes over its settings and removes the old folder.
+      - name: Install Simplify ${{ matrix.simplify }}
+        if: matrix.simplify
+        run: |
+          git clone --quiet --depth 1 --branch "${{ matrix.simplify }}" https://github.com/jerajerajerajera/simplify.git panel/plugins/simplify
+          rm -rf panel/plugins/simplify/.git
+          cd panel
+          php artisan p:plugin:install simplify
+          php artisan p:plugin:list | grep -E '\| Simplify .*\| enabled' || { echo 'Simplify did not install'; exit 1; }
       - name: Install the old simplify-egg-updates 1.0.3
         run: |
           git clone --quiet --depth 1 --branch v1.0.3 "https://github.com/${{ github.repository }}.git" panel/plugins/simplify-egg-updates
@@ -129,6 +141,20 @@ jobs:
         run: |
           php plugins/simplify-eggupdates/tests/panel/smoke.php | tee smoke.txt
           grep -q '^All steps passed$' smoke.txt
+      - name: PHPStan (level 5, in the panel)
+        if: matrix.simplify == 'main' # the add-on's classes extend the core's
+        working-directory: panel
+        # After the smoke: installing larastan brings PHPUnit into the panel, which changes how Livewire's test helpers behave.
+        run: |
+          composer require --dev larastan/larastan --no-interaction --no-progress --quiet
+          # Without a baseline yet: the first run writes one and prints it, to commit as the starting point (every
+          # finding in it is on the clean-up list; new code must be clean).
+          if [ -f plugins/simplify-eggupdates/phpstan-baseline.neon ]; then
+            vendor/bin/phpstan analyse --configuration plugins/simplify-eggupdates/phpstan.neon --memory-limit 1G --no-progress --error-format=github
+          else
+            vendor/bin/phpstan analyse --configuration plugins/simplify-eggupdates/phpstan.neon --memory-limit 1G --no-progress --generate-baseline=plugins/simplify-eggupdates/phpstan-baseline.neon --allow-empty-baseline
+            echo '::group::phpstan-baseline.neon'; cat plugins/simplify-eggupdates/phpstan-baseline.neon; echo '::endgroup::'
+          fi
       - name: Laravel log
         if: failure()
         run: grep -h -E '^\[[0-9-]+ [0-9:]+\]' panel/storage/logs/*.log | cut -c1-600 | tail -n 12 || true
