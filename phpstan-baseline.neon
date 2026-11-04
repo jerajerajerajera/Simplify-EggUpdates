@@ -1,0 +1,73 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method Simplify\\EggUpdates\\Filament\\Admin\\Pages\\EggUpdates\:\:getNavigationGroup\(\) never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: src/Filament/Admin/Pages/EggUpdates.php
+
+		-
+			message: '#^Method Simplify\\EggUpdates\\Filament\\Admin\\Pages\\EggUpdates\:\:getSubheading\(\) never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: src/Filament/Admin/Pages/EggUpdates.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>link_failures" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Filament/Admin/Pages/EggUpdates.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:contains\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|Illuminate\\Database\\Eloquent\\Model\|int\|string, Closure\(App\\Models\\Server\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Services/EggTester.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between ''installing''\|''restoring_backup''\|''suspended''\|App\\Enums\\ServerState and '''' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Services/EggTester.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>inherit_features" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Services/EggTester.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Services/EggTester.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$env_variable\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Services/ServerMover.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/ServerMover.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$rules\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Services/ServerMover.php
+
+		-
+			message: '#^Method Simplify\\EggUpdates\\Services\\ServerMover\:\:fields\(\) should return array\<string, array\{variable\: App\\Models\\EggVariable, servers\: list\<int\>\}\> but returns array\<array\{variable\: Illuminate\\Database\\Eloquent\\Model, servers\: non\-empty\-array\<mixed\>\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Services/ServerMover.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:mapWithKeys\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\<string, string\>, Closure\(App\\Models\\EggVariable\)\: non\-empty\-array\<string, string\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Services/TestEnvironment.php

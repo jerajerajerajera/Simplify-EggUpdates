@@ -2,6 +2,8 @@
 # holds Laravel, Filament and Pelican's own classes. Level 5: wrong types, unknown methods and properties, dead code.
 includes:
     - ../../vendor/larastan/larastan/extension.neon
+    # The findings at the start (the clean-up list): new code must be clean; the file only ever gets shorter.
+    - phpstan-baseline.neon
 parameters:
     level: 5
     paths:
