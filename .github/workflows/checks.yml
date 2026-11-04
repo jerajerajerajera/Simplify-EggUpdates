@@ -134,9 +134,17 @@ jobs:
           software adc324f7f23fad7a57644fd4595411501fda0f39
           voice b25c93abbacbfc8162a4035d2944995d47288444
           EOF
+      - name: Open the pages
+        working-directory: panel
+        env:
+          PUBLIC_EGGS: ${{ github.workspace }}/public-eggs
+        run: |
+          php plugins/simplify-eggupdates/tests/panel/smoke.php | tee smoke.txt
+          grep -q '^All steps passed$' smoke.txt
       - name: PHPStan (level 5, in the panel)
         if: matrix.simplify == 'main' # the add-on's classes extend the core's
         working-directory: panel
+        # After the smoke: installing larastan brings PHPUnit into the panel, which changes how Livewire's test helpers behave.
         run: |
           composer require --dev larastan/larastan --no-interaction --no-progress --quiet
           # Without a baseline yet: the first run writes one and prints it, to commit as the starting point (every
@@ -147,13 +155,6 @@ jobs:
             vendor/bin/phpstan analyse --configuration plugins/simplify-eggupdates/phpstan.neon --memory-limit 1G --no-progress --generate-baseline=plugins/simplify-eggupdates/phpstan-baseline.neon --allow-empty-baseline
             echo '::group::phpstan-baseline.neon'; cat plugins/simplify-eggupdates/phpstan-baseline.neon; echo '::endgroup::'
           fi
-      - name: Open the pages
-        working-directory: panel
-        env:
-          PUBLIC_EGGS: ${{ github.workspace }}/public-eggs
-        run: |
-          php plugins/simplify-eggupdates/tests/panel/smoke.php | tee smoke.txt
-          grep -q '^All steps passed$' smoke.txt
       - name: Laravel log
         if: failure()
         run: grep -h -E '^\[[0-9-]+ [0-9:]+\]' panel/storage/logs/*.log | cut -c1-600 | tail -n 12 || true
