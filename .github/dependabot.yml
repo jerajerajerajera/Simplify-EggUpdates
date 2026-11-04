@@ -1,0 +1,11 @@
+# Keeps the GitHub Actions in the workflows up to date: one grouped pull request a week. The plugin itself has no
+# composer.json or package.json; it runs on Pelican's own vendor folder.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      ci-actions:
+        patterns: ['*']
