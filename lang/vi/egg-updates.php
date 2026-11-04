@@ -24,10 +24,12 @@ return [
         'mode' => 'Cập nhật',
         'mode_help' => 'Mỗi egg được kiểm tra sáu giờ một lần. Egg mà server đang dùng chỉ do bạn cập nhật, hoặc được cập nhật sau khi một server thử cài đặt và khởi động được với phiên bản mới. Phiên bản trước luôn được giữ lại.',
         'saved' => 'Đã lưu cài đặt',
+        'save' => 'Lưu',
     ],
     'page' => [
         'checked' => 'Đã kiểm tra :time',
         'not_checked' => 'Chưa kiểm tra',
+        'eggs' => 'Egg',
         'egg' => 'Egg',
         'servers' => 'Server',
         'server_count' => '{0} Không có server|{1} 1 server|[2,*] :count server',

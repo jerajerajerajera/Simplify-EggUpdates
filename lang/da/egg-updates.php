@@ -24,10 +24,12 @@ return [
         'mode' => 'Opdateringer',
         'mode_help' => 'Hvert egg tjekkes for en ny version hver sjette time. Eggs, som servere bruger, opdateres kun af dig, eller når en testserver har installeret og startet med den nye version. Den forrige version gemmes altid.',
         'saved' => 'Indstillinger gemt',
+        'save' => 'Gem',
     ],
     'page' => [
         'checked' => 'Tjekket :time',
         'not_checked' => 'Ikke tjekket endnu',
+        'eggs' => 'Eggs',
         'egg' => 'Egg',
         'servers' => 'Servere',
         'server_count' => '{0} Ingen servere|{1} 1 server|[2,*] :count servere',

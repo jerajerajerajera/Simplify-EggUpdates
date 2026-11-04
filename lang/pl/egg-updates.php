@@ -24,10 +24,12 @@ return [
         'mode' => 'Aktualizacje',
         'mode_help' => 'Każdy egg jest sprawdzany co sześć godzin. Eggi używane przez serwery aktualizujesz tylko ty albo są aktualizowane po tym, jak serwer testowy zainstaluje się i uruchomi z nową wersją. Poprzednia wersja jest zawsze zachowywana.',
         'saved' => 'Ustawienia zapisane',
+        'save' => 'Zapisz',
     ],
     'page' => [
         'checked' => 'Sprawdzono :time',
         'not_checked' => 'Jeszcze nie sprawdzono',
+        'eggs' => 'Eggi',
         'egg' => 'Egg',
         'servers' => 'Serwery',
         'server_count' => '{0} Brak serwerów|{1} 1 serwer|[2,4] :count serwery|[5,*] :count serwerów',
