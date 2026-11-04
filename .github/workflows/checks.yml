@@ -183,14 +183,8 @@ jobs:
         # After the smoke: installing larastan brings PHPUnit into the panel, which changes how Livewire's test helpers behave.
         run: |
           composer require --dev larastan/larastan --no-interaction --no-progress --quiet
-          # Without a baseline yet: the first run writes one and prints it, to commit as the starting point (every
-          # finding in it is on the clean-up list; new code must be clean).
-          if [ -f plugins/simplify-eggupdates/phpstan-baseline.neon ]; then
-            vendor/bin/phpstan analyse --configuration plugins/simplify-eggupdates/phpstan.neon --memory-limit 1G --no-progress --error-format=github
-          else
-            vendor/bin/phpstan analyse --configuration plugins/simplify-eggupdates/phpstan.neon --memory-limit 1G --no-progress --generate-baseline=plugins/simplify-eggupdates/phpstan-baseline.neon --allow-empty-baseline
-            echo '::group::phpstan-baseline.neon'; cat plugins/simplify-eggupdates/phpstan-baseline.neon; echo '::endgroup::'
-          fi
+          # No baseline: every finding fails the check (the baseline of 4-11 was worked down to zero).
+          vendor/bin/phpstan analyse --configuration plugins/simplify-eggupdates/phpstan.neon --memory-limit 1G --no-progress --error-format=github
       # Someone who goes back (or a folder put back from a backup) keeps a working panel on the newer tables.
       - name: Put the previous release back
         run: |

@@ -15,6 +15,7 @@ use App\Repositories\Daemon\DaemonServerRepository;
 use App\Services\Eggs\Sharing\EggImporterService;
 use App\Services\Servers\ServerCreationService;
 use App\Services\Servers\ServerDeletionService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Simplify\EggUpdates\Models\EggTest;
@@ -191,6 +192,7 @@ final class EggTester
      */
     private static function size(Egg $egg): array
     {
+        /** @var Collection<int, Server> $servers */
         $servers = $egg->servers()->get(['memory', 'disk', 'cpu']);
         $largest = fn (string $field, int $least) => $servers->contains(fn (Server $server) => (int) $server->{$field} === 0) && $servers->isNotEmpty()
             ? 0
@@ -232,13 +234,14 @@ final class EggTester
         if ($server === null) {
             return self::finish($test, false, __('simplify-eggupdates::egg-updates.tests.deleted'));
         }
-        $status = $server->status?->value ?? $server->status;
+        // Null once installed; otherwise a ServerState such as installing or install_failed.
+        $status = $server->status?->value;
         $age = $test->stage_at?->diffInSeconds(now()) ?? 0;
         if ($test->stage === EggTest::INSTALLING) {
             if (in_array($status, ['install_failed', 'reinstall_failed'], true)) {
                 return self::finish($test, false, __('simplify-eggupdates::egg-updates.tests.not_installed'), $server);
             }
-            if ($status === null || $status === '') {
+            if ($status === null) {
                 self::acceptEula($server);
                 app(DaemonServerRepository::class)->setServer($server)->power('start')->throw();
                 $test->fill(['stage' => EggTest::STARTING, 'stage_at' => now()])->save();
@@ -265,7 +268,7 @@ final class EggTester
      */
     private static function acceptEula(Server $server): void
     {
-        if (in_array('eula', $server->egg?->inherit_features ?? [], true)) {
+        if (in_array('eula', $server->egg->inherit_features ?? [], true)) {
             app(DaemonFileRepository::class)->setServer($server)->putContent('eula.txt', "eula=true\n")->throw();
         }
     }

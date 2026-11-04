@@ -7,6 +7,7 @@ namespace Simplify\EggUpdates\Services;
 use App\Models\Egg;
 use App\Models\EggVariable;
 use App\Models\ServerVariable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -24,7 +25,10 @@ final class TestEnvironment
     {
         $used = self::usedValues($egg);
 
-        return $copy->variables()->get()
+        /** @var Collection<int, EggVariable> $variables */
+        $variables = $copy->variables()->get();
+
+        return $variables
             ->mapWithKeys(fn (EggVariable $variable) => [$variable->env_variable => self::value($variable, $used[$variable->env_variable] ?? [])])
             ->all();
     }

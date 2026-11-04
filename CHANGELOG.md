@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Checks: PHPStan runs without a baseline; the 13 findings of 4-11 are fixed (types only, no change in behaviour).
 - Uninstalling Egg Updates keeps its settings, the kept previous versions and the test results, so installing it
   again brings them back.
 - Checks: CI updates from 1.1.5 (Hub stable) and from the latest release with settings filled in, uninstalls and
