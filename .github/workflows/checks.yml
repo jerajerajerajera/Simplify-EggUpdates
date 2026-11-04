@@ -135,10 +135,18 @@ jobs:
           voice b25c93abbacbfc8162a4035d2944995d47288444
           EOF
       - name: PHPStan (level 5, in the panel)
+        if: matrix.simplify == 'main' # the add-on's classes extend the core's
         working-directory: panel
         run: |
           composer require --dev larastan/larastan --no-interaction --no-progress --quiet
-          vendor/bin/phpstan analyse --configuration plugins/simplify-eggupdates/phpstan.neon --memory-limit 1G --no-progress --error-format=github
+          # Without a baseline yet: the first run writes one and prints it, to commit as the starting point (every
+          # finding in it is on the clean-up list; new code must be clean).
+          if [ -f plugins/simplify-eggupdates/phpstan-baseline.neon ]; then
+            vendor/bin/phpstan analyse --configuration plugins/simplify-eggupdates/phpstan.neon --memory-limit 1G --no-progress --error-format=github
+          else
+            vendor/bin/phpstan analyse --configuration plugins/simplify-eggupdates/phpstan.neon --memory-limit 1G --no-progress --generate-baseline=plugins/simplify-eggupdates/phpstan-baseline.neon --allow-empty-baseline
+            echo '::group::phpstan-baseline.neon'; cat plugins/simplify-eggupdates/phpstan-baseline.neon; echo '::endgroup::'
+          fi
       - name: Open the pages
         working-directory: panel
         env:

@@ -11,3 +11,7 @@ parameters:
         - tests
     tmpDir: ../../storage/framework/cache/phpstan
     reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        # A guard for another version of the core or of Pelican (ADDONS.md: a newer add-on keeps working on an older
+        # core) is always true or false against the one version CI installs.
+        - '#(method|class|function|property)_exists\(\) with .* will always evaluate to (true|false)#'
