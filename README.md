@@ -7,8 +7,9 @@ safely. The previous version of an egg is always kept, so it can be put back.
 
 - Every six hours each egg with an update URL is compared with the version published there, the same way Pelican
   compares them. The result is kept until the egg is updated, so nothing is missed.
-- New versions show up in Pelican's notifications for root admins and in an **Updates** block at the top of Pelican's
-  own **Eggs** page, with **Check now** and **Update all** in its title bar. Egg Updates has no menu item of its own.
+- New versions show up in Pelican's notifications for root admins and in Pelican's own **Eggs** list: a status column
+  and the buttons of each egg in its row, with **Check now** and **Update all** in the title bar. One list, one search
+  field. Egg Updates has no menu item of its own.
 - Update one egg or all of them. Running servers keep running and get the new egg at their next start or reinstall.
 - Put back returns the egg to the version it had before the last update. Automatic updates then leave it alone.
 - **Test first**: before an egg that servers use is updated, a temporary test server is made with the new version on
@@ -18,8 +19,10 @@ safely. The previous version of an egg is always kept, so it can be put back.
   servers that still use a command or image the update changed or removed the new one, from their next start. Commands
   and images set by hand stay.
 - Optionally, eggs that no server uses are updated automatically.
-- Pelican's own Update button in its egg rows follows the same result. That button updates without a test and without
-  keeping the previous version; the Updates block is the safe way.
+- For root admins Egg Updates' **Update** takes the place of Pelican's own Update button in the egg rows, as Pelican's
+  updates without keeping the previous version. Pelican adds no way for plugins to put buttons in that list; when a
+  Pelican version changes it so Egg Updates cannot add them, an **Updates** block with the same buttons shows above
+  the list instead.
 
 It works on its own. With [Simplify](https://github.com/jerajerajerajera/Simplify) installed it also shows up in
 Simplify's add-on list.

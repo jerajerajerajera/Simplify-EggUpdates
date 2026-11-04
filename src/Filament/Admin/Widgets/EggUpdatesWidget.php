@@ -6,9 +6,13 @@ namespace Simplify\EggUpdates\Filament\Admin\Widgets;
 
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
+use Simplify\EggUpdates\Filament\Admin\EggsTable;
 use Simplify\EggUpdates\Filament\Admin\UpdatesTable;
 
-/** The Updates block at the top of Pelican's Eggs page, for root admins, only while there is something to do. */
+/**
+ * The Updates block above Pelican's Eggs list, for root admins, only while there is something to do. It only shows when
+ * Egg Updates could not be added to Pelican's own Eggs table (EggsTable), so there is always one list.
+ */
 final class EggUpdatesWidget extends TableWidget
 {
     protected int|string|array $columnSpan = 'full';
@@ -17,7 +21,7 @@ final class EggUpdatesWidget extends TableWidget
 
     public static function canView(): bool
     {
-        return UpdatesTable::canManage() && UpdatesTable::hasRows();
+        return UpdatesTable::canManage() && ! EggsTable::extended() && UpdatesTable::hasRows();
     }
 
     /** Every request of this block, not only the first, comes from a root admin. */

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- One eggs list: Egg Updates now sits in Pelican's own Eggs table, with a status column and Test first, Update, Move
+  servers and Put back in each egg's row, instead of a second list above it. Egg Updates' Update replaces Pelican's
+  Update button for root admins, so a row never has two and the previous version is always kept. If a Pelican version
+  stops Egg Updates from adding them, the Updates block above the list comes back.
+- Simplify settings › Add-ons › Egg Updates shows when the eggs were last checked, as a grey line under the select,
+  with the number of updates waiting and a link to the Eggs page. The Save button on the settings page sits on the
+  right.
+- Checks: the panel smoke checks that one new update gives root admins one notification, and a later check of the
+  same version none.
 - Checks: PHPStan runs without a baseline; the 13 findings of 4-11 are fixed (types only, no change in behaviour).
 - Uninstalling Egg Updates keeps its settings, the kept previous versions and the test results, so installing it
   again brings them back.
