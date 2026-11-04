@@ -141,7 +141,7 @@ Http::fake([
             return Http::response(['data' => ['[Server] Starting Smoke', '', 'Error: Unable to access jarfile server.jar']]);
         }
         if (str_ends_with($request->url(), '/install-logs')) {
-            return Http::response(['data' => "Pulling image from 10.20.30.40 for smoke@example.com token=s3cr3t-smoke\nInstall failed"]);
+            return Http::response(['data' => "Pulling image from 203.0.113.40 for smoke@example.com token=s3cr3t-smoke\nInstall failed"]);
         }
 
         return $request->method() === 'GET' ? Http::response(['state' => $wings, 'utilization' => []]) : Http::response([], 204);

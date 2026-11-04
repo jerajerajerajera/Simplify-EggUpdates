@@ -83,6 +83,7 @@ final class ServerMover
         }
         $old = collect(is_array($previous['variables'] ?? null) ? $previous['variables'] : [])->pluck('env_variable')->all();
         $fields = [];
+        /** @var EggVariable $variable */
         foreach ($egg->variables()->get() as $variable) {
             $rules = $variable->rules ?: [];
             if (in_array($variable->env_variable, $old, true) || ! in_array('required', $rules, true)

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Checks: PHPStan runs without a baseline; the 13 findings of 4-11 are fixed (types only, no change in behaviour).
+- Uninstalling Egg Updates keeps its settings, the kept previous versions and the test results, so installing it
+  again brings them back.
+- Checks: CI updates from 1.1.5 (Hub stable) and from the latest release with settings filled in, uninstalls and
+  installs again, and puts the previous release back over the new tables. Dependabot keeps the CI actions current,
+  and `tests/run.sh` fails on a secret or an internal address.
 - With Simplify 2.0 the settings of Egg Updates are a section of Simplify settings › Add-ons, saved with Simplify's
   Save. Without Simplify the gear on the Eggs page opens the same form.
 - Egg Updates moved to Pelican's Eggs page: an Updates block at the top of the list (only when there is something to

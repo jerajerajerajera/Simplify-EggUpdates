@@ -18,12 +18,9 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
-        if (Schema::hasColumn('simplify_egg_updates', 'test_log')) {
-            Schema::table('simplify_egg_updates', function (Blueprint $table) {
-                $table->dropColumn('test_log');
-            });
-        }
-    }
+    /**
+     * Uninstalling keeps the data: Pelican rolls back a plugin's migrations when it is uninstalled, and the settings,
+     * the kept previous versions (Put back) and the test results must still be there when it is installed again.
+     */
+    public function down(): void {}
 };
