@@ -159,7 +159,8 @@ step('Pelican\'s Eggs page renders without updates, without the Updates block, a
     $response = http($admin, EggResource::getUrl('index', panel: 'admin'));
     must($response->getStatusCode() === 200, 'HTTP '.$response->getStatusCode().($response->exception ? ': '.$response->exception->getMessage() : ''));
     must(str_contains($response->getContent(), 'Check now'), 'no Check now in the title bar of the Eggs page');
-    must(! str_contains($response->getContent(), 'Not checked yet'), 'the Updates block shows with nothing to do');
+    // "Not checked yet" belongs to Egg Updates' part of Pelican's table now, not to a block above it.
+    must(str_contains($response->getContent(), 'Not checked yet') && EggsTable::extended() && ! EggUpdatesWidget::canView(), 'the Eggs table has no Egg Updates, or the Updates block shows: '.EggsTable::traced());
     must(! EggUpdates::shouldRegisterNavigation(), 'Egg Updates still has its own menu item');
     $settings = http($admin, EggUpdates::getUrl(panel: 'admin'));
     must($settings->getStatusCode() === 200, 'the settings page: HTTP '.$settings->getStatusCode().($settings->exception ? ': '.$settings->exception->getMessage() : ''));
@@ -180,7 +181,7 @@ step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' but
     must(EggsTable::extended() && ! EggUpdatesWidget::canView(), 'the Updates block still shows above Pelican\'s list: '.EggsTable::traced());
     must(! str_contains($html, 'No servers · '), 'a second list of eggs is on the page');
     EggsTable::reset();
-    $page = Livewire::actingAs($admin)->test(EggsList::class)->assertHasNoErrors();
+    $page = Livewire::actingAs($admin)->test(ListEggs::class)->assertHasNoErrors();
     must(EggsTable::extended(), 'Livewire::test of the Eggs page: '.EggsTable::traced());
     $page->assertActionVisible(TestAction::make('egg_updates_update')->table($egg->fresh()))
         ->assertActionVisible(TestAction::make('egg_updates_test')->table($egg->fresh()));
@@ -189,7 +190,7 @@ step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' but
     // Other admins get Pelican's table as it is.
     $other = User::factory()->create();
     EggsTable::reset();
-    Livewire::actingAs($other)->test(EggsList::class)->assertActionDoesNotExist(TestAction::make('egg_updates_update')->table($egg->fresh()));
+    Livewire::actingAs($other)->test(ListEggs::class)->assertActionDoesNotExist(TestAction::make('egg_updates_update')->table($egg->fresh()));
     must(! EggsTable::extended(), 'Egg Updates went into the table for a user who is not a root admin');
     $other->delete();
 });
@@ -310,11 +311,11 @@ step('the buttons Check now, Update all, Put back and Update on the page', funct
         ->callAction('egg_updates_update_all')->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha 2' && $second->fresh()->name === 'Smoke Beta 2', 'Update all left an egg behind');
     // Put back and Update in the egg's row of Pelican's table.
-    $page = Livewire::actingAs($admin)->test(EggsList::class);
+    $page = Livewire::actingAs($admin)->test(ListEggs::class);
     $page->callAction(TestAction::make('egg_updates_put_back')->table($first->fresh()))->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha', 'Put back on the page did not restore the egg');
     must(EggUpdate::query()->find($first->id)->held === true, 'not held after Put back');
-    $page = Livewire::actingAs($admin)->test(EggsList::class);
+    $page = Livewire::actingAs($admin)->test(ListEggs::class);
     $page->callAction(TestAction::make('egg_updates_update')->table($first->fresh()))->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha 2', 'Update on the page did not update the egg');
     // The same buttons in the Updates block, for when it shows.
