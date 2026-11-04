@@ -59,6 +59,8 @@ use Simplify\EggUpdates\SimplifyEggUpdatesPlugin;
 use Symfony\Component\Yaml\Yaml;
 
 define('LARAVEL_START', microtime(true));
+// Pelican's Eggs page as the panel serves it: Egg Updates' EggsList, by the name Livewire knows it under.
+const EGGS_PAGE = 'simplify-eggupdates.eggs-list';
 require getcwd().'/vendor/autoload.php';
 $app = require getcwd().'/bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
@@ -181,7 +183,7 @@ step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' but
     must(EggsTable::extended() && ! EggUpdatesWidget::canView(), 'the Updates block still shows above Pelican\'s list: '.EggsTable::traced());
     must(! str_contains($html, 'No servers · '), 'a second list of eggs is on the page');
     EggsTable::reset();
-    $page = Livewire::actingAs($admin)->test(ListEggs::class)->assertHasNoErrors();
+    $page = Livewire::actingAs($admin)->test(EGGS_PAGE)->assertHasNoErrors();
     must(EggsTable::extended(), 'Livewire::test of the Eggs page: '.EggsTable::traced());
     $page->assertActionVisible(TestAction::make('egg_updates_update')->table($egg->fresh()))
         ->assertActionVisible(TestAction::make('egg_updates_test')->table($egg->fresh()));
@@ -190,7 +192,7 @@ step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' but
     // Other admins get Pelican's table as it is.
     $other = User::factory()->create();
     EggsTable::reset();
-    Livewire::actingAs($other)->test(ListEggs::class)->assertActionDoesNotExist(TestAction::make('egg_updates_update')->table($egg->fresh()));
+    Livewire::actingAs($other)->test(EGGS_PAGE)->assertActionDoesNotExist(TestAction::make('egg_updates_update')->table($egg->fresh()));
     must(! EggsTable::extended(), 'Egg Updates went into the table for a user who is not a root admin');
     $other->delete();
 });
@@ -311,11 +313,11 @@ step('the buttons Check now, Update all, Put back and Update on the page', funct
         ->callAction('egg_updates_update_all')->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha 2' && $second->fresh()->name === 'Smoke Beta 2', 'Update all left an egg behind');
     // Put back and Update in the egg's row of Pelican's table.
-    $page = Livewire::actingAs($admin)->test(ListEggs::class);
+    $page = Livewire::actingAs($admin)->test(EGGS_PAGE);
     $page->callAction(TestAction::make('egg_updates_put_back')->table($first->fresh()))->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha', 'Put back on the page did not restore the egg');
     must(EggUpdate::query()->find($first->id)->held === true, 'not held after Put back');
-    $page = Livewire::actingAs($admin)->test(ListEggs::class);
+    $page = Livewire::actingAs($admin)->test(EGGS_PAGE);
     $page->callAction(TestAction::make('egg_updates_update')->table($first->fresh()))->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha 2', 'Update on the page did not update the egg');
     // The same buttons in the Updates block, for when it shows.
