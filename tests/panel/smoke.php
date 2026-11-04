@@ -25,6 +25,7 @@ use App\Services\Servers\ServerDeletionService;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Filament\Support\Facades\FilamentView;
+use Filament\Tables\Table;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithAuthentication;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
@@ -59,8 +60,6 @@ use Simplify\EggUpdates\SimplifyEggUpdatesPlugin;
 use Symfony\Component\Yaml\Yaml;
 
 define('LARAVEL_START', microtime(true));
-// Pelican's Eggs page as the panel serves it: Egg Updates' EggsList, by the name Livewire knows it under.
-const EGGS_PAGE = 'simplify-eggupdates.eggs-list';
 require getcwd().'/vendor/autoload.php';
 $app = require getcwd().'/bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
@@ -107,6 +106,24 @@ function remoteEgg(string $name, array &$remotes, array $change): Egg
 
     return $egg;
 }
+/** The table of Pelican's Eggs page as Egg Updates' EggsList makes it for this user. */
+function eggsTable(User $user): Table
+{
+    auth()->setUser($user);
+    $page = new EggsList();
+
+    return $page->table(Table::make($page));
+}
+
+/** Runs one of Egg Updates' buttons in an egg's row of Pelican's Eggs table, as its confirmation does. */
+function eggsTableAction(User $user, string $name, Egg $egg): void
+{
+    $action = collect(eggsTable($user)->getRecordActions())->first(fn ($action) => $action->getName() === $name);
+    must($action !== null, 'no '.$name.' in the row');
+    must($action->record($egg)->isVisible(), $name.' is not shown for '.$egg->name);
+    $action->call();
+}
+
 /** @return list<string> titles of the user's notifications in Pelican's bell */
 function bell(User $user): array
 {
@@ -182,18 +199,21 @@ step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' but
     must(str_contains($html, 'Checked ') && str_contains($html, 'Update available'), 'the update is not in Pelican\'s Eggs table');
     must(EggsTable::extended() && ! EggUpdatesWidget::canView(), 'the Updates block still shows above Pelican\'s list: '.EggsTable::traced());
     must(! str_contains($html, 'No servers · '), 'a second list of eggs is on the page');
-    EggsTable::reset();
-    $page = Livewire::actingAs($admin)->test(EGGS_PAGE)->assertHasNoErrors();
-    must(EggsTable::extended(), 'Livewire::test of the Eggs page: '.EggsTable::traced());
-    $page->assertActionVisible(TestAction::make('egg_updates_update')->table($egg->fresh()))
-        ->assertActionVisible(TestAction::make('egg_updates_test')->table($egg->fresh()));
-    $actions = $page->instance()->getTable()->getRecordActions();
-    must(collect($actions)->filter(fn ($action) => EggsTable::isPelicansUpdate($action))->isEmpty(), 'Pelican\'s own Update button is still in the row');
+    // A click on the page comes back under the name in the page's snapshot; that name must give EggsList again.
+    preg_match_all('/wire:snapshot="([^"]+)"/', $html, $snapshots);
+    $names = array_map(fn (string $snapshot) => json_decode(html_entity_decode($snapshot), true)['memo']['name'] ?? '', $snapshots[1]);
+    $name = collect($names)->first(fn (string $name) => str_contains($name, 'eggs-list') || str_contains($name, 'list-eggs'));
+    must($name !== null, 'no snapshot of the Eggs page: '.implode(', ', $names));
+    must(app('livewire')->new($name) instanceof EggsList, 'a click on the Eggs page would reach Pelican\'s own page: '.$name);
+    $names = collect(eggsTable($admin)->getRecordActions())->map(fn ($action) => $action->getName());
+    must($names->contains('egg_updates_update') && $names->contains('egg_updates_test') && $names->contains('egg_updates_put_back'), 'Egg Updates\' buttons are not in the row: '.$names->implode(', '));
+    must(collect(eggsTable($admin)->getRecordActions())->filter(fn ($action) => EggsTable::isPelicansUpdate($action))->isEmpty(), 'Pelican\'s own Update button is still in the row');
     // Other admins get Pelican's table as it is.
     $other = User::factory()->create();
     EggsTable::reset();
-    Livewire::actingAs($other)->test(EGGS_PAGE)->assertActionDoesNotExist(TestAction::make('egg_updates_update')->table($egg->fresh()));
-    must(! EggsTable::extended(), 'Egg Updates went into the table for a user who is not a root admin');
+    $names = collect(eggsTable($other)->getRecordActions())->map(fn ($action) => $action->getName());
+    must(! $names->contains('egg_updates_update') && ! EggsTable::extended(), 'Egg Updates went into the table for a user who is not a root admin');
+    auth()->setUser($admin);
     $other->delete();
 });
 step('without its place in Pelican\'s table the Updates block comes back, so nothing is lost', function () use ($admin) {
@@ -313,12 +333,10 @@ step('the buttons Check now, Update all, Put back and Update on the page', funct
         ->callAction('egg_updates_update_all')->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha 2' && $second->fresh()->name === 'Smoke Beta 2', 'Update all left an egg behind');
     // Put back and Update in the egg's row of Pelican's table.
-    $page = Livewire::actingAs($admin)->test(EGGS_PAGE);
-    $page->callAction(TestAction::make('egg_updates_put_back')->table($first->fresh()))->assertHasNoErrors();
+    eggsTableAction($admin, 'egg_updates_put_back', $first->fresh());
     must($first->fresh()->name === 'Smoke Alpha', 'Put back on the page did not restore the egg');
     must(EggUpdate::query()->find($first->id)->held === true, 'not held after Put back');
-    $page = Livewire::actingAs($admin)->test(EGGS_PAGE);
-    $page->callAction(TestAction::make('egg_updates_update')->table($first->fresh()))->assertHasNoErrors();
+    eggsTableAction($admin, 'egg_updates_update', $first->fresh());
     must($first->fresh()->name === 'Smoke Alpha 2', 'Update on the page did not update the egg');
     // The same buttons in the Updates block, for when it shows.
     $block = Livewire::actingAs($admin)->test(EggUpdatesWidget::class);
