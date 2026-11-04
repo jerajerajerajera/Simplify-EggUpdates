@@ -96,7 +96,7 @@ namespace {
     // The updates live on Pelican's Eggs page (Jeroen 4-11): a block and title-bar buttons there, no menu item.
     $page = file_get_contents(__DIR__.'/../src/Filament/Admin/Pages/EggUpdates.php');
     $check(str_contains($plugin, 'ListEggs::registerCustomHeaderWidgets') && str_contains($plugin, 'ListEggs::registerCustomHeaderActions'), 'the updates are not on Pelican\'s Eggs page');
-    $check(str_contains($page, '$shouldRegisterNavigation = false') && str_contains(file_get_contents(__DIR__.'/../resources/views/egg-updates.blade.php'), 'data-simplify-unsaved'), 'Egg Updates still has a menu item, or its settings save without asking');
+    $check(str_contains($page, '$shouldRegisterNavigation = false') && str_contains(file_get_contents(__DIR__.'/../resources/views/livewire/settings.blade.php'), 'data-simplify-save="save"'), 'Egg Updates still has a menu item, or its settings save without asking');
 
     // Explain: a failed test keeps the last 100 lines of the test server's log, oldest first, without empty lines.
     $log = implode("\n", array_map(fn ($n) => 'line '.$n, range(1, 150)))."\n\n";

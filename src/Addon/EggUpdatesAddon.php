@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Simplify\EggUpdates\Addon;
 
 use Simplify\Core\Addons\Addon;
+use Simplify\Core\Filament\Admin\Pages\Settings as SimplifySettings;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
+use Simplify\EggUpdates\Livewire\EggUpdatesSettings;
 use Simplify\EggUpdates\Services\EggTester;
 use Simplify\EggUpdates\Services\Settings;
 use Simplify\EggUpdates\SimplifyEggUpdatesPlugin;
@@ -33,9 +35,22 @@ final class EggUpdatesAddon extends Addon
         return 'tabler-egg';
     }
 
+    /** Egg Updates' section in Simplify settings › Add-ons; on a core before API 8 its own settings page. */
     public function settingsUrl(): ?string
     {
-        return EggUpdates::canAccess() ? EggUpdates::getUrl(panel: 'admin') : null;
+        if (! EggUpdates::canAccess()) {
+            return null;
+        }
+
+        return method_exists(SimplifySettings::class, 'addonUrl')
+            ? SimplifySettings::addonUrl(SimplifyEggUpdatesPlugin::ID)
+            : EggUpdates::getUrl(panel: 'admin');
+    }
+
+    /** The settings, shown in Egg Updates' section of Simplify settings › Add-ons (API 8). */
+    public function settingsForm(): ?string
+    {
+        return EggUpdatesSettings::class;
     }
 
     /** The temporary servers of Test first stay out of Simplify's lists. */

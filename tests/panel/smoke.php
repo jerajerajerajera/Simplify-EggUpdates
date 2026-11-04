@@ -39,6 +39,7 @@ use Simplify\EggUpdates\Addon\EggUpdatesProblems;
 use Simplify\EggUpdates\Enums\Mode;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
 use Simplify\EggUpdates\Filament\Admin\Widgets\EggUpdatesWidget;
+use Simplify\EggUpdates\Livewire\EggUpdatesSettings;
 use Simplify\EggUpdates\Models\EggBackup;
 use Simplify\EggUpdates\Models\EggTest;
 use Simplify\EggUpdates\Models\EggUpdate;
@@ -205,12 +206,14 @@ step('the settings save', function () use ($admin) {
     auth()->login($admin);
     Settings::saveForm(['mode' => 'off']);
     must(Settings::mode() === Mode::Off, 'mode not saved directly');
-    Livewire::actingAs($admin)->test(EggUpdates::class)
+    // One form for both places: Simplify settings › Add-ons (settingsForm, API 8) and the own page without Simplify.
+    Livewire::actingAs($admin)->test(EggUpdatesSettings::class)
         ->assertSet('data.mode', 'off')
         ->set('data.mode', 'test')
-        ->callAction('save')
+        ->call('save')
         ->assertHasNoErrors();
-    must(Settings::mode() === Mode::Test, 'mode not saved from the settings page: '.Settings::mode()->value);
+    must(Settings::mode() === Mode::Test, 'mode not saved from the settings form: '.Settings::mode()->value);
+    must(str_contains(Livewire::actingAs($admin)->test(EggUpdatesSettings::class, ['standalone' => true])->html(), 'data-simplify-save="save"'), 'Simplify\'s Save does not reach the settings form');
     // Without Simplify the gear on the Eggs page opens the settings; with Simplify they are under Settings › Add-ons.
     $eggs = Livewire::actingAs($admin)->test(ListEggs::class);
     class_exists('Simplify\Core\Addons\Addon') ? $eggs->assertActionHidden('egg_updates_settings') : $eggs->assertActionVisible('egg_updates_settings');
@@ -229,6 +232,8 @@ step('Simplify\'s setup asks when eggs are updated and saves it', function () us
     $addon->saveSetup(['mode' => 'ask']);
     must(Settings::mode() === Mode::Ask, 'the setup answer was not saved');
     $addon->saveSetup(['mode' => 'test']);
+    must($addon->settingsForm() === EggUpdatesSettings::class, 'Simplify settings › Add-ons does not get the settings form');
+    must(str_contains((string) $addon->settingsUrl(), method_exists('Simplify\Core\Filament\Admin\Pages\Settings', 'addonUrl') ? 'addon=simplify-eggupdates' : 'egg-updates'), 'the settings link is wrong: '.$addon->settingsUrl());
 });
 step('the scheduled command finds a newer version and updates the egg without servers', function () use (&$remote, $egg) {
     $remote['name'] = 'Smoke Paper 3';
