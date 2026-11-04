@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- With Simplify 2.0 the settings of Egg Updates are a section of Simplify settings › Add-ons, saved with Simplify's
+  Save. Without Simplify the gear on the Eggs page opens the same form.
 - Egg Updates moved to Pelican's Eggs page: an Updates block at the top of the list (only when there is something to
   do) with the same buttons, and Check now and Update all in the page's title bar. The menu item is gone. The
   settings are under Simplify settings › Add-ons, or without Simplify behind the gear on the Eggs page. Notifications
