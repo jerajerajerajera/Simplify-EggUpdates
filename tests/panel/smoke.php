@@ -110,7 +110,7 @@ function remoteEgg(string $name, array &$remotes, array $change): Egg
 function eggsTable(User $user): Table
 {
     auth()->setUser($user);
-    $page = new EggsList();
+    $page = new EggsList;
 
     return $page->table(Table::make($page));
 }
@@ -190,7 +190,7 @@ step('Check now finds the new version and tells root admins', function () use ($
     must(EggUpdate::query()->find($egg->id)?->found_hash !== null, 'the update was not found');
     must(cache()->get('eggs.'.$egg->uuid.'.update') === true, 'Pelican\'s own Update button does not follow');
 });
-step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' buttons in its row (G5)', function () use ($admin, $egg) {
+step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' buttons in its row (G5)', function () use ($admin) {
     must(app(ListEggs::class) instanceof EggsList, 'Pelican\'s Eggs page is not replaced by EggsList');
     EggsTable::reset();
     $response = http($admin, EggResource::getUrl('index', panel: 'admin'));
