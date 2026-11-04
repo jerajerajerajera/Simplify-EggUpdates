@@ -12,7 +12,7 @@
 2. **Geen dataverlies**: blijven instellingen en gegevens van de gebruiker altijd heel, ook bij een update?
 3. **Compatibel**: werkt het op elke Pelican-versie in de CI-matrix, met en zonder kern, naast andere plugins?
 4. **1.5.5 is de basis**: wat Simplify 1.5.5 kan, blijft kunnen, op dezelfde manier tenzij de eigenaar anders besluit (V37).
-5. **Eenvoud**: snel, overzichtelijk, duidelijk en overal hetzelfde; zo klein mogelijk.
+5. **Eenvoud**: snel, overzichtelijk, duidelijk en overal hetzelfde; duidelijk en leesbaar boven zo kort mogelijk (P-35).
 
 Botsen twee principes, dan wint de bovenste.
 
@@ -83,7 +83,7 @@ Threads geven zelf geen nummers; ze melden ongenummerd aan de regisseur.
 | P-32 | Uitkomst ok of fout | Testen |
 | P-33 | Kernrelease | Release |
 | P-34 | Versie en zip | Release |
-| P-35 | Zo klein mogelijk | Product |
+| P-35 | Duidelijk boven kort | Product |
 | P-36 | Veiligheid voorop | Product |
 | P-37 | Testfase | Release |
 | P-38 | Opslaan met Save, nooit vanzelf | UI |
@@ -214,7 +214,7 @@ kernfuncties. Nooit noemen dat Toolkit vroeger een andere naam had.
 *Vervangt:* R4.
 
 #### P-3 Add-on-contract
-`ADDONS.md` (API 4). Een nieuwe `Addon`-methode krijgt altijd een default en een regel in ADDONS.md; een nieuwere
+`ADDONS.md` (API 9). Een nieuwe `Addon`-methode krijgt altijd een default en een regel in ADDONS.md; een nieuwere
 add-on blijft werken op een oudere kern.
 *Bewaakt door:* `tests/addons.php` (kern).
 *Vervangt:* R5.
@@ -357,7 +357,17 @@ Geen verboden functienamen, geen eigen updater of pluginbeheer, updates alleen v
 #### P-27 Codestijl
 Per functie een eigen bestand; PSR-12 en `pint`; schrijf zoals de code eromheen. Laravel-job: nooit een methode
 `queue()`. Na een merge in CSS: accolades tellen. Eigen prefix voor klassen, CSS en routes (`simplify`, `s-`, `ps-`).
-*Bewaakt door:* `pint --test` in CI.
+Daarnaast (V64): **DRY**: één functie of component per taak; een herhaalde UI-actie (Save, verwijderen, bevestigen) is
+één geparametriseerde Action of component en de knop geeft alleen de naam mee; twee functies die voor meer dan de
+helft gelijk zijn worden één. **YAGNI**: geen code voor later, geen API-methode zonder implementatie. **KISS**: boven
+twintig takken of tachtig regels splitsen in benoemde stappen; een private functie met één aanroep die een bestaande
+functie ook kan, gaat weg. **Uitzondering = regel**: een waarde of gedrag dat zonder opgeschreven reden afwijkt, volgt
+de regel. **Design tokens**: maat, kleur, schaduw, ronding, overgang, laag en blur alleen via `tokens.css` van de kern
+(`--ps-*`); add-ons lezen die tokens met een fallback; `!important` alleen om Filament te overschrijven en het aantal
+mag alleen omlaag. **Gedrag gelijk**: een opschoning verandert niets aan wat de gebruiker kan of ziet en noemt in de
+PR de test die dat bewijst ("gedrag gelijk: <test>"); verandert het gedrag, dan is het een vraag aan de eigenaar.
+Naslag: `plannen/werkwijze/codekwaliteit-en-testen.md`.
+*Bewaakt door:* `pint --test`, PHPStan (`phpstan.neon`, level 5) en ESLint (`eslint.config.mjs`) in CI.
 *Vervangt:* R32, R34, R37.
 
 #### P-28 Migraties en instellingen
@@ -385,8 +395,11 @@ Geen `composer install` of `yarn install` in de cloudcontainer; het echte paneel
 #### P-31 Definitie van klaar
 Lokale checks (`bash tests/run.sh`, `pint --test`, `python3 tests/hub-check.py`), CI groen met panel-smoke op elke
 Pelican-versie in de matrix, updatepad getest bij migratie of instelling, echt doorgeklikt in een paneel dat op het
-echte lijkt (klikken, niet kijken), stijlaudit groen bij UI (d1440, laag1366, phone390, licht en donker), screenshot
-van het echte scherm. Add-ons met én zonder kern. Kan een stap niet: precies zeggen welke.
+echte lijkt (klikken, niet kijken; vóór een release de klikronde, `docs/klikronde.md`), stijlaudit groen bij UI (d1440, laag1366, phone390, licht en donker), screenshot
+van het echte scherm. Add-ons met én zonder kern (de echte kern uit de CI-matrix, niet alleen een stub). Kan een
+stap niet: precies zeggen welke. Verder (V64): PHPStan en ESLint groen; de browser-smoke (`tests/panel/browser.cjs`:
+Playwright, axe, Lighthouse) groen bij een wijziging in `resources/`, met Lighthouse en axe niet lager dan de vorige
+run; geen nieuwe losse CSS-waarde zonder token of reden.
 *Vervangt:* R38, R40.
 
 #### P-32 Uitkomst ok of fout
@@ -402,10 +415,31 @@ Vóór een kernrelease: functielijst bijgewerkt, CI groen, upgradetest groen, st
 #### P-34 Versie en zip
 Versienummer in `plugin.json` en CHANGELOG gelijk. Zip:
 `github.com/jerajerajerajera/<Repo>/releases/download/v<v>/<id>-v<v>.zip`.
+Elke versie in `CHANGELOG.md` (Engels) heeft deze vorm; de GitHub-releasenotes en de Hub-changelog volgen mee:
+
+```markdown
+## 2.0.0-beta.6
+
+One sentence that says what this version brings.
+
+- The changes, one line each, as now.
+
+**Please test:**
+- 3 to 5 lines: what testers should click, only for a beta.
+
+**Known issues:**
+- What is known and not fixed yet; leave the heading out when there is nothing.
+```
+
+De eerste zin is de samenvatting en ook de tekst bij de versie op de Hub. Een versie zonder wijzigingen (alleen
+gelijkgetrokken) heeft alleen die zin. "Please test" alleen bij een beta; "Known issues" alleen als er iets is.
 *Vervangt:* R47.
 
-#### P-35 Zo klein mogelijk
-Geen dubbele of onnodige functies, niet meer code dan nodig. Na een aantal wijzigingen een opschoonronde als eigen PR.
+#### P-35 Duidelijk boven kort
+Geen dubbele of onnodige functies, niet meer code dan nodig; maar duidelijkheid en leesbaarheid gaan boven zo kort
+mogelijk (eigenaar 4-11): wie zich aan de principes van P-27 houdt (DRY, YAGNI, KISS, uitzondering = regel, tokens,
+gedrag gelijk; V64) schrijft liever een regel meer dan een slimme regel die niemand leest. Na een aantal wijzigingen een
+opschoonronde als eigen PR op basis van die principes.
 *Vervangt:* R62.
 
 #### P-36 Veiligheid voorop
