@@ -175,9 +175,11 @@ step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' but
     must($response->getStatusCode() === 200, 'HTTP '.$response->getStatusCode());
     $html = $response->getContent();
     must(str_contains($html, 'Checked ') && str_contains($html, 'Update available'), 'the update is not in Pelican\'s Eggs table');
-    must(EggsTable::extended() && ! EggUpdatesWidget::canView(), 'the Updates block still shows above Pelican\'s list');
+    must(EggsTable::extended() && ! EggUpdatesWidget::canView(), 'the Updates block still shows above Pelican\'s list: '.EggsTable::traced());
     must(! str_contains($html, 'No servers · '), 'a second list of eggs is on the page');
+    EggsTable::reset();
     $page = Livewire::actingAs($admin)->test(ListEggs::class)->assertHasNoErrors();
+    must(EggsTable::extended(), 'Livewire::test of the Eggs page: '.EggsTable::traced());
     $page->assertActionVisible(TestAction::make('egg_updates_update')->table($egg->fresh()))
         ->assertActionVisible(TestAction::make('egg_updates_test')->table($egg->fresh()));
     $actions = $page->instance()->getTable()->getRecordActions();

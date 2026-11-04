@@ -24,14 +24,30 @@ final class EggsTable
     /** Whether this request's Eggs table has Egg Updates in it; the Updates block only shows when it does not. */
     private static bool $extended = false;
 
+    /** @var list<string> what happened to the Eggs table in this request, for the panel smoke's message */
+    private static array $trace = [];
+
     public static function extended(): bool
     {
         return self::$extended;
     }
 
+    public static function trace(string $line): void
+    {
+        self::$trace[] = $line;
+    }
+
+    /** What happened to the Eggs table in this request, in one line. */
+    public static function traced(): string
+    {
+        return implode('; ', self::$trace) ?: 'the hook never ran';
+    }
+
     public static function extend(Table $table): void
     {
         if (! UpdatesTable::canManage()) {
+            self::trace('not a root admin');
+
             return;
         }
         $columns = $table->getColumns();
@@ -53,6 +69,7 @@ final class EggsTable
     public static function reset(): void
     {
         self::$extended = false;
+        self::$trace = [];
     }
 
     /** Pelican's own Update button, which updates without keeping the previous version. */

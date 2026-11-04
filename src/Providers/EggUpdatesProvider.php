@@ -10,6 +10,7 @@ use Livewire\ComponentHook;
 use Livewire\Livewire;
 use Simplify\EggUpdates\Addon\EggUpdatesAddon;
 use Simplify\EggUpdates\Addon\EggUpdatesProblems;
+use Simplify\EggUpdates\Filament\Admin\EggsTable;
 use Simplify\EggUpdates\Livewire\EggsTableHook;
 
 final class EggUpdatesProvider extends ServiceProvider
@@ -27,6 +28,8 @@ final class EggUpdatesProvider extends ServiceProvider
         // Egg Updates in Pelican's own Eggs table. Without component hooks the Updates block above the list stays.
         if (class_exists(ComponentHook::class) && method_exists(Livewire::getFacadeRoot(), 'componentHook')) {
             Livewire::componentHook(EggsTableHook::class);
+        } else {
+            EggsTable::trace('Livewire has no component hooks');
         }
         $this->app->booted(function () {
             Schedule::command('simplify-eggupdates:check')->everyMinute()->withoutOverlapping(30);

@@ -17,22 +17,24 @@ final class EggsTableHook extends ComponentHook
 {
     public function mount(mixed ...$arguments): void
     {
-        $this->extend();
+        $this->extend('mount');
     }
 
     public function hydrate(mixed ...$arguments): void
     {
-        $this->extend();
+        $this->extend('hydrate');
     }
 
-    private function extend(): void
+    private function extend(string $when): void
     {
         if (! $this->component instanceof ListEggs) {
             return;
         }
+        EggsTable::trace('hook on '.$when);
         try {
             EggsTable::extend($this->component->getTable());
         } catch (\Throwable $exception) {
+            EggsTable::trace($exception::class.': '.$exception->getMessage());
             report($exception);
         }
     }
