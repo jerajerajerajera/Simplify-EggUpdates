@@ -37,7 +37,9 @@ use Livewire\Livewire;
 use Simplify\EggUpdates\Addon\EggUpdatesAddon;
 use Simplify\EggUpdates\Addon\EggUpdatesProblems;
 use Simplify\EggUpdates\Enums\Mode;
+use Simplify\EggUpdates\Filament\Admin\EggsTable;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
+use Simplify\EggUpdates\Filament\Admin\UpdatesTable;
 use Simplify\EggUpdates\Filament\Admin\Widgets\EggUpdatesWidget;
 use Simplify\EggUpdates\Livewire\EggUpdatesSettings;
 use Simplify\EggUpdates\Models\EggBackup;
@@ -167,13 +169,34 @@ step('Check now finds the new version and tells root admins', function () use ($
     must(EggUpdate::query()->find($egg->id)?->found_hash !== null, 'the update was not found');
     must(cache()->get('eggs.'.$egg->uuid.'.update') === true, 'Pelican\'s own Update button does not follow');
 });
-step('the Updates block on the Eggs page lists the update', function () use ($admin) {
+step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' buttons in its row (G5)', function () use ($admin, $egg) {
+    EggsTable::reset();
     $response = http($admin, EggResource::getUrl('index', panel: 'admin'));
     must($response->getStatusCode() === 200, 'HTTP '.$response->getStatusCode());
-    must(str_contains($response->getContent(), 'Checked '), 'no Updates block on the Eggs page');
-    must(str_contains(Livewire::actingAs($admin)->test(EggUpdatesWidget::class)->html(), 'Smoke Paper'), 'the egg is not listed');
+    $html = $response->getContent();
+    must(str_contains($html, 'Checked ') && str_contains($html, 'Update available'), 'the update is not in Pelican\'s Eggs table');
+    must(EggsTable::extended() && ! EggUpdatesWidget::canView(), 'the Updates block still shows above Pelican\'s list');
+    must(! str_contains($html, 'No servers · '), 'a second list of eggs is on the page');
+    $page = Livewire::actingAs($admin)->test(ListEggs::class)->assertHasNoErrors();
+    $page->assertActionVisible(TestAction::make('egg_updates_update')->table($egg->fresh()))
+        ->assertActionVisible(TestAction::make('egg_updates_test')->table($egg->fresh()));
+    $actions = $page->instance()->getTable()->getRecordActions();
+    must(collect($actions)->filter(fn ($action) => EggsTable::isPelicansUpdate($action))->isEmpty(), 'Pelican\'s own Update button is still in the row');
+    // Other admins get Pelican's table as it is.
+    $other = User::factory()->create();
+    EggsTable::reset();
+    Livewire::actingAs($other)->test(ListEggs::class)->assertActionDoesNotExist(TestAction::make('egg_updates_update')->table($egg->fresh()));
+    must(! EggsTable::extended(), 'Egg Updates went into the table for a user who is not a root admin');
+    $other->delete();
+});
+step('without its place in Pelican\'s table the Updates block comes back, so nothing is lost', function () use ($admin) {
+    EggsTable::reset();
+    auth()->setUser($admin);
+    must(EggUpdatesWidget::canView(), 'no Updates block when the table could not get Egg Updates');
+    $html = Livewire::actingAs($admin)->test(EggUpdatesWidget::class)->html();
+    must(str_contains($html, 'Smoke Paper'), 'the egg is not listed');
     // The phone cell: servers and since on one line under the name.
-    must(str_contains($response->getContent(), 'No servers · '), 'the phone summary is missing');
+    must(str_contains($html, 'No servers · '), 'the phone summary is missing');
 });
 step('updating keeps the previous version', function () use ($egg) {
     $result = EggUpdater::update($egg);
@@ -214,6 +237,12 @@ step('the settings save', function () use ($admin) {
         ->assertHasNoErrors();
     must(Settings::mode() === Mode::Test, 'mode not saved from the settings form: '.Settings::mode()->value);
     must(str_contains(Livewire::actingAs($admin)->test(EggUpdatesSettings::class, ['standalone' => true])->html(), 'data-simplify-save="save"'), 'Simplify\'s Save does not reach the settings form');
+    // When the eggs were last checked, as a grey line under the select, with the updates and a link to the Eggs page (EU2).
+    $settings = Livewire::actingAs($admin)->test(EggUpdatesSettings::class)->html();
+    must(str_contains($settings, 'data-egg-updates-checked') && (str_contains($settings, 'Checked ') || str_contains($settings, 'Not checked yet')), 'no "Checked" line under the select');
+    if (UpdatesTable::available()->exists()) {
+        must(str_contains($settings, EggResource::getUrl('index', panel: 'admin')), 'no link to the Eggs page with updates waiting');
+    }
     // Without Simplify the gear on the Eggs page opens the settings; with Simplify they are under Settings › Add-ons.
     $eggs = Livewire::actingAs($admin)->test(ListEggs::class);
     class_exists('Simplify\Core\Addons\Addon') ? $eggs->assertActionHidden('egg_updates_settings') : $eggs->assertActionVisible('egg_updates_settings');
@@ -259,7 +288,10 @@ step('Off checks nothing, Ask only tells, Auto updates eggs no server uses', fun
     Runner::run(true);
     must(EggUpdate::query()->find($egg->id)?->found_hash !== null, 'Ask did not find the update');
     must($egg->fresh()->name === 'Smoke Modes', 'Ask updated without asking');
-    must(count(bell($admin)) > $before, 'Ask did not tell the root admin');
+    // One notification per new update, not one per check: the next check of the same version says nothing (EU3).
+    must(count(bell($admin)) === $before + 1, 'Ask did not tell the root admin once: '.implode(' / ', bell($admin)));
+    Runner::run(true);
+    must(count(bell($admin)) === $before + 1, 'the same update was told twice: '.implode(' / ', bell($admin)));
     must(Runner::handle([$egg->fresh()], Mode::Auto) !== [], 'Auto did nothing');
     must($egg->fresh()->name === 'Smoke Modes 2', 'Auto did not update an egg without servers');
     // The notification names the egg as it is called after the update.
@@ -273,12 +305,20 @@ step('the buttons Check now, Update all, Put back and Update on the page', funct
         ->assertActionVisible('egg_updates_update_all')
         ->callAction('egg_updates_update_all')->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha 2' && $second->fresh()->name === 'Smoke Beta 2', 'Update all left an egg behind');
-    $page = Livewire::actingAs($admin)->test(EggUpdatesWidget::class);
-    $page->callAction(TestAction::make('put_back')->table($first->fresh()))->assertHasNoErrors();
+    // Put back and Update in the egg's row of Pelican's table.
+    $page = Livewire::actingAs($admin)->test(ListEggs::class);
+    $page->callAction(TestAction::make('egg_updates_put_back')->table($first->fresh()))->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha', 'Put back on the page did not restore the egg');
     must(EggUpdate::query()->find($first->id)->held === true, 'not held after Put back');
-    $page->callAction(TestAction::make('update')->table($first->fresh()))->assertHasNoErrors();
+    $page = Livewire::actingAs($admin)->test(ListEggs::class);
+    $page->callAction(TestAction::make('egg_updates_update')->table($first->fresh()))->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha 2', 'Update on the page did not update the egg');
+    // The same buttons in the Updates block, for when it shows.
+    $block = Livewire::actingAs($admin)->test(EggUpdatesWidget::class);
+    $block->callAction(TestAction::make('put_back')->table($first->fresh()))->assertHasNoErrors();
+    must($first->fresh()->name === 'Smoke Alpha', 'Put back in the Updates block did not restore the egg');
+    $block->callAction(TestAction::make('update')->table($first->fresh()))->assertHasNoErrors();
+    must($first->fresh()->name === 'Smoke Alpha 2', 'Update in the Updates block did not update the egg');
 });
 step('Move servers on the page moves servers off the removed image and command, and keeps their own', function () use ($admin, &$remotes) {
     $egg = remoteEgg('Smoke Move', $remotes, [

@@ -102,13 +102,7 @@ final class UpdatesTable
                     ->label(__('simplify-eggupdates::egg-updates.page.servers'))
                     ->formatStateUsing(fn (int $state) => trans_choice('simplify-eggupdates::egg-updates.page.server_count', $state, ['count' => $state]))
                     ->visibleFrom('sm'),
-                TextColumn::make('status')
-                    ->label(__('simplify-eggupdates::egg-updates.page.status'))
-                    ->badge()
-                    ->state(fn (Egg $egg) => self::status($egg))
-                    ->formatStateUsing(fn (string $state) => __('simplify-eggupdates::egg-updates.status.'.$state))
-                    ->description(fn (Egg $egg) => self::note($egg) === null ? null : new HtmlString(e(self::note($egg)).' '.self::explain($egg)?->toHtml()))
-                    ->color(fn (string $state) => self::color($state))
+                self::statusColumn('status')
                     ->visibleFrom('sm'),
                 TextColumn::make('since')
                     ->label(__('simplify-eggupdates::egg-updates.page.since'))
@@ -116,63 +110,109 @@ final class UpdatesTable
                     ->since()
                     ->visibleFrom('sm'),
             ])
-            ->recordActions([
-                Action::make('test')
-                    ->label(__('simplify-eggupdates::egg-updates.actions.test'))
-                    ->icon('tabler-flask')
-                    ->color('gray')
-                    ->button()
-                    ->labeledFrom('sm')
-                    ->visible(fn (Egg $egg) => in_array(self::status($egg), ['available', 'held'], true))
-                    ->requiresConfirmation()
-                    ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.test_heading', ['egg' => $egg->name]))
-                    ->modalDescription(__('simplify-eggupdates::egg-updates.actions.test_description'))
-                    ->action(fn (Egg $egg) => self::send(EggTester::queue($egg))),
-                Action::make('update')
-                    ->label(__('simplify-eggupdates::egg-updates.actions.update'))
-                    ->icon('tabler-download')
-                    ->button()
-                    ->labeledFrom('sm')
-                    ->visible(fn (Egg $egg) => in_array(self::status($egg), ['available', 'held'], true))
-                    ->requiresConfirmation()
-                    ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.update_heading', ['egg' => $egg->name]))
-                    ->modalDescription(fn (Egg $egg) => __($egg->servers_count > 0
-                        ? 'simplify-eggupdates::egg-updates.actions.update_servers'
-                        : 'simplify-eggupdates::egg-updates.actions.update_kept'))
-                    ->action(fn (Egg $egg) => self::send(EggUpdater::update($egg))),
-                Action::make('move')
-                    ->label(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.move', ['count' => ServerMover::count($egg)]))
-                    ->icon('tabler-arrows-right')
-                    ->color('gray')
-                    ->button()
-                    ->labeledFrom('sm')
-                    ->visible(fn (Egg $egg) => $egg->servers_count > 0 && ServerMover::count($egg) > 0)
-                    ->requiresConfirmation()
-                    ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.move_heading', ['egg' => $egg->name]))
-                    ->modalDescription(__('simplify-eggupdates::egg-updates.actions.move_description'))
-                    // A field the update made required, for the servers without a value.
-                    ->schema(fn (Egg $egg) => array_map(fn (array $field) => TextInput::make($field['variable']->env_variable)
-                        ->label($field['variable']->name)
-                        ->helperText(__('simplify-eggupdates::egg-updates.actions.move_field_help', ['count' => count($field['servers'])]))
-                        ->rules($field['variable']->rules ?: [])
-                        ->required(), array_values(ServerMover::fields($egg))))
-                    ->fillForm(fn (Egg $egg) => array_map(fn (array $field) => TestEnvironment::value($field['variable']), ServerMover::fields($egg)))
-                    ->action(fn (Egg $egg, array $data) => self::send(ServerMover::move($egg, $data))),
-                Action::make('put_back')
-                    ->label(__('simplify-eggupdates::egg-updates.actions.put_back'))
-                    ->icon('tabler-arrow-back-up')
-                    ->color('gray')
-                    ->button()
-                    ->labeledFrom('sm')
-                    ->visible(fn (Egg $egg) => EggBackup::query()->where('egg_id', $egg->id)->exists())
-                    ->requiresConfirmation()
-                    ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.put_back_heading', ['egg' => $egg->name]))
-                    ->modalDescription(__('simplify-eggupdates::egg-updates.actions.put_back_description'))
-                    ->action(fn (Egg $egg) => self::send(EggUpdater::putBack($egg))),
-            ])
+            ->recordActions(self::recordActions())
             ->emptyStateIcon('tabler-egg')
             ->emptyStateHeading(__('simplify-eggupdates::egg-updates.page.empty'))
             ->emptyStateDescription(__('simplify-eggupdates::egg-updates.page.empty_help'));
+    }
+
+    /**
+     * The status of an egg as a badge, with why its last test failed or its update link cannot be checked. In Pelican's
+     * Eggs table it stays empty for eggs Egg Updates has nothing to say about.
+     */
+    public static function statusColumn(string $name): TextColumn
+    {
+        return TextColumn::make($name)
+            ->label(__('simplify-eggupdates::egg-updates.page.status'))
+            ->badge()
+            ->state(fn (Egg $egg) => self::rowStatus($egg))
+            ->formatStateUsing(fn (?string $state) => $state === null ? null : __('simplify-eggupdates::egg-updates.status.'.$state))
+            ->description(fn (Egg $egg) => self::note($egg) === null ? null : new HtmlString(e(self::note($egg)).' '.self::explain($egg)?->toHtml()))
+            ->color(fn (?string $state) => $state === null ? null : self::color($state));
+    }
+
+    /**
+     * Test first, Update, Move servers and Put back for one egg. In Pelican's Eggs table they get a prefix, so they
+     * never take the place of one of Pelican's own buttons, and they are icons with a tooltip, like Pelican's.
+     *
+     * @return list<Action>
+     */
+    public static function recordActions(bool $inPelicanTable = false): array
+    {
+        $prefix = $inPelicanTable ? 'egg_updates_' : '';
+        $actions = [
+            Action::make($prefix.'test')
+                ->label(__('simplify-eggupdates::egg-updates.actions.test'))
+                ->icon('tabler-flask')
+                ->color('gray')
+                ->button()
+                ->labeledFrom('sm')
+                ->visible(fn (Egg $egg) => in_array(self::status($egg), ['available', 'held'], true))
+                ->requiresConfirmation()
+                ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.test_heading', ['egg' => $egg->name]))
+                ->modalDescription(__('simplify-eggupdates::egg-updates.actions.test_description'))
+                ->action(fn (Egg $egg) => self::send(EggTester::queue($egg))),
+            Action::make($prefix.'update')
+                ->label(__('simplify-eggupdates::egg-updates.actions.update'))
+                ->icon('tabler-download')
+                ->button()
+                ->labeledFrom('sm')
+                ->visible(fn (Egg $egg) => in_array(self::status($egg), ['available', 'held'], true))
+                ->requiresConfirmation()
+                ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.update_heading', ['egg' => $egg->name]))
+                ->modalDescription(fn (Egg $egg) => __(self::servers($egg) > 0
+                    ? 'simplify-eggupdates::egg-updates.actions.update_servers'
+                    : 'simplify-eggupdates::egg-updates.actions.update_kept'))
+                ->action(fn (Egg $egg) => self::send(EggUpdater::update($egg))),
+            Action::make($prefix.'move')
+                ->label(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.move', ['count' => ServerMover::count($egg)]))
+                ->icon('tabler-arrows-right')
+                ->color('gray')
+                ->button()
+                ->labeledFrom('sm')
+                ->visible(fn (Egg $egg) => self::servers($egg) > 0 && ServerMover::count($egg) > 0)
+                ->requiresConfirmation()
+                ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.move_heading', ['egg' => $egg->name]))
+                ->modalDescription(__('simplify-eggupdates::egg-updates.actions.move_description'))
+                // A field the update made required, for the servers without a value.
+                ->schema(fn (Egg $egg) => array_map(fn (array $field) => TextInput::make($field['variable']->env_variable)
+                    ->label($field['variable']->name)
+                    ->helperText(__('simplify-eggupdates::egg-updates.actions.move_field_help', ['count' => count($field['servers'])]))
+                    ->rules($field['variable']->rules ?: [])
+                    ->required(), array_values(ServerMover::fields($egg))))
+                ->fillForm(fn (Egg $egg) => array_map(fn (array $field) => TestEnvironment::value($field['variable']), ServerMover::fields($egg)))
+                ->action(fn (Egg $egg, array $data) => self::send(ServerMover::move($egg, $data))),
+            Action::make($prefix.'put_back')
+                ->label(__('simplify-eggupdates::egg-updates.actions.put_back'))
+                ->icon('tabler-arrow-back-up')
+                ->color('gray')
+                ->button()
+                ->labeledFrom('sm')
+                ->visible(fn (Egg $egg) => EggBackup::query()->where('egg_id', $egg->id)->exists())
+                ->requiresConfirmation()
+                ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.put_back_heading', ['egg' => $egg->name]))
+                ->modalDescription(__('simplify-eggupdates::egg-updates.actions.put_back_description'))
+                ->action(fn (Egg $egg) => self::send(EggUpdater::putBack($egg))),
+        ];
+        foreach ($actions as $action) {
+            // Every click checks root admin again: Pelican's Eggs page is open to other admins too.
+            $action->authorize(fn () => self::canManage());
+            if ($inPelicanTable) {
+                $action->iconButton()->tooltip(fn (Action $action) => $action->getLabel());
+            }
+        }
+
+        return $actions;
+    }
+
+    /** The status of an egg that is listed, or null for an egg Egg Updates has nothing to say about. */
+    public static function rowStatus(Egg $egg): ?string
+    {
+        if (EggTester::stage($egg) === null && ! self::query()->whereKey($egg->id)->exists()) {
+            return null;
+        }
+
+        return self::status($egg);
     }
 
     /**
@@ -331,6 +371,12 @@ final class UpdatesTable
         }
 
         return EggUpdater::latest($egg)?->created_at;
+    }
+
+    /** How many servers use the egg: counted by the list's query, or counted here. */
+    private static function servers(Egg $egg): int
+    {
+        return (int) ($egg->servers_count ?? $egg->servers()->count());
     }
 
     private static function send(Result $result): void

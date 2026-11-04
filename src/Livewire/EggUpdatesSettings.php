@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Simplify\EggUpdates\Livewire;
 
+use App\Filament\Admin\Resources\Eggs\EggResource;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
@@ -48,6 +49,10 @@ final class EggUpdatesSettings extends Component implements HasForms
 
     public function render(): mixed
     {
-        return view('simplify-eggupdates::livewire.settings');
+        return view('simplify-eggupdates::livewire.settings', [
+            'checked' => UpdatesTable::checked(),
+            'available' => UpdatesTable::available()->count(),
+            'eggsUrl' => EggResource::getUrl('index', panel: 'admin'),
+        ]);
     }
 }
