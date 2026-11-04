@@ -271,7 +271,7 @@ final class UpdatesTable
         }
         $state = EggUpdate::query()->find($egg->id);
         if ($state?->found_hash === null) {
-            return ($state?->link_failures ?? 0) >= EggUpdate::LINK_FAILURES ? 'unreachable' : 'updated';
+            return $state !== null && $state->link_failures >= EggUpdate::LINK_FAILURES ? 'unreachable' : 'updated';
         }
 
         return $state->held ? 'held' : 'available';

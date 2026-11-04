@@ -38,7 +38,7 @@ final class EggUpdates extends Page
         return __('simplify-eggupdates::egg-updates.title');
     }
 
-    public function getSubheading(): ?string
+    public function getSubheading(): string
     {
         return UpdatesTable::checked();
     }
