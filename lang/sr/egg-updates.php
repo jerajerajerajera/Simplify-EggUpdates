@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Test nije uspeo: :reason. Trenutni egg ostaje.',
         'last_lines' => 'Poslednji redovi: :lines',
         'failed_short' => 'Poslednji test nije uspeo: :reason',
+        'problem_title' => 'Poslednji test za :egg',
     ],
     'errors' => [
         'https' => 'URL za ažuriranje mora da počinje sa https://',

@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Η δοκιμή απέτυχε: :reason. Το τρέχον egg μένει.',
         'last_lines' => 'Τελευταίες γραμμές: :lines',
         'failed_short' => 'Η τελευταία δοκιμή απέτυχε: :reason',
+        'problem_title' => 'Τελευταία δοκιμή του :egg',
     ],
     'errors' => [
         'https' => 'Το URL ενημέρωσης πρέπει να ξεκινά με https://',

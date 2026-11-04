@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Testen mislykkedes: :reason. Det nuværende egg bliver.',
         'last_lines' => 'Sidste linjer: :lines',
         'failed_short' => 'Sidste test mislykkedes: :reason',
+        'problem_title' => 'Sidste test af :egg',
     ],
     'errors' => [
         'https' => 'Opdaterings-URL\'en skal starte med https://',

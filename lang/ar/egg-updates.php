@@ -109,6 +109,7 @@ return [
         'failed_body' => 'فشل الاختبار: :reason. يبقى الـ egg الحالي.',
         'last_lines' => 'آخر الأسطر: :lines',
         'failed_short' => 'فشل آخر اختبار: :reason',
+        'problem_title' => 'آخر اختبار لـ :egg',
     ],
     'errors' => [
         'https' => 'يجب أن يبدأ رابط التحديث بـ https://',

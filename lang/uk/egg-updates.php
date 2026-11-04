@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Тест не пройшов: :reason. Поточний egg залишається.',
         'last_lines' => 'Останні рядки: :lines',
         'failed_short' => 'Останній тест не пройшов: :reason',
+        'problem_title' => 'Останній тест :egg',
     ],
     'errors' => [
         'https' => 'URL оновлення має починатися з https://',

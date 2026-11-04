@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Testi epäonnistui: :reason. Nykyinen egg säilyy.',
         'last_lines' => 'Viimeiset rivit: :lines',
         'failed_short' => 'Viimeisin testi epäonnistui: :reason',
+        'problem_title' => 'Viimeisin testi: :egg',
     ],
     'errors' => [
         'https' => 'Päivitys-URL:n täytyy alkaa https://',

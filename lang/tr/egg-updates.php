@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Test başarısız oldu: :reason. Mevcut egg kalıyor.',
         'last_lines' => 'Son satırlar: :lines',
         'failed_short' => 'Son test başarısız: :reason',
+        'problem_title' => ':egg son testi',
     ],
     'errors' => [
         'https' => 'Güncelleme URL\'si https:// ile başlamalı',

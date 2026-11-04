@@ -22,6 +22,7 @@ use App\Services\Eggs\Sharing\EggImporterService;
 use App\Services\Servers\ServerDeletionService;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
+use Filament\Support\Facades\FilamentView;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithAuthentication;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
@@ -32,6 +33,7 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
 use Simplify\EggUpdates\Addon\EggUpdatesAddon;
+use Simplify\EggUpdates\Addon\EggUpdatesProblems;
 use Simplify\EggUpdates\Enums\Mode;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
 use Simplify\EggUpdates\Models\EggBackup;
@@ -130,6 +132,10 @@ Http::fake([
         return Http::response(json_encode($remotes[basename($request->url(), '.json')] ?? $remote));
     },
     'wings.smoke.test*' => function ($request) use (&$wings) {
+        if (str_ends_with((string) parse_url($request->url(), PHP_URL_PATH), '/logs')) {
+            // The console of a server that stopped, as Wings gives it: lines, at most 100.
+            return Http::response(['data' => ['[Server] Starting Smoke', '', 'Error: Unable to access jarfile server.jar']]);
+        }
         if (str_ends_with($request->url(), '/install-logs')) {
             return Http::response(['data' => "Pulling image from 10.20.30.40 for smoke@example.com token=s3cr3t-smoke\nInstall failed"]);
         }
@@ -404,6 +410,40 @@ step('a failing test keeps the egg, says why and cleans up', function () use ($a
     must($state->found_hash !== null, 'the update is no longer listed');
     must($leftovers() === 0, 'left behind after the failed test: '.$leftovers());
     must(count(bell($admin)) > $before, 'no notification about the failed test');
+});
+step('a failed install keeps the install log for Explain', function () use ($tested) {
+    $log = EggUpdate::query()->find($tested->id)->test_log;
+    must(is_array($log) && end($log) === 'Install failed', 'the install log of the failed test is not kept: '.json_encode($log));
+});
+step('a test server that stops keeps its console for Explain', function () use ($tested, $leftovers, &$wings) {
+    EggTester::queue($tested->fresh());
+    $test = EggTest::query()->where('egg_id', $tested->id)->firstOrFail();
+    Server::query()->whereKey($test->server_id)->update(['status' => null]);
+    $wings = 'starting';
+    EggTester::tick();
+    EggTest::query()->whereKey($test->id)->update(['stage_at' => now()->subMinute()]);
+    $wings = 'offline';
+    EggTester::tick();
+    $state = EggUpdate::query()->find($tested->id);
+    must($state->test_ok === false, 'the stopped test did not fail: '.$state->test_reason);
+    must($state->test_log === ['[Server] Starting Smoke', 'Error: Unable to access jarfile server.jar'], 'the console is not kept: '.json_encode($state->test_log));
+    must($leftovers() === 0, 'left behind after the stopped test: '.$leftovers());
+});
+step('Explain\'s button sits after "Last test failed" and gets the console, only for root admins', function () use ($admin, $tested) {
+    $id = 'simplify-eggupdates:test:'.$tested->id;
+    // Stands in for Explain: it renders its button on this hook, with the problem id as scope.
+    FilamentView::registerRenderHook('simplify::problem.actions', fn (array $scopes = []) => '<i data-smoke-explain="'.e($scopes[1] ?? '').'"></i>');
+    $html = Livewire::actingAs($admin)->test(EggUpdates::class)->assertHasNoErrors()->html();
+    must(str_contains($html, 'data-smoke-explain="simplify-problem:'.$id.'"'), 'no Explain button after the failed test');
+    $source = collect(app()->tagged('simplify.problems'))->first(fn ($source) => $source instanceof EggUpdatesProblems);
+    must($source !== null, 'the problem source is not tagged simplify.problems');
+    $other = User::factory()->create();
+    must($source->canExplainProblem($id, $admin) && ! $source->canExplainProblem($id, $other), 'the problem source does not check the user');
+    must(! $source->canExplainProblem('simplify-eggupdates:test:0', $admin) && ! $source->canExplainProblem('simplify:install:'.$tested->id, $admin), 'the problem source takes an id that is not its own');
+    $problem = $source->explainProblem($id, $admin);
+    must(($problem['lines'] ?? null) === ['[Server] Starting Smoke', 'Error: Unable to access jarfile server.jar'] && str_contains($problem['title'], 'Smoke Tested'), 'the problem source does not give the console: '.json_encode($problem));
+    must($source->explainProblem($id, $other) === null, 'the console goes to a user who is not a root admin');
+    $other->delete();
 });
 step('No settings gear on Pelican\'s Plugins page: settings live on the Egg updates page (EU-B1)', function () {
     must(! is_subclass_of(SimplifyEggUpdatesPlugin::class, HasPluginSettings::class), 'the plugin still implements HasPluginSettings');

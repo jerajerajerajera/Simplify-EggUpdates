@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Test zlyhal: :reason. Súčasný egg zostáva.',
         'last_lines' => 'Posledné riadky: :lines',
         'failed_short' => 'Posledný test zlyhal: :reason',
+        'problem_title' => 'Posledný test :egg',
     ],
     'errors' => [
         'https' => 'URL na aktualizácie musí začínať https://',

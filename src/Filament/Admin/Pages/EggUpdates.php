@@ -10,12 +10,16 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
+use Simplify\EggUpdates\Addon\EggUpdatesProblems;
 use Simplify\EggUpdates\Models\EggBackup;
 use Simplify\EggUpdates\Models\EggUpdate;
 use Simplify\EggUpdates\Services\EggTester;
@@ -105,6 +109,7 @@ final class EggUpdates extends Page implements HasTable
                             self::since($egg)?->diffForHumans(),
                             self::note($egg),
                         ])),
+                        'explain' => self::explain($egg),
                     ])
                     ->hiddenFrom('sm'),
                 TextColumn::make('name')
@@ -122,7 +127,7 @@ final class EggUpdates extends Page implements HasTable
                     ->badge()
                     ->state(fn (Egg $egg) => self::status($egg))
                     ->formatStateUsing(fn (string $state) => __('simplify-eggupdates::egg-updates.status.'.$state))
-                    ->description(fn (Egg $egg) => self::note($egg))
+                    ->description(fn (Egg $egg) => self::note($egg) === null ? null : new HtmlString(e(self::note($egg)).' '.self::explain($egg)?->toHtml()))
                     ->color(fn (string $state) => self::color($state))
                     ->visibleFrom('sm'),
                 TextColumn::make('since')
@@ -306,6 +311,21 @@ final class EggUpdates extends Page implements HasTable
         }
 
         return __('simplify-eggupdates::egg-updates.tests.failed_short', ['reason' => $state->test_reason]);
+    }
+
+    /**
+     * Explain's question button right after "Last test failed", when Explain is installed (Simplify-Explain's README,
+     * "Explain your plugin's errors"). Without Explain the hook renders nothing.
+     */
+    private static function explain(Egg $egg): ?Htmlable
+    {
+        $state = EggUpdate::query()->find($egg->id);
+        if (self::status($egg) === 'unreachable' || $state?->test_ok !== false || empty($state->test_log) || self::note($egg) === null) {
+            return null;
+        }
+        $id = EggUpdatesProblems::id($egg);
+
+        return FilamentView::renderHook('simplify::problem.actions', scopes: ['simplify-problem', 'simplify-problem:'.$id]);
     }
 
     private static function since(Egg $egg): mixed

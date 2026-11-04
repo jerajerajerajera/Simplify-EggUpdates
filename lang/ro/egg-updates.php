@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Testul a eșuat: :reason. Egg-ul actual rămâne.',
         'last_lines' => 'Ultimele rânduri: :lines',
         'failed_short' => 'Ultimul test a eșuat: :reason',
+        'problem_title' => 'Ultimul test pentru :egg',
     ],
     'errors' => [
         'https' => 'URL-ul de actualizare trebuie să înceapă cu https://',
