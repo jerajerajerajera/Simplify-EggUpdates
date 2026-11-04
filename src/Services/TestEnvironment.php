@@ -10,9 +10,9 @@ use App\Models\ServerVariable;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * The variables of a Test first server. A variable keeps its default when that is valid. A required variable without
- * a valid default (such as Paper's User Agent, a bot token or an admin password) gets the value the egg's own servers
- * use, and otherwise the first of a few neutral values that its own rules accept.
+ * The variables of a Test first server. A variable keeps its default when that is filled and valid. An empty default
+ * (such as FTB's modpack ID) or one that is not valid (such as Paper's User Agent, a bot token or an admin password)
+ * gets the value the egg's own servers use, and otherwise the first of a few neutral values that its own rules accept.
  */
 final class TestEnvironment
 {
@@ -30,14 +30,14 @@ final class TestEnvironment
     }
 
     /**
-     * The default when it is valid, else the first valid one of $used and the neutral fillers.
+     * The first valid one of the default, $used and the neutral fillers; an empty default comes after $used.
      *
      * @param  list<string>  $used
      */
     public static function value(EggVariable $variable, array $used = []): string
     {
         $rules = $variable->rules ?: [];
-        $candidates = [(string) ($variable->default_value ?? ''), ...$used, ...self::fillers($rules)];
+        $candidates = [...self::order((string) ($variable->default_value ?? ''), $used), ...self::fillers($rules)];
         foreach ($candidates as $value) {
             if (self::valid($value, $rules)) {
                 return $value;
@@ -45,6 +45,17 @@ final class TestEnvironment
         }
 
         return $candidates[0];
+    }
+
+    /**
+     * The default first, unless it is empty: an empty value would make an egg such as FTB install nothing.
+     *
+     * @param  list<string>  $used
+     * @return list<string>
+     */
+    public static function order(string $default, array $used): array
+    {
+        return $default === '' ? [...$used, $default] : [$default, ...$used];
     }
 
     /** Whether Pelican will accept the value; a rule that cannot be checked (a broken pattern) counts as a no. */

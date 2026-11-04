@@ -334,6 +334,9 @@ $level = $tested->variables()->create(['name' => 'Level Name', 'description' => 
 // Like a Steam game: the server needs more than the default test size, and unlimited CPU.
 $owned = Server::factory()->create(['egg_id' => $tested->id, 'node_id' => $node->id, 'memory' => 6144, 'disk' => 30720, 'cpu' => 0]);
 ServerVariable::query()->create(['server_id' => $owned->id, 'variable_id' => $level->id, 'variable_value' => 'smoke world']);
+// Like FTB's modpack ID (EU-B2): optional and empty by default, but without it the egg installs nothing.
+$pack = $tested->variables()->create(['name' => 'Modpack ID', 'description' => 'Smoke', 'env_variable' => 'MODPACK_ID', 'default_value' => '', 'user_viewable' => true, 'user_editable' => true, 'rules' => ['nullable', 'integer'], 'sort' => 3]);
+ServerVariable::query()->create(['server_id' => $owned->id, 'variable_id' => $pack->id, 'variable_value' => '123']);
 $export = json_decode(app(EggExporterService::class)->handle($tested->id, EggFormat::JSON), true);
 $agent = array_replace(collect($export['variables'])->firstWhere('env_variable', 'LEVEL_NAME'), ['name' => 'User Agent', 'env_variable' => 'USER_AGENT', 'rules' => ['required'], 'user_viewable' => false, 'user_editable' => false, 'sort' => 2]);
 $remotes['smoke-tested'] = array_replace($export, ['name' => 'Smoke Tested 2', 'features' => ['eula'], 'variables' => [...$export['variables'], $agent]]);
@@ -367,6 +370,7 @@ step('Test first on the page makes a test server on a test port from a copy', fu
     must((int) $server->memory >= 6144 && (int) $server->disk >= 30720 && (int) $server->cpu === 0, 'the test server is smaller than the egg\'s server: '.$server->memory.' MB, '.$server->disk.' MB disk, '.$server->cpu.'% CPU');
     must($values['LEVEL_NAME'] === 'smoke world', 'the test server does not use the value the servers use: '.$values['LEVEL_NAME']);
     must($values['USER_AGENT'] === TestEnvironment::FILLER, 'the new User Agent has no value: '.$values['USER_AGENT']);
+    must(($values['MODPACK_ID'] ?? '') === '123', 'an empty default does not take the value the servers use: '.($values['MODPACK_ID'] ?? 'none'));
 });
 step('a passing test updates the egg, cleans up and tells the root admin', function () use ($admin, $tested, $leftovers, &$wings) {
     $test = EggTest::query()->where('egg_id', $tested->id)->firstOrFail();
