@@ -93,9 +93,19 @@ namespace {
     $plugin = file_get_contents(__DIR__.'/../src/SimplifyEggUpdatesPlugin.php');
     $check(! str_contains($plugin, 'HasPluginSettings'), "the plugin class has Pelican's own settings gear (HasPluginSettings)");
 
+    // Explain: a failed test keeps the last 100 lines of the test server's log, oldest first, without empty lines.
+    $log = implode("\n", array_map(fn ($n) => 'line '.$n, range(1, 150)))."\n\n";
+    $check(EggTester::lines($log) === array_map(fn ($n) => 'line '.$n, range(51, 150)), 'the test log is not the last 100 lines');
+    $check(EggTester::lines(["a\r\n", '', 'b']) === ['a', 'b'], 'console lines keep empty lines or line ends');
+    $check(EggTester::lines('') === [], 'an empty log gives lines');
+    $problems = file_get_contents(__DIR__.'/../src/Addon/EggUpdatesProblems.php') ?: '';
+    $provider = file_get_contents(__DIR__.'/../src/Providers/EggUpdatesProvider.php');
+    $check(str_contains($provider, "'simplify.problems'") && str_contains($problems, 'function canExplainProblem') && str_contains($problems, 'function explainProblem'), 'no problem source for Explain');
+    $check(substr_count($problems, 'isRootAdmin()') >= 1 && ! str_contains($problems, 'Simplify\\Explain'), 'the problem source does not check root admins, or needs Explain');
+
     if ($failures !== []) {
         echo "FAIL egg updates:\n  ".implode("\n  ", $failures)."\n";
         exit(1);
     }
-    echo "PASS egg updates: hash, format, names, modes, reasons, test ports, server moves, test values and no Pelican settings gear\n";
+    echo "PASS egg updates: hash, format, names, modes, reasons, test ports, server moves, test values, no Pelican settings gear and test logs for Explain\n";
 }

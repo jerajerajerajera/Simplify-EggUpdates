@@ -109,6 +109,7 @@ return [
         'failed_body' => 'A teszt sikertelen: :reason. A jelenlegi egg marad.',
         'last_lines' => 'Utolsó sorok: :lines',
         'failed_short' => 'Az utolsó teszt sikertelen: :reason',
+        'problem_title' => ':egg utolsó tesztje',
     ],
     'errors' => [
         'https' => 'A frissítési URL-nek https:// kezdetűnek kell lennie',

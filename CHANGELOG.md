@@ -6,6 +6,8 @@
   modpack on the test server instead of stopping at the first start.
 - Test first runs the test server on the Docker image the egg's servers use, when the new version still offers it,
   instead of the egg's first image (CurseForge lists Java 8 first).
+- A failed test keeps the last 100 lines of the test server's install log or console. With Simplify Explain
+  installed, a question button after "Last test failed" explains them; only root admins see it.
 - Checks: PHPStan (level 5) runs in CI, and the panel smoke also runs with the real Simplify core (main) instead of a stub.
 
 ## 2.0.0-beta.4

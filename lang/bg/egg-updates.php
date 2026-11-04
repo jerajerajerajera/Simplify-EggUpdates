@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Тестът не мина: :reason. Текущият egg остава.',
         'last_lines' => 'Последни редове: :lines',
         'failed_short' => 'Последният тест не мина: :reason',
+        'problem_title' => 'Последен тест на :egg',
     ],
     'errors' => [
         'https' => 'URL за обновяване трябва да започва с https://',

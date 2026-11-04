@@ -109,6 +109,7 @@ return [
         'failed_body' => 'テストに失敗しました: :reason。現在の egg はそのままです。',
         'last_lines' => '最後の行: :lines',
         'failed_short' => '前回のテストは失敗: :reason',
+        'problem_title' => ':egg の前回のテスト',
     ],
     'errors' => [
         'https' => '更新 URL は https:// で始まる必要があります',

@@ -109,6 +109,7 @@ return [
         'failed_body' => 'De test is mislukt: :reason. Het huidige egg blijft.',
         'last_lines' => 'Laatste regels: :lines',
         'failed_short' => 'Laatste test mislukt: :reason',
+        'problem_title' => 'Laatste test van :egg',
     ],
     'errors' => [
         'https' => 'De update-URL moet beginnen met https://',

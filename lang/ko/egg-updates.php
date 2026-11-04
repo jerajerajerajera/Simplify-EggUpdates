@@ -109,6 +109,7 @@ return [
         'failed_body' => '테스트 실패: :reason. 현재 egg가 유지됩니다.',
         'last_lines' => '마지막 줄: :lines',
         'failed_short' => '마지막 테스트 실패: :reason',
+        'problem_title' => ':egg 마지막 테스트',
     ],
     'errors' => [
         'https' => '업데이트 URL은 https://로 시작해야 합니다',
