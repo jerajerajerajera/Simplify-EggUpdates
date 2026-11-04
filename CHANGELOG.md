@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Checks: PHPStan (level 5) runs in CI, and the panel smoke also runs with the real Simplify core (main) instead of a stub.
+
 ## 2.0.0-beta.4
 
 - Pelican's Plugins page no longer shows a settings gear for Egg Updates; its settings are on the Egg updates page.

@@ -20,7 +20,8 @@ DOCS = 'https://raw.githubusercontent.com/pelican-dev/docs/main/docs/panel/advan
 # (0.5.1 was refused for "private static function link(").
 BANNED = ['file_put_contents', 'exec', 'unlink', 'fwrite', 'copy', 'rename', 'mkdir', 'rmdir', 'link',
           'symlink', 'chmod', 'chown', 'chgrp', 'lchown', 'lchgrp', 'touch', 'fputs', 'ftruncate',
-          'move_uploaded_file', 'shell_exec', 'system', 'passthru', 'proc_open', 'popen', 'pcntl_exec']
+          'move_uploaded_file', 'shell_exec', 'system', 'passthru', 'proc_open', 'popen', 'pcntl_exec', 'eval',
+          'assert', 'create_function']
 REQUIRED_FALLBACK = ['id', 'name', 'author', 'category', 'namespace', 'class']
 # Any use of the name followed by "(": plain calls, methods (->copy, ::copy) and declarations (function copy), but not
 # part of a longer name (fcopy) or a variable ($copy).
