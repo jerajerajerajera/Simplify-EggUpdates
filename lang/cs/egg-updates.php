@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Test selhal: :reason. Současný egg zůstává.',
         'last_lines' => 'Poslední řádky: :lines',
         'failed_short' => 'Poslední test selhal: :reason',
+        'problem_title' => 'Poslední test :egg',
     ],
     'errors' => [
         'https' => 'URL pro aktualizace musí začínat https://',

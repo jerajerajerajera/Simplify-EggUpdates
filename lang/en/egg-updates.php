@@ -109,6 +109,7 @@ return [
         'failed_body' => 'The test failed: :reason. The current egg stays.',
         'last_lines' => 'Last lines: :lines',
         'failed_short' => 'Last test failed: :reason',
+        'problem_title' => 'Last test of :egg',
     ],
     'errors' => [
         'https' => 'The update URL must start with https://',

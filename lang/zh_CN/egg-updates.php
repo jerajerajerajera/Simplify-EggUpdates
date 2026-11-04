@@ -109,6 +109,7 @@ return [
         'failed_body' => '测试失败：:reason。当前的 egg 保持不变。',
         'last_lines' => '最后几行：:lines',
         'failed_short' => '上次测试失败：:reason',
+        'problem_title' => ':egg 的上次测试',
     ],
     'errors' => [
         'https' => '更新 URL 必须以 https:// 开头',

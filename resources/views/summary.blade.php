@@ -4,5 +4,5 @@
     <x-filament::badge :color="$row['color']" size="sm">
         {{ __('simplify-eggupdates::egg-updates.status.'.$row['status']) }}
     </x-filament::badge>
-    <span class="fi-ta-text-item-label" style="font-size: 0.75rem; opacity: 0.7;">{{ $row['meta'] }}</span>
+    <span class="fi-ta-text-item-label" style="font-size: 0.75rem; opacity: 0.7;">{{ $row['meta'] }} {{ $row['explain'] }}</span>
 </div>

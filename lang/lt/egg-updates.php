@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Testas nepavyko: :reason. Dabartinis egg lieka.',
         'last_lines' => 'Paskutinės eilutės: :lines',
         'failed_short' => 'Paskutinis testas nepavyko: :reason',
+        'problem_title' => 'Paskutinis :egg testas',
     ],
     'errors' => [
         'https' => 'Atnaujinimo URL turi prasidėti https://',

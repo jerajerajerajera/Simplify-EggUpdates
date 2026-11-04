@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Тэст не прайшоў: :reason. Цяперашні egg застаецца.',
         'last_lines' => 'Апошнія радкі: :lines',
         'failed_short' => 'Апошні тэст не прайшоў: :reason',
+        'problem_title' => 'Апошні тэст :egg',
     ],
     'errors' => [
         'https' => 'URL абнаўлення павінен пачынацца з https://',

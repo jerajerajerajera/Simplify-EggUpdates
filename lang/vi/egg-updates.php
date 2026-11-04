@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Lần thử thất bại: :reason. Egg hiện tại được giữ nguyên.',
         'last_lines' => 'Các dòng cuối: :lines',
         'failed_short' => 'Lần thử gần nhất thất bại: :reason',
+        'problem_title' => 'Lần thử gần nhất của :egg',
     ],
     'errors' => [
         'https' => 'URL cập nhật phải bắt đầu bằng https://',

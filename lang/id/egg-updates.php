@@ -109,6 +109,7 @@ return [
         'failed_body' => 'Uji gagal: :reason. Egg saat ini tetap dipakai.',
         'last_lines' => 'Baris terakhir: :lines',
         'failed_short' => 'Uji terakhir gagal: :reason',
+        'problem_title' => 'Uji terakhir :egg',
     ],
     'errors' => [
         'https' => 'URL pembaruan harus diawali https://',

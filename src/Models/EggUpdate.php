@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $applied_hash hash of the remote definition that was last installed
  * @property bool|null $test_ok how the last test of an update ended, null when it was not tested
  * @property string|null $test_reason
+ * @property list<string>|null $test_log the last lines of the test server's log when the test failed
  * @property Carbon|null $tested_at
  * @property int $link_failures checks in a row on which the update URL failed
  * @property Carbon|null $link_failed_at
@@ -30,7 +31,7 @@ final class EggUpdate extends Model
 
     public $incrementing = false;
 
-    protected $fillable = ['egg_id', 'found_hash', 'found_at', 'held', 'applied_hash', 'test_ok', 'test_reason', 'tested_at', 'link_failures', 'link_failed_at', 'link_error'];
+    protected $fillable = ['egg_id', 'found_hash', 'found_at', 'held', 'applied_hash', 'test_ok', 'test_reason', 'test_log', 'tested_at', 'link_failures', 'link_failed_at', 'link_error'];
 
     /** Checks in a row an update URL must fail before the egg is listed as one that cannot be checked. */
     public const LINK_FAILURES = 2;
@@ -41,6 +42,7 @@ final class EggUpdate extends Model
             'found_at' => 'datetime',
             'held' => 'boolean',
             'test_ok' => 'boolean',
+            'test_log' => 'array',
             'tested_at' => 'datetime',
             'link_failures' => 'integer',
             'link_failed_at' => 'datetime',
