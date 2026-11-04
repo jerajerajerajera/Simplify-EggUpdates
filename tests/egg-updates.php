@@ -21,12 +21,14 @@ namespace {
     require __DIR__.'/../src/Enums/Mode.php';
     require __DIR__.'/../src/Services/EggTester.php';
     require __DIR__.'/../src/Services/ServerMover.php';
+    require __DIR__.'/../src/Services/TestEnvironment.php';
 
     use App\Enums\EggFormat;
     use Simplify\EggUpdates\Enums\Mode;
     use Simplify\EggUpdates\Services\Definition;
     use Simplify\EggUpdates\Services\EggTester;
     use Simplify\EggUpdates\Services\ServerMover;
+    use Simplify\EggUpdates\Services\TestEnvironment;
 
     $failures = [];
     $check = function (bool $ok, string $what) use (&$failures) {
@@ -76,6 +78,17 @@ namespace {
 
     $check(Definition::reason(new RuntimeException("  <b>Not found</b>\n  at the URL.  ")) === 'Not found at the URL', 'a reason is one plain line');
 
+    // EU-B2: an empty default (FTB's modpack ID) takes the value the egg's own servers use; a filled default stays first.
+    $check(TestEnvironment::order('', ['123', '45']) === ['123', '45', ''], 'an empty default takes the value the servers use: '.json_encode(TestEnvironment::order('', ['123', '45'])));
+    $check(TestEnvironment::order('latest', ['1.20']) === ['latest', '1.20'], 'a filled default stays first');
+    $check(TestEnvironment::order('', []) === [''], 'without servers the empty default stays');
+
+    // EU-B3: the test server runs on the image the egg's servers use (CurseForge lists Java 8 first), if the new version still has it.
+    $images = ['Java 8' => 'yolks:java_8', 'Java 21' => 'yolks:java_21'];
+    $check(TestEnvironment::image($images, ['yolks:java_21', 'yolks:java_8']) === 'yolks:java_21', 'the test server does not use the image the servers use');
+    $check(TestEnvironment::image($images, ['yolks:java_16']) === 'yolks:java_8', 'an image the new version dropped is not replaced by its default');
+    $check(TestEnvironment::image($images, []) === 'yolks:java_8', 'without servers the default image is not used');
+
     // Settings live on the Egg updates page in Simplify, never behind a gear on Pelican's Plugins page.
     $plugin = file_get_contents(__DIR__.'/../src/SimplifyEggUpdatesPlugin.php');
     $check(! str_contains($plugin, 'HasPluginSettings'), "the plugin class has Pelican's own settings gear (HasPluginSettings)");
@@ -84,5 +97,5 @@ namespace {
         echo "FAIL egg updates:\n  ".implode("\n  ", $failures)."\n";
         exit(1);
     }
-    echo "PASS egg updates: hash, format, names, modes, reasons, test ports, server moves and no Pelican settings gear\n";
+    echo "PASS egg updates: hash, format, names, modes, reasons, test ports, server moves, test values and no Pelican settings gear\n";
 }
