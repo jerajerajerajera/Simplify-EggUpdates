@@ -13,7 +13,7 @@ use Simplify\EggUpdates\Services\EggTester;
  * and per row Test first, Update, Move servers and Put back. Pelican's own Update button makes way for Egg Updates'
  * Update, which keeps the previous version, so a row never has two Update buttons.
  *
- * Pelican has no way for a plugin to add columns or row buttons to this table, so EggsTableHook adds them after
+ * Pelican has no way for a plugin to add columns or row buttons to this table, so EggsTableListener adds them after
  * Pelican made the table. When that fails, for example because a new Pelican changes the table, the Updates block
  * above the list comes back (EggUpdatesWidget), so nothing is lost.
  */
@@ -32,6 +32,14 @@ final class EggsTable
         return self::$extended;
     }
 
+    /** How the Eggs table is reached at boot, for the panel smoke's message. */
+    private static string $registered = 'not registered';
+
+    public static function registered(string $how): void
+    {
+        self::$registered = $how;
+    }
+
     public static function trace(string $line): void
     {
         self::$trace[] = $line;
@@ -40,7 +48,7 @@ final class EggsTable
     /** What happened to the Eggs table in this request, in one line. */
     public static function traced(): string
     {
-        return implode('; ', self::$trace) ?: 'the hook never ran';
+        return self::$registered.': '.(implode('; ', self::$trace) ?: 'nothing ran');
     }
 
     public static function extend(Table $table): void
