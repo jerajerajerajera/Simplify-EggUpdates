@@ -110,7 +110,7 @@ jobs:
           rm -rf panel/plugins/simplify-eggupdates/.git
           cd panel
           php artisan tinker --execute="App\Jobs\Plugin\InstallPlugin::dispatch(App\Models\User::factory()->create(), 'simplify-eggupdates');"
-          php artisan queue:work --max-jobs=1 --stop-when-empty
+          php artisan queue:work --stop-when-empty
           php artisan p:plugin:list | grep -E 'Simplify Egg Updates .*\| enabled' || { echo '1.1.5 did not install'; exit 1; }
           php ../plugin/tests/panel/state.php fill
       # The last release before this code (a beta counts): an update from one beta to the next must work too.
@@ -124,7 +124,7 @@ jobs:
           rm -rf panel/plugins/simplify-eggupdates/.git
           cd panel
           php artisan tinker --execute="App\Jobs\Plugin\InstallPlugin::dispatch(App\Models\User::factory()->create(), 'simplify-eggupdates');"
-          php artisan queue:work --max-jobs=1 --stop-when-empty
+          php artisan queue:work --stop-when-empty
           php ../plugin/tests/panel/state.php check
       - name: Install Simplify Egg Updates
         run: |
@@ -134,7 +134,7 @@ jobs:
           cd panel
           # As Admin → Plugins and the Hub install it: in a queue job.
           php artisan tinker --execute="App\Jobs\Plugin\InstallPlugin::dispatch(App\Models\User::factory()->create(), 'simplify-eggupdates');"
-          php artisan queue:work --max-jobs=1 --stop-when-empty
+          php artisan queue:work --stop-when-empty
           php artisan p:plugin:list | tee plugins.txt
           grep -E 'Simplify Egg Updates .*\| enabled' plugins.txt || { echo 'Simplify Egg Updates did not install'; exit 1; }
           test ! -e plugins/simplify-egg-updates || { echo 'The old simplify-egg-updates folder is still there'; exit 1; }
@@ -148,7 +148,7 @@ jobs:
           php artisan p:plugin:uninstall simplify-eggupdates --no-interaction
           php artisan p:plugin:list | grep -E 'Simplify Egg Updates .*\| enabled' && { echo 'still enabled after uninstalling'; exit 1; }
           php artisan tinker --execute="App\Jobs\Plugin\InstallPlugin::dispatch(App\Models\User::factory()->create(), 'simplify-eggupdates');"
-          php artisan queue:work --max-jobs=1 --stop-when-empty
+          php artisan queue:work --stop-when-empty
           php artisan p:plugin:list | grep -E 'Simplify Egg Updates .*\| enabled' || { echo 'did not install again'; exit 1; }
           php ../plugin/tests/panel/state.php check
           php ../plugin/tests/panel/state.php clean
@@ -193,7 +193,7 @@ jobs:
           rm -rf panel/plugins/simplify-eggupdates/.git
           cd panel
           php artisan tinker --execute="App\Jobs\Plugin\InstallPlugin::dispatch(App\Models\User::factory()->create(), 'simplify-eggupdates');"
-          php artisan queue:work --max-jobs=1 --stop-when-empty
+          php artisan queue:work --stop-when-empty
           php artisan p:plugin:list | grep -E 'Simplify Egg Updates .*\| enabled' || { echo "$PREVIOUS_RELEASE did not install over the new tables"; exit 1; }
           php ../plugin/tests/panel/pages.php
       - name: Laravel log
