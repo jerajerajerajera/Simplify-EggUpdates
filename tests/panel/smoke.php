@@ -210,16 +210,7 @@ step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' but
     $name = collect($names)->first(fn (string $name) => str_contains($name, 'eggs-list') || str_contains($name, 'list-eggs'));
     must($name !== null, 'no snapshot of the Eggs page: '.implode(', ', $names));
     must($name === 'simplify-eggupdates.eggs-list', 'a click on the Eggs page would reach Pelican\'s own page: '.$name);
-    $names = collect(eggsTable($admin)->getRecordActions())->map(fn ($action) => $action->getName());
-    must($names->contains('egg_updates_update') && $names->contains('egg_updates_test') && $names->contains('egg_updates_put_back'), 'Egg Updates\' buttons are not in the row: '.$names->implode(', '));
-    must(collect(eggsTable($admin)->getRecordActions())->filter(fn ($action) => EggsTable::isPelicansUpdate($action))->isEmpty(), 'Pelican\'s own Update button is still in the row');
-    // Other admins get Pelican's table as it is.
-    $other = User::factory()->create();
-    EggsTable::reset();
-    $names = collect(eggsTable($other)->getRecordActions())->map(fn ($action) => $action->getName());
-    must(! $names->contains('egg_updates_update') && ! EggsTable::extended(), 'Egg Updates went into the table for a user who is not a root admin');
-    auth()->setUser($admin);
-    $other->delete();
+    // The buttons in the row are checked in the last step: a page made by hand upsets Livewire's tests after it.
 });
 step('without its place in Pelican\'s table the Updates block comes back, so nothing is lost', function () use ($admin) {
     EggsTable::reset();
@@ -337,13 +328,7 @@ step('the buttons Check now, Update all, Put back and Update on the page', funct
         ->assertActionVisible('egg_updates_update_all')
         ->callAction('egg_updates_update_all')->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha 2' && $second->fresh()->name === 'Smoke Beta 2', 'Update all left an egg behind');
-    // Put back and Update in the egg's row of Pelican's table.
-    eggsTableAction($admin, 'egg_updates_put_back', $first->fresh());
-    must($first->fresh()->name === 'Smoke Alpha', 'Put back on the page did not restore the egg');
-    must(EggUpdate::query()->find($first->id)->held === true, 'not held after Put back');
-    eggsTableAction($admin, 'egg_updates_update', $first->fresh());
-    must($first->fresh()->name === 'Smoke Alpha 2', 'Update on the page did not update the egg');
-    // The same buttons in the Updates block, for when it shows.
+    // Put back and Update in the Updates block, for when it shows; the row of Pelican's table is the last step.
     $block = Livewire::actingAs($admin)->test(EggUpdatesWidget::class);
     $block->callAction(TestAction::make('put_back')->table($first->fresh()))->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha', 'Put back in the Updates block did not restore the egg');
@@ -622,5 +607,28 @@ if ($public !== '' && is_dir($public)) {
         must($failures === [], count($failures).' of '.$files->count().' public eggs fail Test first');
     });
 }
+// Last, because it makes Pelican's Eggs page by hand, outside Livewire, and Livewire's tests after it would see that page.
+step('Egg Updates\' buttons sit in the egg\'s row of Pelican\'s table: Update, Test first and Put back, without Pelican\'s own Update (G5)', function () use ($admin, &$remotes) {
+    $egg = remoteEgg('Smoke Gamma', $remotes, ['name' => 'Smoke Gamma 2']);
+    Settings::saveForm(['mode' => 'ask']);
+    Runner::run(true);
+    EggsTable::reset();
+    $actions = collect(eggsTable($admin)->getRecordActions());
+    $names = $actions->map(fn ($action) => $action->getName());
+    must($names->contains('egg_updates_update') && $names->contains('egg_updates_test') && $names->contains('egg_updates_put_back'), 'Egg Updates\' buttons are not in the row: '.$names->implode(', '));
+    must($actions->filter(fn ($action) => EggsTable::isPelicansUpdate($action))->isEmpty(), 'Pelican\'s own Update button is still in the row');
+    eggsTableAction($admin, 'egg_updates_update', $egg->fresh());
+    must($egg->fresh()->name === 'Smoke Gamma 2', 'Update in the row did not update the egg');
+    eggsTableAction($admin, 'egg_updates_put_back', $egg->fresh());
+    must($egg->fresh()->name === 'Smoke Gamma', 'Put back in the row did not restore the egg');
+    must(EggUpdate::query()->find($egg->id)->held === true, 'not held after Put back');
+    // Other admins get Pelican's table as it is.
+    $other = User::factory()->create();
+    EggsTable::reset();
+    $names = collect(eggsTable($other)->getRecordActions())->map(fn ($action) => $action->getName());
+    must(! $names->contains('egg_updates_update') && ! EggsTable::extended(), 'Egg Updates went into the table for a user who is not a root admin');
+    auth()->setUser($admin);
+    $other->delete();
+});
 echo $failed ? "Some steps failed\n" : "All steps passed\n";
 exit($failed ? 1 : 0);
