@@ -24,10 +24,12 @@ return [
         'mode' => 'Atnaujinimai',
         'mode_help' => 'Kiekvienas egg tikrinamas kas šešias valandas. Serverių naudojamus eggus atnaujini tik tu, arba jie atnaujinami, kai testinis serveris su nauja versija įsidiegia ir pasileidžia. Ankstesnė versija visada išsaugoma.',
         'saved' => 'Nustatymai išsaugoti',
+        'save' => 'Išsaugoti',
     ],
     'page' => [
         'checked' => 'Patikrinta :time',
         'not_checked' => 'Dar netikrinta',
+        'eggs' => 'Eggs',
         'egg' => 'Egg',
         'servers' => 'Serveriai',
         'server_count' => '{0} Nėra serverių|{1} 1 serveris|[2,9] :count serveriai|[10,*] Serverių: :count',

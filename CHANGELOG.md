@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Egg Updates moved to Pelican's Eggs page: an Updates block at the top of the list (only when there is something to
+  do) with the same buttons, and Check now and Update all in the page's title bar. The menu item is gone. The
+  settings are under Simplify settings › Add-ons, or without Simplify behind the gear on the Eggs page. Notifications
+  open the Eggs page.
 - Test first gives an empty field the value the egg's own servers use, so an egg such as FTB Server installs its
   modpack on the test server instead of stopping at the first start.
 - Test first runs the test server on the Docker image the egg's servers use, when the new version still offers it,

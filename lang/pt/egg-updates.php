@@ -24,10 +24,12 @@ return [
         'mode' => 'Atualizações',
         'mode_help' => 'Cada egg é verificado de seis em seis horas. Os eggs usados por servidores só são atualizados por ti, ou depois de um servidor de teste instalar e arrancar com a nova versão. A versão anterior é sempre guardada.',
         'saved' => 'Definições guardadas',
+        'save' => 'Guardar',
     ],
     'page' => [
         'checked' => 'Verificado :time',
         'not_checked' => 'Ainda não verificado',
+        'eggs' => 'Eggs',
         'egg' => 'Egg',
         'servers' => 'Servidores',
         'server_count' => '{0} Sem servidores|{1} 1 servidor|[2,*] :count servidores',

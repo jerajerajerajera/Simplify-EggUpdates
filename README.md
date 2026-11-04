@@ -7,7 +7,8 @@ safely. The previous version of an egg is always kept, so it can be put back.
 
 - Every six hours each egg with an update URL is compared with the version published there, the same way Pelican
   compares them. The result is kept until the egg is updated, so nothing is missed.
-- New versions show up in Pelican's notifications for root admins and on **Simplify → Egg Updates** in the admin menu.
+- New versions show up in Pelican's notifications for root admins and in an **Updates** block at the top of Pelican's
+  own **Eggs** page, with **Check now** and **Update all** in its title bar. Egg Updates has no menu item of its own.
 - Update one egg or all of them. Running servers keep running and get the new egg at their next start or reinstall.
 - Put back returns the egg to the version it had before the last update. Automatic updates then leave it alone.
 - **Test first**: before an egg that servers use is updated, a temporary test server is made with the new version on
@@ -17,22 +18,23 @@ safely. The previous version of an egg is always kept, so it can be put back.
   servers that still use a command or image the update changed or removed the new one, from their next start. Commands
   and images set by hand stay.
 - Optionally, eggs that no server uses are updated automatically.
-- Pelican's own Update button on its Eggs page follows the same result.
+- Pelican's own Update button in its egg rows follows the same result. That button updates without a test and without
+  keeping the previous version; the Updates block is the safe way.
 
 It works on its own. With [Simplify](https://github.com/jerajerajerajera/Simplify) installed it also shows up in
 Simplify's add-on list.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/egg-updates-host-desktop-dark.png">
-  <img src="docs/screenshots/egg-updates-host-desktop-light.png" alt="The Egg Updates page in Simplify" width="720">
+  <img src="docs/screenshots/egg-updates-host-desktop-light.png" alt="Egg Updates on Pelican's Eggs page" width="720">
 </picture>
 
 ## Set up
 
 1. Install the plugin from the [Pelican Hub](https://hub.pelican.dev). Updates come from the Hub only.
-2. Open **Simplify → Egg Updates** in the admin menu. Under **Settings** choose what happens with new versions:
-   *Ask first* (default), *Update eggs without servers automatically*, *Test first, then update* or *Off*. The same settings are behind the
-   gear on Pelican's Plugins page.
+2. Open the settings: with Simplify under **Simplify settings → Add-ons → Egg Updates**, without Simplify with the gear
+   in the title bar of Pelican's **Eggs** page. Choose what happens with new versions: *Ask first* (default), *Update
+   eggs without servers automatically*, *Test first, then update* or *Off*.
 
 Pelican's scheduler must run (`php artisan schedule:run` every minute), as in Pelican's own installation guide.
 

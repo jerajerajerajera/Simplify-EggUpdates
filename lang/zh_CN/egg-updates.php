@@ -24,10 +24,12 @@ return [
         'mode' => '更新',
         'mode_help' => '每六小时检查一次每个 egg 是否有新版本。服务器正在使用的 egg 只由你更新，或在测试服务器用新版本安装并启动成功后更新。上一个版本始终保留。',
         'saved' => '设置已保存',
+        'save' => '保存',
     ],
     'page' => [
         'checked' => '检查于 :time',
         'not_checked' => '尚未检查',
+        'eggs' => 'Egg',
         'egg' => 'Egg',
         'servers' => '服务器',
         'server_count' => '{0} 无服务器|{1} 1 台服务器|[2,*] :count 台服务器',

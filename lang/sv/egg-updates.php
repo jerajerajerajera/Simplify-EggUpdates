@@ -24,10 +24,12 @@ return [
         'mode' => 'Uppdateringar',
         'mode_help' => 'Varje egg kollas efter en ny version var sjätte timme. Eggs som servrar använder uppdateras bara av dig, eller efter att en testserver har installerats och startat med den nya versionen. Den förra versionen sparas alltid.',
         'saved' => 'Inställningar sparade',
+        'save' => 'Spara',
     ],
     'page' => [
         'checked' => 'Kollad :time',
         'not_checked' => 'Inte kollad än',
+        'eggs' => 'Eggs',
         'egg' => 'Egg',
         'servers' => 'Servrar',
         'server_count' => '{0} Inga servrar|{1} 1 server|[2,*] :count servrar',

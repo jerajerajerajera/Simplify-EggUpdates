@@ -24,10 +24,12 @@ return [
         'mode' => 'Frissítések',
         'mode_help' => 'Minden egg hatóránként ellenőrizve van. A szerverek által használt eggeket csak te frissíted, vagy akkor frissülnek, ha egy tesztszerver települt és elindult az új verzióval. Az előző verzió mindig megmarad.',
         'saved' => 'Beállítások mentve',
+        'save' => 'Mentés',
     ],
     'page' => [
         'checked' => 'Ellenőrizve :time',
         'not_checked' => 'Még nincs ellenőrizve',
+        'eggs' => 'Eggek',
         'egg' => 'Egg',
         'servers' => 'Szerverek',
         'server_count' => '{0} Nincs szerver|{1} 1 szerver|[2,*] :count szerver',
