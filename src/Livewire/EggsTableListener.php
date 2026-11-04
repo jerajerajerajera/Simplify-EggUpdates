@@ -9,10 +9,10 @@ use Livewire\Livewire;
 use Simplify\EggUpdates\Filament\Admin\EggsTable;
 
 /**
- * Adds Egg Updates to Pelican's Eggs table on every request of that page, right after Pelican made the table. Livewire
- * runs what a "mount" or "hydrate" listener returns once the component's own mount or hydrate (which builds the table)
- * is done. Anything that goes wrong is reported and leaves Pelican's table as it was; the Updates block above the list
- * then shows instead.
+ * Adds Egg Updates to Pelican's Eggs table on every request of that page, after Pelican made the table: just before
+ * the page renders ("render") and before every click on the page runs ("call"), so the column is drawn and the buttons
+ * are found. Anything that goes wrong is reported and leaves Pelican's table as it was; the Updates block above the
+ * list then shows instead.
  */
 final class EggsTableListener
 {
@@ -28,17 +28,19 @@ final class EggsTableListener
 
             return;
         }
-        foreach (['mount', 'hydrate'] as $event) {
-            $listen($event, fn (mixed $component) => $component instanceof ListEggs
-                ? fn () => self::extend($component, $event)
-                : null);
+        foreach (['render', 'call'] as $event) {
+            $listen($event, function (mixed $component) use ($event) {
+                if ($component instanceof ListEggs) {
+                    self::extend($component, $event);
+                }
+            });
         }
         EggsTable::registered('listening');
     }
 
     private static function extend(ListEggs $component, string $event): void
     {
-        EggsTable::trace('after '.$event);
+        EggsTable::trace('on '.$event);
         try {
             EggsTable::extend($component->getTable());
         } catch (\Throwable $exception) {
