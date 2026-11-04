@@ -24,10 +24,12 @@ return [
         'mode' => 'Aggiornamenti',
         'mode_help' => 'Ogni egg viene controllato ogni sei ore. Gli egg usati dai server li aggiorni solo tu, oppure dopo che un server di test si è installato e avviato con la nuova versione. La versione precedente viene sempre conservata.',
         'saved' => 'Impostazioni salvate',
+        'save' => 'Salva',
     ],
     'page' => [
         'checked' => 'Controllato :time',
         'not_checked' => 'Non ancora controllato',
+        'eggs' => 'Egg',
         'egg' => 'Egg',
         'servers' => 'Server',
         'server_count' => '{0} Nessun server|{1} 1 server|[2,*] :count server',

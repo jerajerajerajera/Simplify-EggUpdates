@@ -10,6 +10,8 @@
 use App\Contracts\Plugins\HasPluginSettings;
 use App\Enums\EggFormat;
 use App\Enums\ServerState;
+use App\Filament\Admin\Resources\Eggs\EggResource;
+use App\Filament\Admin\Resources\Eggs\Pages\ListEggs;
 use App\Models\Allocation;
 use App\Models\Egg;
 use App\Models\Node;
@@ -36,6 +38,7 @@ use Simplify\EggUpdates\Addon\EggUpdatesAddon;
 use Simplify\EggUpdates\Addon\EggUpdatesProblems;
 use Simplify\EggUpdates\Enums\Mode;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
+use Simplify\EggUpdates\Filament\Admin\Widgets\EggUpdatesWidget;
 use Simplify\EggUpdates\Models\EggBackup;
 use Simplify\EggUpdates\Models\EggTest;
 use Simplify\EggUpdates\Models\EggUpdate;
@@ -148,19 +151,26 @@ Filament::setCurrentPanel(Filament::getPanel('admin'));
 step('the smoke user is a root admin', function () use ($admin) {
     must($admin->fresh()->isRootAdmin(), 'not a root admin');
 });
-step('the page renders without updates', function () use ($admin) {
-    $response = http($admin, EggUpdates::getUrl(panel: 'admin'));
+step('Pelican\'s Eggs page renders without updates, without the Updates block, and Egg Updates has no menu item', function () use ($admin) {
+    $response = http($admin, EggResource::getUrl('index', panel: 'admin'));
     must($response->getStatusCode() === 200, 'HTTP '.$response->getStatusCode().($response->exception ? ': '.$response->exception->getMessage() : ''));
+    must(str_contains($response->getContent(), 'Check now'), 'no Check now in the title bar of the Eggs page');
+    must(! str_contains($response->getContent(), 'Not checked yet'), 'the Updates block shows with nothing to do');
+    must(! EggUpdates::shouldRegisterNavigation(), 'Egg Updates still has its own menu item');
+    $settings = http($admin, EggUpdates::getUrl(panel: 'admin'));
+    must($settings->getStatusCode() === 200, 'the settings page: HTTP '.$settings->getStatusCode().($settings->exception ? ': '.$settings->exception->getMessage() : ''));
+    must(str_contains($settings->getContent(), 'data-simplify-unsaved'), 'the settings form does not ask before leaving with changes');
 });
 step('Check now finds the new version and tells root admins', function () use ($admin, $egg) {
-    Livewire::actingAs($admin)->test(EggUpdates::class)->callAction('check')->assertHasNoErrors();
+    Livewire::actingAs($admin)->test(ListEggs::class)->callAction('egg_updates_check')->assertHasNoErrors()->assertRedirect(EggResource::getUrl('index', panel: 'admin'));
     must(EggUpdate::query()->find($egg->id)?->found_hash !== null, 'the update was not found');
     must(cache()->get('eggs.'.$egg->uuid.'.update') === true, 'Pelican\'s own Update button does not follow');
 });
-step('the page lists the update', function () use ($admin) {
-    $response = http($admin, EggUpdates::getUrl(panel: 'admin'));
+step('the Updates block on the Eggs page lists the update', function () use ($admin) {
+    $response = http($admin, EggResource::getUrl('index', panel: 'admin'));
     must($response->getStatusCode() === 200, 'HTTP '.$response->getStatusCode());
-    must(str_contains($response->getContent(), 'Smoke Paper'), 'the egg is not listed');
+    must(str_contains($response->getContent(), 'Checked '), 'no Updates block on the Eggs page');
+    must(str_contains(Livewire::actingAs($admin)->test(EggUpdatesWidget::class)->html(), 'Smoke Paper'), 'the egg is not listed');
     // The phone cell: servers and since on one line under the name.
     must(str_contains($response->getContent(), 'No servers · '), 'the phone summary is missing');
 });
@@ -195,13 +205,15 @@ step('the settings save', function () use ($admin) {
     auth()->login($admin);
     Settings::saveForm(['mode' => 'off']);
     must(Settings::mode() === Mode::Off, 'mode not saved directly');
-    // Filament's fillForm() does not reach a header action's form here, so set its state the way the browser does.
     Livewire::actingAs($admin)->test(EggUpdates::class)
-        ->mountAction('settings')
-        ->set('mountedActions.0.data.mode', 'test')
-        ->callMountedAction()
-        ->assertHasNoFormErrors();
-    must(Settings::mode() === Mode::Test, 'mode not saved from the page: '.Settings::mode()->value);
+        ->assertSet('data.mode', 'off')
+        ->set('data.mode', 'test')
+        ->callAction('save')
+        ->assertHasNoErrors();
+    must(Settings::mode() === Mode::Test, 'mode not saved from the settings page: '.Settings::mode()->value);
+    // Without Simplify the gear on the Eggs page opens the settings; with Simplify they are under Settings › Add-ons.
+    $eggs = Livewire::actingAs($admin)->test(ListEggs::class);
+    class_exists('Simplify\Core\Addons\Addon') ? $eggs->assertActionHidden('egg_updates_settings') : $eggs->assertActionVisible('egg_updates_settings');
 });
 step('Simplify\'s setup asks when eggs are updated and saves it', function () use ($admin) {
     if (! class_exists('Simplify\Core\Addons\Addon')) {
@@ -252,10 +264,11 @@ step('the buttons Check now, Update all, Put back and Update on the page', funct
     $first = remoteEgg('Smoke Alpha', $remotes, ['name' => 'Smoke Alpha 2']);
     $second = remoteEgg('Smoke Beta', $remotes, ['name' => 'Smoke Beta 2']);
     Settings::saveForm(['mode' => 'ask']);
-    $page = Livewire::actingAs($admin)->test(EggUpdates::class)->callAction('check')->assertHasNoErrors()
-        ->assertActionVisible('update_all')
-        ->callAction('update_all')->assertHasNoErrors();
+    Livewire::actingAs($admin)->test(ListEggs::class)->callAction('egg_updates_check')->assertHasNoErrors()
+        ->assertActionVisible('egg_updates_update_all')
+        ->callAction('egg_updates_update_all')->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha 2' && $second->fresh()->name === 'Smoke Beta 2', 'Update all left an egg behind');
+    $page = Livewire::actingAs($admin)->test(EggUpdatesWidget::class);
     $page->callAction(TestAction::make('put_back')->table($first->fresh()))->assertHasNoErrors();
     must($first->fresh()->name === 'Smoke Alpha', 'Put back on the page did not restore the egg');
     must(EggUpdate::query()->find($first->id)->held === true, 'not held after Put back');
@@ -274,7 +287,7 @@ step('Move servers on the page moves servers off the removed image and command, 
     $result = EggUpdater::update($egg->fresh());
     must($result->ok, $result->message);
     must(ServerMover::count($egg->fresh()) === 1, 'expected one server to move, got '.ServerMover::count($egg->fresh()));
-    Livewire::actingAs($admin)->test(EggUpdates::class)
+    Livewire::actingAs($admin)->test(EggUpdatesWidget::class)
         ->assertActionVisible(TestAction::make('move')->table($egg->fresh()))
         ->callAction(TestAction::make('move')->table($egg->fresh()))->assertHasNoErrors();
     $old->refresh();
@@ -299,7 +312,7 @@ step('Move servers asks for a field the update made required and fills it on ser
     ServerVariable::query()->create(['server_id' => $own->id, 'variable_id' => $agent->id, 'variable_value' => 'mine']);
     must(array_keys(ServerMover::fields($egg->fresh())) === ['USER_AGENT'], 'asked for: '.implode(', ', array_keys(ServerMover::fields($egg->fresh()))));
     must(ServerMover::count($egg->fresh()) === 1, 'expected one server without a value, got '.ServerMover::count($egg->fresh()));
-    Livewire::actingAs($admin)->test(EggUpdates::class)
+    Livewire::actingAs($admin)->test(EggUpdatesWidget::class)
         ->assertActionVisible(TestAction::make('move')->table($egg->fresh()))
         ->mountAction(TestAction::make('move')->table($egg->fresh()))
         ->set('mountedActions.0.data.USER_AGENT', 'smoke agent')
@@ -315,16 +328,14 @@ step('an egg whose update link stopped working shows as Can\'t check, after two 
     remoteEgg('Smoke Broken Unused', $remotes, []);
     Server::factory()->create(['egg_id' => $egg->id]);
     $broken = ['smoke-broken', 'smoke-broken-unused'];
-    $badge = EggUpdates::getNavigationBadge();
     $bell = count(bell($admin));
-    $page = fn () => http($admin, EggUpdates::getUrl(panel: 'admin'))->getContent();
+    $page = fn () => Livewire::actingAs($admin)->test(EggUpdatesWidget::class)->html();
     UpdateChecker::check();
     must(! str_contains($page(), 'Smoke Broken'), 'listed after one failed check');
     UpdateChecker::check();
     $html = $page();
     must(str_contains($html, 'Smoke Broken') && str_contains($html, '404'), 'not listed with the reason after two failed checks');
     must(! str_contains($html, 'Smoke Broken Unused'), 'an egg without servers is listed');
-    must(EggUpdates::getNavigationBadge() === $badge, 'counted in the menu badge');
     must(count(bell($admin)) === $bell, 'a notification was sent');
     $broken = [];
     UpdateChecker::check();
@@ -363,7 +374,7 @@ step('Test first on the page makes a test server on a test port from a copy', fu
     Settings::saveForm(['mode' => 'ask']);
     Runner::run(true);
     must(EggUpdate::query()->find($tested->id)?->found_hash !== null, 'the update was not found');
-    Livewire::actingAs($admin)->test(EggUpdates::class)
+    Livewire::actingAs($admin)->test(EggUpdatesWidget::class)
         ->callAction(TestAction::make('test')->table($tested->fresh()))->assertHasNoErrors();
     $test = EggTest::query()->where('egg_id', $tested->id)->first();
     must($test?->stage === 'installing', 'not installing: '.($test?->stage ?? 'no test').' '.EggUpdate::query()->find($tested->id)?->test_reason);
@@ -433,7 +444,7 @@ step('Explain\'s button sits after "Last test failed" and gets the console, only
     $id = 'simplify-eggupdates:test:'.$tested->id;
     // Stands in for Explain: it renders its button on this hook, with the problem id as scope.
     FilamentView::registerRenderHook('simplify::problem.actions', fn (array $scopes = []) => '<i data-smoke-explain="'.e($scopes[1] ?? '').'"></i>');
-    $html = Livewire::actingAs($admin)->test(EggUpdates::class)->assertHasNoErrors()->html();
+    $html = Livewire::actingAs($admin)->test(EggUpdatesWidget::class)->assertHasNoErrors()->html();
     must(str_contains($html, 'data-smoke-explain="simplify-problem:'.$id.'"'), 'no Explain button after the failed test');
     $source = collect(app()->tagged('simplify.problems'))->first(fn ($source) => $source instanceof EggUpdatesProblems);
     must($source !== null, 'the problem source is not tagged simplify.problems');
@@ -445,11 +456,18 @@ step('Explain\'s button sits after "Last test failed" and gets the console, only
     must($source->explainProblem($id, $other) === null, 'the console goes to a user who is not a root admin');
     $other->delete();
 });
+step('only root admins see the Updates block and its buttons', function () use ($admin) {
+    $other = User::factory()->create();
+    auth()->setUser($other);
+    must(! EggUpdatesWidget::canView() && ! EggUpdates::canAccess(), 'a user who is not a root admin sees Egg Updates');
+    auth()->setUser($admin);
+    $other->delete();
+});
 step('No settings gear on Pelican\'s Plugins page: settings live on the Egg updates page (EU-B1)', function () {
     must(! is_subclass_of(SimplifyEggUpdatesPlugin::class, HasPluginSettings::class), 'the plugin still implements HasPluginSettings');
 });
 step('Copy log is gone again after 1.1.5 (B7)', function () use ($admin) {
-    $html = Livewire::actingAs($admin)->test(EggUpdates::class)->assertHasNoErrors()->html();
+    $html = Livewire::actingAs($admin)->test(ListEggs::class)->assertHasNoErrors()->html();
     must(str_contains($html, 'Check now') && ! str_contains($html, 'Copy log'), 'the Copy log button is still in the title bar');
     must(! view()->exists('simplify-eggupdates::debug-log'), 'the Copy log view is still there');
     must(! class_exists('Simplify\EggUpdates\Services\DebugLog'), 'the DebugLog class is still there');

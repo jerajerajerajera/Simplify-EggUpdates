@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Simplify\EggUpdates;
 
+use App\Enums\HeaderActionPosition;
+use App\Enums\HeaderWidgetPosition;
+use App\Filament\Admin\Resources\Eggs\Pages\ListEggs;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
+use Simplify\EggUpdates\Filament\Admin\UpdatesTable;
+use Simplify\EggUpdates\Filament\Admin\Widgets\EggUpdatesWidget;
 
 final class SimplifyEggUpdatesPlugin implements Plugin
 {
@@ -19,9 +24,15 @@ final class SimplifyEggUpdatesPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-        if ($panel->getId() === 'admin') {
-            $panel->pages([EggUpdates::class]);
+        if ($panel->getId() !== 'admin') {
+            return;
         }
+        // The settings page, without a menu item.
+        $panel->pages([EggUpdates::class]);
+        // The updates live on Pelican's own Eggs page: a block above the list, and Check now and Update all in its
+        // title bar. Pelican lets a plugin add both, but no buttons in its own egg rows.
+        ListEggs::registerCustomHeaderWidgets(HeaderWidgetPosition::Before, EggUpdatesWidget::class);
+        ListEggs::registerCustomHeaderActions(HeaderActionPosition::Before, ...UpdatesTable::headerActions());
     }
 
     public function boot(Panel $panel): void {}
