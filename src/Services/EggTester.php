@@ -164,6 +164,7 @@ final class EggTester
             'allocation_id' => $allocation->id,
             'egg_id' => $copy->id,
             'environment' => TestEnvironment::for($copy, $egg),
+            'image' => TestEnvironment::image($copy->docker_images ?? [], TestEnvironment::usedImages($egg)),
             'memory' => $size['memory'],
             'swap' => 0,
             'disk' => $size['disk'],

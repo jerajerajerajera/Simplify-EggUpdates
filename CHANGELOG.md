@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Test first gives an empty field the value the egg's own servers use, so an egg such as FTB Server installs its
+  modpack on the test server instead of stopping at the first start.
+- Test first runs the test server on the Docker image the egg's servers use, when the new version still offers it,
+  instead of the egg's first image (CurseForge lists Java 8 first).
+
 ## 2.0.0-beta.4
 
 - Pelican's Plugins page no longer shows a settings gear for Egg Updates; its settings are on the Egg updates page.
