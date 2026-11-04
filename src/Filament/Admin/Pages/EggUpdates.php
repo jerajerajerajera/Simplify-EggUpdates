@@ -6,16 +6,13 @@ namespace Simplify\EggUpdates\Filament\Admin\Pages;
 
 use App\Filament\Admin\Resources\Eggs\EggResource;
 use Filament\Actions\Action;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Schema;
 use Simplify\EggUpdates\Filament\Admin\UpdatesTable;
-use Simplify\EggUpdates\Services\Settings;
 
 /**
- * The settings of Egg Updates. The updates themselves are a block on Pelican's Eggs page, so this page has no menu
- * item: Simplify opens it under Simplify settings › Add-ons, and without Simplify the gear on the Eggs page does.
- * It keeps the address egg-updates, so a link in an older notification still lands in Egg Updates.
+ * The settings of Egg Updates without Simplify: the gear on Pelican's Eggs page opens it. With Simplify the same form
+ * sits in Simplify settings › Add-ons. The updates themselves are a block on the Eggs page, so this page has no menu
+ * item. It keeps the address egg-updates, so a link in an older notification still lands in Egg Updates.
  */
 final class EggUpdates extends Page
 {
@@ -24,9 +21,6 @@ final class EggUpdates extends Page
     protected static bool $shouldRegisterNavigation = false;
 
     protected string $view = 'simplify-eggupdates::egg-updates';
-
-    /** @var array<string, mixed> */
-    public ?array $data = [];
 
     public static function canAccess(): bool
     {
@@ -43,16 +37,6 @@ final class EggUpdates extends Page
         return UpdatesTable::checked();
     }
 
-    public function mount(): void
-    {
-        $this->form->fill(Settings::formData());
-    }
-
-    public function form(Schema $schema): Schema
-    {
-        return $schema->components(Settings::form())->statePath('data');
-    }
-
     protected function getHeaderActions(): array
     {
         return [
@@ -61,18 +45,6 @@ final class EggUpdates extends Page
                 ->icon('tabler-egg')
                 ->color('gray')
                 ->url(fn () => EggResource::getUrl('index', panel: 'admin')),
-            Action::make('save')
-                ->label(__('simplify-eggupdates::egg-updates.settings.save'))
-                ->icon('tabler-device-floppy')
-                ->action(fn () => $this->save())
-                ->keyBindings(['mod+s']),
         ];
-    }
-
-    public function save(): void
-    {
-        abort_unless(self::canAccess(), 403);
-        Settings::saveForm($this->form->getState());
-        Notification::make()->title(__('simplify-eggupdates::egg-updates.settings.saved'))->success()->send();
     }
 }
