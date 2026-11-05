@@ -41,6 +41,9 @@ final class EggTester
     /** Temporary test ports: above the usual game ranges, below the ephemeral range. */
     public const PORTS = [45000, 45999];
 
+    /** Test servers only listen on the node itself. */
+    public const IP = '127.0.0.1';
+
     /** Log lines kept of a failed test, for Explain: as many as Wings gives of the console. */
     public const LOG_LINES = 100;
 
@@ -64,6 +67,50 @@ final class EggTester
         self::tick();
 
         return new Result(true, __('simplify-eggupdates::egg-updates.tests.queued', ['egg' => $egg->name]));
+    }
+
+    /** The running test of a test server, or null for any other server. */
+    public static function testOf(?Server $server): ?EggTest
+    {
+        return self::isTestServer($server) ? EggTest::query()->where('server_id', $server->id)->first() : null;
+    }
+
+    /** The egg a test server tests, or null for any other server. */
+    public static function testedEgg(?Server $server): ?Egg
+    {
+        $test = self::testOf($server);
+
+        return $test === null ? null : Egg::query()->find($test->egg_id);
+    }
+
+    /**
+     * Force kill on the test server's page: the test stops now, as a failed test. The egg keeps its version, root
+     * admins are told, and the test server, its port and the copy are removed.
+     */
+    public static function kill(Server $server): ?Result
+    {
+        $test = self::testOf($server);
+        if ($test === null) {
+            return null;
+        }
+        $egg = Egg::query()->find($test->egg_id);
+        self::finish($test, false, __('simplify-eggupdates::egg-updates.tests.killed'), $server);
+
+        return new Result(true, __('simplify-eggupdates::egg-updates.tests.stopped', ['egg' => $egg->name ?? '']));
+    }
+
+    /** Retry on the test server's page: removes this test server and tests the egg again on a fresh copy. */
+    public static function retry(Server $server): ?Result
+    {
+        $test = self::testOf($server);
+        if ($test === null) {
+            return null;
+        }
+        $egg = Egg::query()->find($test->egg_id);
+        self::cleanUp($test);
+        $test->delete();
+
+        return $egg === null ? null : self::queue($egg);
     }
 
     public static function stage(Egg $egg): ?string
@@ -201,17 +248,21 @@ final class EggTester
         return ['memory' => $largest('memory', self::MEMORY), 'disk' => $largest('disk', self::DISK), 'cpu' => $largest('cpu', self::CPU)];
     }
 
-    /** A free port in the test range on the node's first address, made for this test only. */
+    /**
+     * A free port in the test range, made for this test only, on 127.0.0.1: nobody outside the node can join a test
+     * server, so no player ever plays on a server whose EULA Test first accepted. Wings binds 127.0.0.1 to its own
+     * Docker interface (or not at all with ISPN), never to a public address. A port in the range is taken on any of
+     * the node's addresses, because Docker cannot bind a port twice.
+     */
     private static function allocation(Node $node): Allocation
     {
-        $ip = Allocation::query()->where('node_id', $node->id)->orderBy('id')->value('ip') ?? '0.0.0.0';
-        $taken = Allocation::query()->where('node_id', $node->id)->where('ip', $ip)->whereBetween('port', self::PORTS)->pluck('port')->all();
+        $taken = Allocation::query()->where('node_id', $node->id)->whereBetween('port', self::PORTS)->pluck('port')->all();
         $port = self::freePort($taken);
         if ($port === null) {
             throw new RuntimeException(__('simplify-eggupdates::egg-updates.tests.no_port', ['from' => self::PORTS[0], 'to' => self::PORTS[1]]));
         }
 
-        return Allocation::query()->create(['node_id' => $node->id, 'ip' => $ip, 'port' => $port]);
+        return Allocation::query()->create(['node_id' => $node->id, 'ip' => self::IP, 'port' => $port]);
     }
 
     /** The highest port of the test range that is not taken, or null. */

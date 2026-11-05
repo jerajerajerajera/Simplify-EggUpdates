@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Simplify\EggUpdates\Addon;
 
+use App\Models\Server;
 use Simplify\Core\Addons\Addon;
 use Simplify\Core\Filament\Admin\Pages\Settings as SimplifySettings;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
 use Simplify\EggUpdates\Livewire\EggUpdatesSettings;
+use Simplify\EggUpdates\Livewire\TestServerActions;
 use Simplify\EggUpdates\Services\EggTester;
 use Simplify\EggUpdates\Services\Settings;
 use Simplify\EggUpdates\SimplifyEggUpdatesPlugin;
@@ -61,6 +63,25 @@ final class EggUpdatesAddon extends Addon
     public function hiddenServerPrefixes(): array
     {
         return [EggTester::MARK];
+    }
+
+    /**
+     * A Test first server's page is locked (API 10): you can watch the test, but only Force kill and Retry work, and
+     * the server can't be changed or joined (its EULA was accepted for the test only).
+     *
+     * @return array{notice: string, actions: class-string<TestServerActions>}|null
+     */
+    public function lockedServer(Server $server): ?array
+    {
+        if (! EggTester::isTestServer($server)) {
+            return null;
+        }
+        $egg = EggTester::testedEgg($server);
+
+        return [
+            'notice' => __('simplify-eggupdates::egg-updates.tests.locked_notice', ['egg' => $egg->name ?? '']),
+            'actions' => TestServerActions::class,
+        ];
     }
 
     /** Simplify's setup asks when eggs are updated, for root admins. */

@@ -150,7 +150,9 @@ final class UpdatesTable
                 ->visible(fn (Egg $egg) => in_array(self::status($egg), ['available', 'held'], true))
                 ->requiresConfirmation()
                 ->modalHeading(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.test_heading', ['egg' => $egg->name]))
-                ->modalDescription(__('simplify-eggupdates::egg-updates.actions.test_description'))
+                ->modalDescription(fn (Egg $egg) => __('simplify-eggupdates::egg-updates.actions.test_description')
+                    // Like Paper: the test server accepts the EULA before its first start (EggTester::acceptEula).
+                    .(in_array('eula', $egg->inherit_features ?? [], true) ? ' '.__('simplify-eggupdates::egg-updates.actions.test_eula') : ''))
                 ->action(fn (Egg $egg) => self::send(EggTester::queue($egg))),
             Action::make($prefix.'update')
                 ->label(__('simplify-eggupdates::egg-updates.actions.update'))
