@@ -24,10 +24,12 @@ return [
         'mode' => 'Ažuriranja',
         'mode_help' => 'Svaki egg se proverava na svakih šest sati. Eggove koje koriste serveri ažuriraš samo ti, ili se ažuriraju kada se test server sa novom verzijom instalira i pokrene. Prethodna verzija se uvek čuva.',
         'saved' => 'Podešavanja sačuvana',
+        'save' => 'Sačuvaj',
     ],
     'page' => [
         'checked' => 'Provereno :time',
         'not_checked' => 'Još nije provereno',
+        'eggs' => 'Eggs',
         'egg' => 'Egg',
         'servers' => 'Serveri',
         'server_count' => '{0} Nema servera|{1} 1 server|[2,4] :count servera|[5,*] :count servera',
@@ -109,6 +111,7 @@ return [
         'failed_body' => 'Test nije uspeo: :reason. Trenutni egg ostaje.',
         'last_lines' => 'Poslednji redovi: :lines',
         'failed_short' => 'Poslednji test nije uspeo: :reason',
+        'problem_title' => 'Poslednji test za :egg',
     ],
     'errors' => [
         'https' => 'URL za ažuriranje mora da počinje sa https://',

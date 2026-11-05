@@ -24,10 +24,12 @@ return [
         'mode' => 'Güncellemeler',
         'mode_help' => 'Her egg altı saatte bir kontrol edilir. Sunucuların kullandığı egg\'leri yalnızca sen güncellersin ya da bir test sunucusu yeni sürümle kurulup başladıktan sonra güncellenirler. Önceki sürüm her zaman saklanır.',
         'saved' => 'Ayarlar kaydedildi',
+        'save' => 'Kaydet',
     ],
     'page' => [
         'checked' => 'Kontrol edildi: :time',
         'not_checked' => 'Henüz kontrol edilmedi',
+        'eggs' => 'Egg\'ler',
         'egg' => 'Egg',
         'servers' => 'Sunucular',
         'server_count' => '{0} Sunucu yok|{1} 1 sunucu|[2,*] :count sunucu',
@@ -109,6 +111,7 @@ return [
         'failed_body' => 'Test başarısız oldu: :reason. Mevcut egg kalıyor.',
         'last_lines' => 'Son satırlar: :lines',
         'failed_short' => 'Son test başarısız: :reason',
+        'problem_title' => ':egg son testi',
     ],
     'errors' => [
         'https' => 'Güncelleme URL\'si https:// ile başlamalı',

@@ -24,10 +24,12 @@ return [
         'mode' => 'Pembaruan',
         'mode_help' => 'Setiap egg diperiksa setiap enam jam. Egg yang dipakai server hanya kamu yang memperbarui, atau diperbarui setelah server uji berhasil diinstal dan dimulai dengan versi baru. Versi sebelumnya selalu disimpan.',
         'saved' => 'Pengaturan disimpan',
+        'save' => 'Simpan',
     ],
     'page' => [
         'checked' => 'Diperiksa :time',
         'not_checked' => 'Belum diperiksa',
+        'eggs' => 'Egg',
         'egg' => 'Egg',
         'servers' => 'Server',
         'server_count' => '{0} Tidak ada server|{1} 1 server|[2,*] :count server',
@@ -109,6 +111,7 @@ return [
         'failed_body' => 'Uji gagal: :reason. Egg saat ini tetap dipakai.',
         'last_lines' => 'Baris terakhir: :lines',
         'failed_short' => 'Uji terakhir gagal: :reason',
+        'problem_title' => 'Uji terakhir :egg',
     ],
     'errors' => [
         'https' => 'URL pembaruan harus diawali https://',

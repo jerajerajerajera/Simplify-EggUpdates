@@ -15,6 +15,7 @@ use App\Repositories\Daemon\DaemonServerRepository;
 use App\Services\Eggs\Sharing\EggImporterService;
 use App\Services\Servers\ServerCreationService;
 use App\Services\Servers\ServerDeletionService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Simplify\EggUpdates\Models\EggTest;
@@ -40,6 +41,9 @@ final class EggTester
     /** Temporary test ports: above the usual game ranges, below the ephemeral range. */
     public const PORTS = [45000, 45999];
 
+    /** Log lines kept of a failed test, for Explain: as many as Wings gives of the console. */
+    public const LOG_LINES = 100;
+
     /** What a test server gets at least; more when the egg's servers get more. */
     private const MEMORY = 2048;
 
@@ -56,7 +60,7 @@ final class EggTester
     public static function queue(Egg $egg): Result
     {
         EggTest::query()->firstOrCreate(['egg_id' => $egg->id], ['stage' => EggTest::QUEUED, 'stage_at' => now()]);
-        EggUpdate::for($egg->id)->fill(['test_ok' => null, 'test_reason' => null, 'tested_at' => null])->save();
+        EggUpdate::for($egg->id)->fill(['test_ok' => null, 'test_reason' => null, 'test_log' => null, 'tested_at' => null])->save();
         self::tick();
 
         return new Result(true, __('simplify-eggupdates::egg-updates.tests.queued', ['egg' => $egg->name]));
@@ -164,6 +168,7 @@ final class EggTester
             'allocation_id' => $allocation->id,
             'egg_id' => $copy->id,
             'environment' => TestEnvironment::for($copy, $egg),
+            'image' => TestEnvironment::image($copy->docker_images ?? [], TestEnvironment::usedImages($egg)),
             'memory' => $size['memory'],
             'swap' => 0,
             'disk' => $size['disk'],
@@ -187,6 +192,7 @@ final class EggTester
      */
     private static function size(Egg $egg): array
     {
+        /** @var Collection<int, Server> $servers */
         $servers = $egg->servers()->get(['memory', 'disk', 'cpu']);
         $largest = fn (string $field, int $least) => $servers->contains(fn (Server $server) => (int) $server->{$field} === 0) && $servers->isNotEmpty()
             ? 0
@@ -228,13 +234,14 @@ final class EggTester
         if ($server === null) {
             return self::finish($test, false, __('simplify-eggupdates::egg-updates.tests.deleted'));
         }
-        $status = $server->status?->value ?? $server->status;
+        // Null once installed; otherwise a ServerState such as installing or install_failed.
+        $status = $server->status?->value;
         $age = $test->stage_at?->diffInSeconds(now()) ?? 0;
         if ($test->stage === EggTest::INSTALLING) {
             if (in_array($status, ['install_failed', 'reinstall_failed'], true)) {
                 return self::finish($test, false, __('simplify-eggupdates::egg-updates.tests.not_installed'), $server);
             }
-            if ($status === null || $status === '') {
+            if ($status === null) {
                 self::acceptEula($server);
                 app(DaemonServerRepository::class)->setServer($server)->power('start')->throw();
                 $test->fill(['stage' => EggTest::STARTING, 'stage_at' => now()])->save();
@@ -261,7 +268,7 @@ final class EggTester
      */
     private static function acceptEula(Server $server): void
     {
-        if (in_array('eula', $server->egg?->inherit_features ?? [], true)) {
+        if (in_array('eula', $server->egg->inherit_features ?? [], true)) {
             app(DaemonFileRepository::class)->setServer($server)->putContent('eula.txt', "eula=true\n")->throw();
         }
     }
@@ -274,7 +281,9 @@ final class EggTester
     private static function finish(EggTest $test, bool $ok, string $reason, ?Server $server = null): array
     {
         $egg = Egg::query()->find($test->egg_id);
-        $log = $ok || $server === null ? '' : self::logTail($server);
+        // While installing, the install log tells why; once started, the console does.
+        $lines = $ok || $server === null ? [] : self::log($server, $test->stage === EggTest::INSTALLING);
+        $log = mb_strimwidth(implode(' | ', array_slice($lines, -3)), 0, 300, '…');
         self::cleanUp($test);
         if ($ok && $egg !== null && $test->content !== null) {
             $format = $test->format === EggFormat::YAML->name ? EggFormat::YAML : EggFormat::JSON;
@@ -286,7 +295,7 @@ final class EggTester
         if ($egg === null) {
             return [];
         }
-        self::remember($egg, $ok, $reason);
+        self::remember($egg, $ok, $reason, $lines);
         if ($ok) {
             Notifier::rootAdmins(
                 __('simplify-eggupdates::egg-updates.tests.passed_title', ['egg' => $egg->name]),
@@ -306,11 +315,12 @@ final class EggTester
         return [$egg->name.': '.$reason];
     }
 
-    private static function remember(Egg $egg, bool $ok, string $reason): void
+    /** @param  list<string>  $lines  the test server's last log lines, which Explain can explain */
+    private static function remember(Egg $egg, bool $ok, string $reason, array $lines = []): void
     {
         $state = EggUpdate::for($egg->id);
         if ($state->exists || ! $ok) {
-            $state->fill(['test_ok' => $ok, 'test_reason' => $ok ? null : $reason, 'tested_at' => now()])->save();
+            $state->fill(['test_ok' => $ok, 'test_reason' => $ok ? null : $reason, 'test_log' => $ok || $lines === [] ? null : $lines, 'tested_at' => now()])->save();
         }
     }
 
@@ -340,14 +350,35 @@ final class EggTester
         }
     }
 
-    private static function logTail(Server $server): string
+    /**
+     * The last lines of the test server's install log or console, read from Wings before the server is removed.
+     *
+     * @return list<string>
+     */
+    private static function log(Server $server, bool $installing): array
     {
         try {
-            $lines = preg_split('/\R/', trim(app(DaemonServerRepository::class)->setServer($server)->getInstallLogs())) ?: [];
+            $wings = app(DaemonServerRepository::class)->setServer($server);
 
-            return mb_strimwidth(implode(' | ', array_slice(array_filter($lines), -3)), 0, 300, '…');
+            return self::lines($installing
+                ? $wings->getInstallLogs()
+                : (array) $wings->getHttpClient()->get("/api/servers/{$server->uuid}/logs", ['size' => self::LOG_LINES])->throw()->json('data'));
         } catch (\Throwable) {
-            return '';
+            return [];
         }
+    }
+
+    /**
+     * The last LOG_LINES lines that are not empty, oldest first.
+     *
+     * @param  string|array<mixed>  $log  a log as text, or the console as lines
+     * @return list<string>
+     */
+    public static function lines(string|array $log): array
+    {
+        $lines = preg_split('/\R/', is_array($log) ? implode("\n", array_map('strval', $log)) : $log) ?: [];
+        $lines = array_values(array_filter(array_map('rtrim', $lines), fn (string $line) => trim($line) !== ''));
+
+        return array_slice($lines, -self::LOG_LINES);
     }
 }

@@ -1,3 +1,3 @@
 <x-filament-panels::page>
-    {{ $this->table }}
+    @livewire(\Simplify\EggUpdates\Livewire\EggUpdatesSettings::class, ['standalone' => true])
 </x-filament-panels::page>

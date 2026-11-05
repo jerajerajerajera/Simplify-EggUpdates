@@ -24,10 +24,12 @@ return [
         'mode' => 'Atnaujinimai',
         'mode_help' => 'Kiekvienas egg tikrinamas kas šešias valandas. Serverių naudojamus eggus atnaujini tik tu, arba jie atnaujinami, kai testinis serveris su nauja versija įsidiegia ir pasileidžia. Ankstesnė versija visada išsaugoma.',
         'saved' => 'Nustatymai išsaugoti',
+        'save' => 'Išsaugoti',
     ],
     'page' => [
         'checked' => 'Patikrinta :time',
         'not_checked' => 'Dar netikrinta',
+        'eggs' => 'Eggs',
         'egg' => 'Egg',
         'servers' => 'Serveriai',
         'server_count' => '{0} Nėra serverių|{1} 1 serveris|[2,9] :count serveriai|[10,*] Serverių: :count',
@@ -109,6 +111,7 @@ return [
         'failed_body' => 'Testas nepavyko: :reason. Dabartinis egg lieka.',
         'last_lines' => 'Paskutinės eilutės: :lines',
         'failed_short' => 'Paskutinis testas nepavyko: :reason',
+        'problem_title' => 'Paskutinis :egg testas',
     ],
     'errors' => [
         'https' => 'Atnaujinimo URL turi prasidėti https://',

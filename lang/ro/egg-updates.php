@@ -24,10 +24,12 @@ return [
         'mode' => 'Actualizări',
         'mode_help' => 'Fiecare egg este verificat la fiecare șase ore. Eggs folosite de servere sunt actualizate doar de tine sau după ce un server de test s-a instalat și a pornit cu noua versiune. Versiunea anterioară este păstrată mereu.',
         'saved' => 'Setări salvate',
+        'save' => 'Salvează',
     ],
     'page' => [
         'checked' => 'Verificat :time',
         'not_checked' => 'Încă neverificat',
+        'eggs' => 'Eggs',
         'egg' => 'Egg',
         'servers' => 'Servere',
         'server_count' => '{0} Niciun server|{1} 1 server|[2,19] :count servere|[20,*] :count de servere',
@@ -109,6 +111,7 @@ return [
         'failed_body' => 'Testul a eșuat: :reason. Egg-ul actual rămâne.',
         'last_lines' => 'Ultimele rânduri: :lines',
         'failed_short' => 'Ultimul test a eșuat: :reason',
+        'problem_title' => 'Ultimul test pentru :egg',
     ],
     'errors' => [
         'https' => 'URL-ul de actualizare trebuie să înceapă cu https://',

@@ -24,10 +24,12 @@ return [
         'mode' => 'Mises à jour',
         'mode_help' => 'Chaque egg est vérifié toutes les six heures. Les eggs utilisés par des serveurs ne sont mis à jour que par vous, ou après qu\'un serveur de test s\'est installé et a démarré avec la nouvelle version. La version précédente est toujours gardée.',
         'saved' => 'Paramètres enregistrés',
+        'save' => 'Enregistrer',
     ],
     'page' => [
         'checked' => 'Vérifié :time',
         'not_checked' => 'Pas encore vérifié',
+        'eggs' => 'Eggs',
         'egg' => 'Egg',
         'servers' => 'Serveurs',
         'server_count' => '{0} Aucun serveur|{1} 1 serveur|[2,*] :count serveurs',
@@ -109,6 +111,7 @@ return [
         'failed_body' => 'Le test a échoué : :reason. L\'egg actuel reste.',
         'last_lines' => 'Dernières lignes : :lines',
         'failed_short' => 'Dernier test échoué : :reason',
+        'problem_title' => 'Dernier test de :egg',
     ],
     'errors' => [
         'https' => 'L\'URL de mise à jour doit commencer par https://',

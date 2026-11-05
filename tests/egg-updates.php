@@ -21,12 +21,14 @@ namespace {
     require __DIR__.'/../src/Enums/Mode.php';
     require __DIR__.'/../src/Services/EggTester.php';
     require __DIR__.'/../src/Services/ServerMover.php';
+    require __DIR__.'/../src/Services/TestEnvironment.php';
 
     use App\Enums\EggFormat;
     use Simplify\EggUpdates\Enums\Mode;
     use Simplify\EggUpdates\Services\Definition;
     use Simplify\EggUpdates\Services\EggTester;
     use Simplify\EggUpdates\Services\ServerMover;
+    use Simplify\EggUpdates\Services\TestEnvironment;
 
     $failures = [];
     $check = function (bool $ok, string $what) use (&$failures) {
@@ -76,13 +78,39 @@ namespace {
 
     $check(Definition::reason(new RuntimeException("  <b>Not found</b>\n  at the URL.  ")) === 'Not found at the URL', 'a reason is one plain line');
 
+    // EU-B2: an empty default (FTB's modpack ID) takes the value the egg's own servers use; a filled default stays first.
+    $check(TestEnvironment::order('', ['123', '45']) === ['123', '45', ''], 'an empty default takes the value the servers use: '.json_encode(TestEnvironment::order('', ['123', '45'])));
+    $check(TestEnvironment::order('latest', ['1.20']) === ['latest', '1.20'], 'a filled default stays first');
+    $check(TestEnvironment::order('', []) === [''], 'without servers the empty default stays');
+
+    // EU-B3: the test server runs on the image the egg's servers use (CurseForge lists Java 8 first), if the new version still has it.
+    $images = ['Java 8' => 'yolks:java_8', 'Java 21' => 'yolks:java_21'];
+    $check(TestEnvironment::image($images, ['yolks:java_21', 'yolks:java_8']) === 'yolks:java_21', 'the test server does not use the image the servers use');
+    $check(TestEnvironment::image($images, ['yolks:java_16']) === 'yolks:java_8', 'an image the new version dropped is not replaced by its default');
+    $check(TestEnvironment::image($images, []) === 'yolks:java_8', 'without servers the default image is not used');
+
     // Settings live on the Egg updates page in Simplify, never behind a gear on Pelican's Plugins page.
     $plugin = file_get_contents(__DIR__.'/../src/SimplifyEggUpdatesPlugin.php');
     $check(! str_contains($plugin, 'HasPluginSettings'), "the plugin class has Pelican's own settings gear (HasPluginSettings)");
+
+    // The updates live on Pelican's Eggs page (Jeroen 4-11): a block and title-bar buttons there, no menu item.
+    $page = file_get_contents(__DIR__.'/../src/Filament/Admin/Pages/EggUpdates.php');
+    $check(str_contains($plugin, 'ListEggs::registerCustomHeaderWidgets') && str_contains($plugin, 'ListEggs::registerCustomHeaderActions'), 'the updates are not on Pelican\'s Eggs page');
+    $check(str_contains($page, '$shouldRegisterNavigation = false') && str_contains(file_get_contents(__DIR__.'/../resources/views/livewire/settings.blade.php'), 'data-simplify-save="save"'), 'Egg Updates still has a menu item, or its settings save without asking');
+
+    // Explain: a failed test keeps the last 100 lines of the test server's log, oldest first, without empty lines.
+    $log = implode("\n", array_map(fn ($n) => 'line '.$n, range(1, 150)))."\n\n";
+    $check(EggTester::lines($log) === array_map(fn ($n) => 'line '.$n, range(51, 150)), 'the test log is not the last 100 lines');
+    $check(EggTester::lines(["a\r\n", '', 'b']) === ['a', 'b'], 'console lines keep empty lines or line ends');
+    $check(EggTester::lines('') === [], 'an empty log gives lines');
+    $problems = file_get_contents(__DIR__.'/../src/Addon/EggUpdatesProblems.php') ?: '';
+    $provider = file_get_contents(__DIR__.'/../src/Providers/EggUpdatesProvider.php');
+    $check(str_contains($provider, "'simplify.problems'") && str_contains($problems, 'function canExplainProblem') && str_contains($problems, 'function explainProblem'), 'no problem source for Explain');
+    $check(substr_count($problems, 'isRootAdmin()') >= 1 && ! str_contains($problems, 'Simplify\\Explain'), 'the problem source does not check root admins, or needs Explain');
 
     if ($failures !== []) {
         echo "FAIL egg updates:\n  ".implode("\n  ", $failures)."\n";
         exit(1);
     }
-    echo "PASS egg updates: hash, format, names, modes, reasons, test ports, server moves and no Pelican settings gear\n";
+    echo "PASS egg updates: hash, format, names, modes, reasons, test ports, server moves, test values, no Pelican settings gear, on the Eggs page and test logs for Explain\n";
 }

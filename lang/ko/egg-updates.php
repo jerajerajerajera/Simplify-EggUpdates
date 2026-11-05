@@ -24,10 +24,12 @@ return [
         'mode' => '업데이트',
         'mode_help' => '모든 egg를 6시간마다 확인합니다. 서버가 사용하는 egg는 직접 업데이트하거나, 테스트 서버가 새 버전으로 설치되고 시작된 뒤에만 업데이트됩니다. 이전 버전은 항상 보관됩니다.',
         'saved' => '설정이 저장되었습니다',
+        'save' => '저장',
     ],
     'page' => [
         'checked' => ':time 확인함',
         'not_checked' => '아직 확인하지 않음',
+        'eggs' => 'Egg',
         'egg' => 'Egg',
         'servers' => '서버',
         'server_count' => '{0} 서버 없음|{1} 서버 1대|[2,*] 서버 :count대',
@@ -109,6 +111,7 @@ return [
         'failed_body' => '테스트 실패: :reason. 현재 egg가 유지됩니다.',
         'last_lines' => '마지막 줄: :lines',
         'failed_short' => '마지막 테스트 실패: :reason',
+        'problem_title' => ':egg 마지막 테스트',
     ],
     'errors' => [
         'https' => '업데이트 URL은 https://로 시작해야 합니다',

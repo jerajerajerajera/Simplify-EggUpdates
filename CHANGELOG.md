@@ -2,6 +2,37 @@
 
 ## 2.0.0-beta.4
 
+- One eggs list: Egg Updates now sits in Pelican's own Eggs table, with a status column and Test first, Update, Move
+  servers and Put back in each egg's row, instead of a second list above it. Egg Updates' Update replaces Pelican's
+  Update button for root admins, so a row never has two and the previous version is always kept. If a Pelican version
+  stops Egg Updates from adding them, the Updates block above the list comes back.
+- Simplify settings › Add-ons › Egg Updates shows when the eggs were last checked, as a grey line under the select,
+  with the number of updates waiting and a link to the Eggs page. The Save button on the settings page sits on the
+  right.
+- Checks: the panel smoke checks that one new update gives root admins one notification, and a later check of the
+  same version none.
+- Checks: PHPStan runs without a baseline; the 13 findings of 4-11 are fixed (types only, no change in behaviour).
+- Uninstalling Egg Updates keeps its settings, the kept previous versions and the test results, so installing it
+  again brings them back.
+- Checks: CI updates from 1.1.5 (Hub stable) and from the latest release with settings filled in, uninstalls and
+  installs again, and puts the previous release back over the new tables. Dependabot keeps the CI actions current,
+  and `tests/run.sh` fails on a secret or an internal address.
+- With Simplify 2.0 the settings of Egg Updates are a section of Simplify settings › Add-ons, saved with Simplify's
+  Save. Without Simplify the gear on the Eggs page opens the same form.
+- Egg Updates moved to Pelican's Eggs page: an Updates block at the top of the list (only when there is something to
+  do) with the same buttons, and Check now and Update all in the page's title bar. The menu item is gone. The
+  settings are under Simplify settings › Add-ons, or without Simplify behind the gear on the Eggs page. Notifications
+  open the Eggs page.
+- Test first gives an empty field the value the egg's own servers use, so an egg such as FTB Server installs its
+  modpack on the test server instead of stopping at the first start.
+- Test first runs the test server on the Docker image the egg's servers use, when the new version still offers it,
+  instead of the egg's first image (CurseForge lists Java 8 first).
+- A failed test keeps the last 100 lines of the test server's install log or console. With Simplify Explain
+  installed, a question button after "Last test failed" explains them; only root admins see it.
+- Checks: PHPStan (level 5) runs in CI, and the panel smoke also runs with the real Simplify core (main) instead of a stub.
+
+## 2.0.0-beta.4
+
 - Pelican's Plugins page no longer shows a settings gear for Egg Updates; its settings are on the Egg updates page.
 
 ## 2.0.0-beta.1

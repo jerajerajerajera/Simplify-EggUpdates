@@ -24,10 +24,12 @@ return [
         'mode' => '更新',
         'mode_help' => '每六小時檢查一次每個 egg 是否有新版本。伺服器正在使用的 egg 只由你更新，或在測試伺服器用新版本安裝並啟動成功後更新。上一個版本一律保留。',
         'saved' => '設定已儲存',
+        'save' => '儲存',
     ],
     'page' => [
         'checked' => '檢查於 :time',
         'not_checked' => '尚未檢查',
+        'eggs' => 'Egg',
         'egg' => 'Egg',
         'servers' => '伺服器',
         'server_count' => '{0} 無伺服器|{1} 1 台伺服器|[2,*] :count 台伺服器',
@@ -109,6 +111,7 @@ return [
         'failed_body' => '測試失敗：:reason。目前的 egg 保持不變。',
         'last_lines' => '最後幾行：:lines',
         'failed_short' => '上次測試失敗：:reason',
+        'problem_title' => ':egg 的上次測試',
     ],
     'errors' => [
         'https' => '更新 URL 必須以 https:// 開頭',

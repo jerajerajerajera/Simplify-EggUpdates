@@ -24,10 +24,12 @@ return [
         'mode' => 'Updates',
         'mode_help' => 'Elk egg wordt elke zes uur op een nieuwe versie gecontroleerd. Eggs die servers gebruiken worden alleen door jou bijgewerkt, of nadat een proefserver met de nieuwe versie installeerde en startte. De vorige versie wordt altijd bewaard.',
         'saved' => 'Instellingen opgeslagen',
+        'save' => 'Opslaan',
     ],
     'page' => [
         'checked' => 'Gecontroleerd :time',
         'not_checked' => 'Nog niet gecontroleerd',
+        'eggs' => 'Eggs',
         'egg' => 'Egg',
         'servers' => 'Servers',
         'server_count' => '{0} Geen servers|{1} 1 server|[2,*] :count servers',
@@ -109,6 +111,7 @@ return [
         'failed_body' => 'De test is mislukt: :reason. Het huidige egg blijft.',
         'last_lines' => 'Laatste regels: :lines',
         'failed_short' => 'Laatste test mislukt: :reason',
+        'problem_title' => 'Laatste test van :egg',
     ],
     'errors' => [
         'https' => 'De update-URL moet beginnen met https://',

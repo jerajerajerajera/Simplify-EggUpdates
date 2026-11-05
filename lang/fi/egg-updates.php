@@ -24,10 +24,12 @@ return [
         'mode' => 'Päivitykset',
         'mode_help' => 'Jokainen egg tarkistetaan kuuden tunnin välein. Palvelimien käyttämät eggit päivität vain sinä, tai ne päivitetään, kun testipalvelin on asentunut ja käynnistynyt uudella versiolla. Edellinen versio säilytetään aina.',
         'saved' => 'Asetukset tallennettu',
+        'save' => 'Tallenna',
     ],
     'page' => [
         'checked' => 'Tarkistettu :time',
         'not_checked' => 'Ei vielä tarkistettu',
+        'eggs' => 'Eggit',
         'egg' => 'Egg',
         'servers' => 'Palvelimet',
         'server_count' => '{0} Ei palvelimia|{1} 1 palvelin|[2,*] :count palvelinta',
@@ -109,6 +111,7 @@ return [
         'failed_body' => 'Testi epäonnistui: :reason. Nykyinen egg säilyy.',
         'last_lines' => 'Viimeiset rivit: :lines',
         'failed_short' => 'Viimeisin testi epäonnistui: :reason',
+        'problem_title' => 'Viimeisin testi: :egg',
     ],
     'errors' => [
         'https' => 'Päivitys-URL:n täytyy alkaa https://',

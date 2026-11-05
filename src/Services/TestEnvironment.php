@@ -7,12 +7,13 @@ namespace Simplify\EggUpdates\Services;
 use App\Models\Egg;
 use App\Models\EggVariable;
 use App\Models\ServerVariable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * The variables of a Test first server. A variable keeps its default when that is valid. A required variable without
- * a valid default (such as Paper's User Agent, a bot token or an admin password) gets the value the egg's own servers
- * use, and otherwise the first of a few neutral values that its own rules accept.
+ * The variables of a Test first server. A variable keeps its default when that is filled and valid. An empty default
+ * (such as FTB's modpack ID) or one that is not valid (such as Paper's User Agent, a bot token or an admin password)
+ * gets the value the egg's own servers use, and otherwise the first of a few neutral values that its own rules accept.
  */
 final class TestEnvironment
 {
@@ -24,20 +25,23 @@ final class TestEnvironment
     {
         $used = self::usedValues($egg);
 
-        return $copy->variables()->get()
+        /** @var Collection<int, EggVariable> $variables */
+        $variables = $copy->variables()->get();
+
+        return $variables
             ->mapWithKeys(fn (EggVariable $variable) => [$variable->env_variable => self::value($variable, $used[$variable->env_variable] ?? [])])
             ->all();
     }
 
     /**
-     * The default when it is valid, else the first valid one of $used and the neutral fillers.
+     * The first valid one of the default, $used and the neutral fillers; an empty default comes after $used.
      *
      * @param  list<string>  $used
      */
     public static function value(EggVariable $variable, array $used = []): string
     {
         $rules = $variable->rules ?: [];
-        $candidates = [(string) ($variable->default_value ?? ''), ...$used, ...self::fillers($rules)];
+        $candidates = [...self::order((string) ($variable->default_value ?? ''), $used), ...self::fillers($rules)];
         foreach ($candidates as $value) {
             if (self::valid($value, $rules)) {
                 return $value;
@@ -45,6 +49,41 @@ final class TestEnvironment
         }
 
         return $candidates[0];
+    }
+
+    /**
+     * The default first, unless it is empty: an empty value would make an egg such as FTB install nothing.
+     *
+     * @param  list<string>  $used
+     * @return list<string>
+     */
+    public static function order(string $default, array $used): array
+    {
+        return $default === '' ? [...$used, $default] : [$default, ...$used];
+    }
+
+    /**
+     * The image the egg's servers use most that the new version still offers, else its first (Pelican's default).
+     * CurseForge, for one, lists Java 8 first: a modern modpack would stop at once on it.
+     *
+     * @param  array<string, string>  $images
+     * @param  list<string>  $used  most used first
+     */
+    public static function image(array $images, array $used): ?string
+    {
+        foreach ($used as $image) {
+            if (in_array($image, $images, true)) {
+                return $image;
+            }
+        }
+
+        return array_values($images)[0] ?? null;
+    }
+
+    /** @return list<string> the images the egg's servers use, most used first */
+    public static function usedImages(Egg $egg): array
+    {
+        return $egg->servers()->pluck('image')->filter()->countBy()->sortDesc()->keys()->map(fn ($image) => (string) $image)->all();
     }
 
     /** Whether Pelican will accept the value; a rule that cannot be checked (a broken pattern) counts as a no. */

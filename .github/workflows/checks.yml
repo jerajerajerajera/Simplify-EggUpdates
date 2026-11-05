@@ -55,7 +55,11 @@ jobs:
             php: '8.3'
           - pelican: '1.0.0-rc.2'
             php: '8.4'
-    name: panel-smoke (Pelican ${{ matrix.pelican }})
+          # With the real Simplify core (main), not a stub: the add-on opens inside Simplify (P-1).
+          - pelican: '1.0.0-rc.2'
+            php: '8.4'
+            simplify: 'main'
+    name: panel-smoke (Pelican ${{ matrix.pelican }}${{ matrix.simplify && format(', Simplify {0}', matrix.simplify) || '' }})
     steps:
       - uses: actions/checkout@v4
         with:
@@ -84,6 +88,14 @@ jobs:
           yarn install --silent
       # Until 1.1.0 the plugin id was simplify-egg-updates: install that version first, so the job proves the new id
       # takes over its settings and removes the old folder.
+      - name: Install Simplify ${{ matrix.simplify }}
+        if: matrix.simplify
+        run: |
+          git clone --quiet --depth 1 --branch "${{ matrix.simplify }}" https://github.com/jerajerajerajera/simplify.git panel/plugins/simplify
+          rm -rf panel/plugins/simplify/.git
+          cd panel
+          php artisan p:plugin:install simplify
+          php artisan p:plugin:list | grep -E '\| Simplify .*\| enabled' || { echo 'Simplify did not install'; exit 1; }
       - name: Install the old simplify-egg-updates 1.0.3
         run: |
           git clone --quiet --depth 1 --branch v1.0.3 "https://github.com/${{ github.repository }}.git" panel/plugins/simplify-egg-updates
@@ -91,19 +103,55 @@ jobs:
           cd panel
           php artisan p:plugin:install simplify-egg-updates
           php -r '$db = new PDO("sqlite:database/database.sqlite"); $db->exec("INSERT INTO simplify_egg_update_settings (key, value) VALUES (\"ci_takeover\", \"kept\")");'
+      # The version on the Hub's stable channel, with its settings and data filled in: every newer version must keep them.
+      - name: Update to 1.1.5 (Hub stable) and fill in its settings
+        run: |
+          git clone --quiet --depth 1 --branch v1.1.5 "https://github.com/${{ github.repository }}.git" panel/plugins/simplify-eggupdates
+          rm -rf panel/plugins/simplify-eggupdates/.git
+          cd panel
+          php artisan tinker --execute="App\Jobs\Plugin\InstallPlugin::dispatch(App\Models\User::factory()->create(), 'simplify-eggupdates');"
+          php artisan queue:work --stop-when-empty
+          php artisan p:plugin:list | grep -E 'Simplify Egg Updates .*\| enabled' || { echo '1.1.5 did not install'; exit 1; }
+          php ../plugin/tests/panel/state.php fill
+      # The last release before this code (a beta counts): an update from one beta to the next must work too.
+      - name: Update to the latest release
+        run: |
+          latest=$(git ls-remote --tags --refs "https://github.com/${{ github.repository }}.git" 'v*' | sed 's#.*/##; s/-/~/' | sort -V | tail -n 1 | sed 's/~/-/')
+          echo "Latest release: $latest"
+          echo "PREVIOUS_RELEASE=$latest" >> "$GITHUB_ENV"
+          rm -rf panel/plugins/simplify-eggupdates
+          git clone --quiet --depth 1 --branch "$latest" "https://github.com/${{ github.repository }}.git" panel/plugins/simplify-eggupdates
+          rm -rf panel/plugins/simplify-eggupdates/.git
+          cd panel
+          php artisan tinker --execute="App\Jobs\Plugin\InstallPlugin::dispatch(App\Models\User::factory()->create(), 'simplify-eggupdates');"
+          php artisan queue:work --stop-when-empty
+          php ../plugin/tests/panel/state.php check
       - name: Install Simplify Egg Updates
         run: |
+          rm -rf panel/plugins/simplify-eggupdates
           mkdir -p panel/plugins/simplify-eggupdates
           tar -C plugin --exclude=.git --exclude=dist -cf - . | tar -C panel/plugins/simplify-eggupdates -xf -
           cd panel
           # As Admin → Plugins and the Hub install it: in a queue job.
           php artisan tinker --execute="App\Jobs\Plugin\InstallPlugin::dispatch(App\Models\User::factory()->create(), 'simplify-eggupdates');"
-          php artisan queue:work --max-jobs=1 --stop-when-empty
+          php artisan queue:work --stop-when-empty
           php artisan p:plugin:list | tee plugins.txt
           grep -E 'Simplify Egg Updates .*\| enabled' plugins.txt || { echo 'Simplify Egg Updates did not install'; exit 1; }
           test ! -e plugins/simplify-egg-updates || { echo 'The old simplify-egg-updates folder is still there'; exit 1; }
           test "$(grep -c 'Simplify Egg Updates' plugins.txt)" = 1 || { echo 'Simplify Egg Updates is listed twice'; exit 1; }
           php -r '$db = new PDO("sqlite:database/database.sqlite"); $kept = $db->query("SELECT value FROM simplify_egg_update_settings WHERE key = \"ci_takeover\"")->fetchColumn(); $db->exec("DELETE FROM simplify_egg_update_settings WHERE key = \"ci_takeover\""); exit($kept === "kept" ? 0 : 1);' || { echo 'The old settings were lost'; exit 1; }
+          php ../plugin/tests/panel/state.php check
+      # Uninstalling keeps the data (decided 4-11): installing again brings the settings and kept versions back.
+      - name: Uninstall and install again
+        working-directory: panel
+        run: |
+          php artisan p:plugin:uninstall simplify-eggupdates --no-interaction
+          php artisan p:plugin:list | grep -E 'Simplify Egg Updates .*\| enabled' && { echo 'still enabled after uninstalling'; exit 1; }
+          php artisan tinker --execute="App\Jobs\Plugin\InstallPlugin::dispatch(App\Models\User::factory()->create(), 'simplify-eggupdates');"
+          php artisan queue:work --stop-when-empty
+          php artisan p:plugin:list | grep -E 'Simplify Egg Updates .*\| enabled' || { echo 'did not install again'; exit 1; }
+          php ../plugin/tests/panel/state.php check
+          php ../plugin/tests/panel/state.php clean
       # Every public egg, at a fixed commit so a change upstream never turns a pull request red by itself.
       - name: Get the public eggs
         run: |
@@ -129,6 +177,25 @@ jobs:
         run: |
           php plugins/simplify-eggupdates/tests/panel/smoke.php | tee smoke.txt
           grep -q '^All steps passed$' smoke.txt
+      - name: PHPStan (level 5, in the panel)
+        if: matrix.simplify == 'main' # the add-on's classes extend the core's
+        working-directory: panel
+        # After the smoke: installing larastan brings PHPUnit into the panel, which changes how Livewire's test helpers behave.
+        run: |
+          composer require --dev larastan/larastan --no-interaction --no-progress --quiet
+          # No baseline: every finding fails the check (the baseline of 4-11 was worked down to zero).
+          vendor/bin/phpstan analyse --configuration plugins/simplify-eggupdates/phpstan.neon --memory-limit 1G --no-progress --error-format=github
+      # Someone who goes back (or a folder put back from a backup) keeps a working panel on the newer tables.
+      - name: Put the previous release back
+        run: |
+          rm -rf panel/plugins/simplify-eggupdates
+          git clone --quiet --depth 1 --branch "$PREVIOUS_RELEASE" "https://github.com/${{ github.repository }}.git" panel/plugins/simplify-eggupdates
+          rm -rf panel/plugins/simplify-eggupdates/.git
+          cd panel
+          php artisan tinker --execute="App\Jobs\Plugin\InstallPlugin::dispatch(App\Models\User::factory()->create(), 'simplify-eggupdates');"
+          php artisan queue:work --stop-when-empty
+          php artisan p:plugin:list | grep -E 'Simplify Egg Updates .*\| enabled' || { echo "$PREVIOUS_RELEASE did not install over the new tables"; exit 1; }
+          php ../plugin/tests/panel/pages.php
       - name: Laravel log
         if: failure()
         run: grep -h -E '^\[[0-9-]+ [0-9:]+\]' panel/storage/logs/*.log | cut -c1-600 | tail -n 12 || true

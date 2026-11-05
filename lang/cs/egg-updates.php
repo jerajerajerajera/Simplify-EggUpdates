@@ -24,10 +24,12 @@ return [
         'mode' => 'Aktualizace',
         'mode_help' => 'Každý egg se kontroluje každých šest hodin. Eggy, které používají servery, aktualizuješ jen ty, nebo se aktualizují poté, co se testovací server s novou verzí nainstaluje a spustí. Předchozí verze se vždy uchová.',
         'saved' => 'Nastavení uloženo',
+        'save' => 'Uložit',
     ],
     'page' => [
         'checked' => 'Zkontrolováno :time',
         'not_checked' => 'Zatím nezkontrolováno',
+        'eggs' => 'Eggy',
         'egg' => 'Egg',
         'servers' => 'Servery',
         'server_count' => '{0} Žádné servery|{1} 1 server|[2,4] :count servery|[5,*] :count serverů',
@@ -109,6 +111,7 @@ return [
         'failed_body' => 'Test selhal: :reason. Současný egg zůstává.',
         'last_lines' => 'Poslední řádky: :lines',
         'failed_short' => 'Poslední test selhal: :reason',
+        'problem_title' => 'Poslední test :egg',
     ],
     'errors' => [
         'https' => 'URL pro aktualizace musí začínat https://',

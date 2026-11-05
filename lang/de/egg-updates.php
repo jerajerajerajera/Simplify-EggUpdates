@@ -24,10 +24,12 @@ return [
         'mode' => 'Updates',
         'mode_help' => 'Jedes Egg wird alle sechs Stunden auf eine neue Version geprüft. Eggs, die Server nutzen, werden nur von dir aktualisiert oder nachdem ein Testserver mit der neuen Version installiert und gestartet ist. Die vorige Version wird immer behalten.',
         'saved' => 'Einstellungen gespeichert',
+        'save' => 'Speichern',
     ],
     'page' => [
         'checked' => 'Geprüft :time',
         'not_checked' => 'Noch nicht geprüft',
+        'eggs' => 'Eggs',
         'egg' => 'Egg',
         'servers' => 'Server',
         'server_count' => '{0} Keine Server|{1} 1 Server|[2,*] :count Server',
@@ -109,6 +111,7 @@ return [
         'failed_body' => 'Der Test ist fehlgeschlagen: :reason. Das aktuelle Egg bleibt.',
         'last_lines' => 'Letzte Zeilen: :lines',
         'failed_short' => 'Letzter Test fehlgeschlagen: :reason',
+        'problem_title' => 'Letzter Test von :egg',
     ],
     'errors' => [
         'https' => 'Die Update-URL muss mit https:// beginnen',

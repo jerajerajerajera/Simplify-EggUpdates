@@ -24,10 +24,12 @@ return [
         'mode' => '更新',
         'mode_help' => 'すべての egg を 6 時間ごとに確認します。サーバーが使っている egg は、あなたが更新するか、テストサーバーが新しいバージョンでインストールと起動に成功したときだけ更新されます。前のバージョンは常に保存されます。',
         'saved' => '設定を保存しました',
+        'save' => '保存',
     ],
     'page' => [
         'checked' => ':time に確認',
         'not_checked' => 'まだ確認していません',
+        'eggs' => 'Egg',
         'egg' => 'Egg',
         'servers' => 'サーバー',
         'server_count' => '{0} サーバーなし|{1} 1 台のサーバー|[2,*] :count 台のサーバー',
@@ -109,6 +111,7 @@ return [
         'failed_body' => 'テストに失敗しました: :reason。現在の egg はそのままです。',
         'last_lines' => '最後の行: :lines',
         'failed_short' => '前回のテストは失敗: :reason',
+        'problem_title' => ':egg の前回のテスト',
     ],
     'errors' => [
         'https' => '更新 URL は https:// で始まる必要があります',
