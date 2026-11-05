@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0-beta.4
+## 2.0.0-beta.5
 
 - One eggs list: Egg Updates now sits in Pelican's own Eggs table, with a status column and Test first, Update, Move
   servers and Put back in each egg's row, instead of a second list above it. Egg Updates' Update replaces Pelican's
