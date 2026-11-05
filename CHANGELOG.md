@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.0.0-beta.6
+
 - Test first: nobody can join a test server any more. It listens on 127.0.0.1 only, so no player plays on a server
   whose EULA the test accepted. The Test first confirmation says so for eggs with a EULA (such as Paper).
 - With Simplify (API 10), a test server's page is locked: you can watch the console, but everything else is greyed out.
