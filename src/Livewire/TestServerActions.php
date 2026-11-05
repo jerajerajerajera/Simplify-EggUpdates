@@ -75,7 +75,7 @@ final class TestServerActions extends Component
         $server = Server::query()->where('uuid', $this->server)->first();
 
         return view('simplify-eggupdates::livewire.test-server-actions', [
-            'egg' => EggTester::testedEgg($server)?->name ?? '',
+            'egg' => EggTester::testedEgg($server)->name ?? '',
         ]);
     }
 }

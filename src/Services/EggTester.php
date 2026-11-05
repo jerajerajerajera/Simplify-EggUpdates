@@ -96,7 +96,7 @@ final class EggTester
         $egg = Egg::query()->find($test->egg_id);
         self::finish($test, false, __('simplify-eggupdates::egg-updates.tests.killed'), $server);
 
-        return new Result(true, __('simplify-eggupdates::egg-updates.tests.stopped', ['egg' => $egg?->name ?? '']));
+        return new Result(true, __('simplify-eggupdates::egg-updates.tests.stopped', ['egg' => $egg->name ?? '']));
     }
 
     /** Retry on the test server's page: removes this test server and tests the egg again on a fresh copy. */

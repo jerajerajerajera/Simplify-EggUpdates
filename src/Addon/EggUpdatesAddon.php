@@ -73,13 +73,13 @@ final class EggUpdatesAddon extends Addon
      */
     public function lockedServer(Server $server): ?array
     {
-        $egg = EggTester::testedEgg($server);
         if (! EggTester::isTestServer($server)) {
             return null;
         }
+        $egg = EggTester::testedEgg($server);
 
         return [
-            'notice' => __('simplify-eggupdates::egg-updates.tests.locked_notice', ['egg' => $egg?->name ?? '']),
+            'notice' => __('simplify-eggupdates::egg-updates.tests.locked_notice', ['egg' => $egg->name ?? '']),
             'actions' => TestServerActions::class,
         ];
     }
