@@ -42,7 +42,9 @@ Simplify's add-on list.
 Pelican's scheduler must run (`php artisan schedule:run` every minute), as in Pelican's own installation guide.
 
 Test first needs a node with room for 2 GB RAM, 8 GB disk and 200% CPU. The test server belongs to the first root
-admin and is named "Egg update test: <egg>". With Simplify installed it stays out of Simplify's lists.
+admin and is named "Egg update test: <egg>". It listens on 127.0.0.1 only, so nobody can join it: for eggs with a
+EULA (such as Paper) the test server accepts it for the test, and the Test first confirmation says so. With Simplify
+installed it stays out of Simplify's lists, and its page is locked: only Force kill and Retry work.
 
 ## What it sends where
 

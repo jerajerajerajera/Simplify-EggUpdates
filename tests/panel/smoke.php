@@ -44,6 +44,7 @@ use Simplify\EggUpdates\Filament\Admin\Pages\EggUpdates;
 use Simplify\EggUpdates\Filament\Admin\UpdatesTable;
 use Simplify\EggUpdates\Filament\Admin\Widgets\EggUpdatesWidget;
 use Simplify\EggUpdates\Livewire\EggUpdatesSettings;
+use Simplify\EggUpdates\Livewire\TestServerActions;
 use Simplify\EggUpdates\Models\EggBackup;
 use Simplify\EggUpdates\Models\EggTest;
 use Simplify\EggUpdates\Models\EggUpdate;
@@ -442,6 +443,9 @@ step('Test first on the page makes a test server on a test port from a copy', fu
     must(EggTester::isTestServer($server) && (int) $server->node_id === (int) $node->id, 'no test server on the node');
     $port = Allocation::query()->find($test->allocation_id)?->port;
     must($port >= EggTester::PORTS[0] && $port <= EggTester::PORTS[1], 'port '.$port.' is outside the test range');
+    // Nobody can join a test server: it listens on the node only (EULA, Jeroen 05-11).
+    $ip = Allocation::query()->find($test->allocation_id)?->ip;
+    must($ip === '127.0.0.1', 'the test server listens on '.$ip.', where players could join');
     must((int) $server->egg_id === (int) $test->copy_egg_id && (int) $test->copy_egg_id !== (int) $tested->id, 'the test server does not use a copy');
     must($tested->fresh()->name === 'Smoke Tested', 'the real egg changed before the test');
     $values = ServerVariable::query()->where('server_id', $server->id)->with('variable')->get()->mapWithKeys(fn (ServerVariable $value) => [$value->variable->env_variable => $value->variable_value]);
@@ -499,6 +503,33 @@ step('a test server that stops keeps its console for Explain', function () use (
     must($state->test_ok === false, 'the stopped test did not fail: '.$state->test_reason);
     must($state->test_log === ['[Server] Starting Smoke', 'Error: Unable to access jarfile server.jar'], 'the console is not kept: '.json_encode($state->test_log));
     must($leftovers() === 0, 'left behind after the stopped test: '.$leftovers());
+});
+step('a test server\'s page is locked: only Force kill and Retry, for root admins, and nobody can join it (EULA)', function () use ($admin, $tested, $leftovers) {
+    EggTester::queue($tested->fresh());
+    $test = EggTest::query()->where('egg_id', $tested->id)->firstOrFail();
+    $server = Server::query()->findOrFail($test->server_id);
+    must(Allocation::query()->find($test->allocation_id)?->ip === EggTester::IP, 'the test server can be joined from outside the node');
+    if (class_exists('Simplify\Core\Addons\Addon')) {
+        $locked = app(EggUpdatesAddon::class)->lockedServer($server);
+        must(($locked['actions'] ?? null) === TestServerActions::class && str_contains($locked['notice'] ?? '', 'Smoke Tested'), 'the test server\'s page is not locked: '.json_encode($locked));
+        $other = Server::query()->where('external_id', 'not like', EggTester::MARK.'%')->orWhereNull('external_id')->first();
+        must($other === null || app(EggUpdatesAddon::class)->lockedServer($other) === null, 'a normal server\'s page is locked');
+    }
+    $stranger = User::factory()->create();
+    Livewire::actingAs($stranger)->test(TestServerActions::class, ['server' => $server->uuid])->assertForbidden();
+    $stranger->delete();
+    // Retry: a fresh test server, the old one is gone.
+    Livewire::actingAs($admin)->test(TestServerActions::class, ['server' => $server->uuid])->call('retry')->assertHasNoErrors()->assertRedirect();
+    $retried = EggTest::query()->where('egg_id', $tested->id)->firstOrFail();
+    must($retried->server_id !== null && (int) $retried->server_id !== (int) $server->id && Server::query()->find($server->id) === null, 'Retry did not start again on a fresh test server');
+    must($leftovers() === 4, 'Retry left the old test behind: '.$leftovers());
+    // Force kill: the test stops as failed, the egg keeps its version and nothing is left.
+    $fresh = Server::query()->findOrFail($retried->server_id);
+    Livewire::actingAs($admin)->test(TestServerActions::class, ['server' => $fresh->uuid])->call('kill')->assertHasNoErrors()->assertRedirect();
+    must($tested->fresh()->name === 'Smoke Tested 2', 'Force kill updated the egg');
+    $state = EggUpdate::query()->find($tested->id);
+    must($state->test_ok === false && str_contains((string) $state->test_reason, __('simplify-eggupdates::egg-updates.tests.killed')), 'Force kill is not remembered as a stopped test: '.$state->test_reason);
+    must($leftovers() === 0, 'left behind after Force kill: '.$leftovers());
 });
 step('Explain\'s button sits after "Last test failed" and gets the console, only for root admins', function () use ($admin, $tested) {
     $id = 'simplify-eggupdates:test:'.$tested->id;

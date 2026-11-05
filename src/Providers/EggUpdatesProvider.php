@@ -11,6 +11,7 @@ use Livewire\Livewire;
 use Simplify\EggUpdates\Addon\EggUpdatesAddon;
 use Simplify\EggUpdates\Addon\EggUpdatesProblems;
 use Simplify\EggUpdates\Filament\Admin\Pages\EggsList;
+use Simplify\EggUpdates\Livewire\TestServerActions;
 
 final class EggUpdatesProvider extends ServiceProvider
 {
@@ -28,6 +29,7 @@ final class EggUpdatesProvider extends ServiceProvider
     {
         // Livewire finds the page again on every click by this name.
         Livewire::component('simplify-eggupdates.eggs-list', EggsList::class);
+        Livewire::component('simplify-eggupdates.test-server-actions', TestServerActions::class);
         $this->app->booted(function () {
             Schedule::command('simplify-eggupdates:check')->everyMinute()->withoutOverlapping(30);
         });

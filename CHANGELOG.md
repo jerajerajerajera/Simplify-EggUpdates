@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Test first: nobody can join a test server any more. It listens on 127.0.0.1 only, so no player plays on a server
+  whose EULA the test accepted. The Test first confirmation says so for eggs with a EULA (such as Paper).
+- With Simplify (API 10), a test server's page is locked: you can watch the console, but everything else is greyed out.
+  Only Force kill (stops the test, keeps the egg as it is and removes the test server) and Retry (tests again on a
+  fresh copy) work, with a line that explains the server is deleted when the egg update is done.
+
 ## 2.0.0-beta.5
 
 - One eggs list: Egg Updates now sits in Pelican's own Eggs table, with a status column and Test first, Update, Move
