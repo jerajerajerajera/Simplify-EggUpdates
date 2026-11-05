@@ -214,7 +214,7 @@ kernfuncties. Nooit noemen dat Toolkit vroeger een andere naam had.
 *Vervangt:* R4.
 
 #### P-3 Add-on-contract
-`ADDONS.md` (API 9). Een nieuwe `Addon`-methode krijgt altijd een default en een regel in ADDONS.md; een nieuwere
+`ADDONS.md` (API 10). Een nieuwe `Addon`-methode krijgt altijd een default en een regel in ADDONS.md; een nieuwere
 add-on blijft werken op een oudere kern.
 *Bewaakt door:* `tests/addons.php` (kern).
 *Vervangt:* R5.
