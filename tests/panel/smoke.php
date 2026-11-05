@@ -504,6 +504,22 @@ step('a test server that stops keeps its console for Explain', function () use (
     must($state->test_log === ['[Server] Starting Smoke', 'Error: Unable to access jarfile server.jar'], 'the console is not kept: '.json_encode($state->test_log));
     must($leftovers() === 0, 'left behind after the stopped test: '.$leftovers());
 });
+step('Explain\'s button sits after "Last test failed" and gets the console, only for root admins', function () use ($admin, $tested) {
+    $id = 'simplify-eggupdates:test:'.$tested->id;
+    // Stands in for Explain: it renders its button on this hook, with the problem id as scope.
+    FilamentView::registerRenderHook('simplify::problem.actions', fn (array $scopes = []) => '<i data-smoke-explain="'.e($scopes[1] ?? '').'"></i>');
+    $html = Livewire::actingAs($admin)->test(EggUpdatesWidget::class)->assertHasNoErrors()->html();
+    must(str_contains($html, 'data-smoke-explain="simplify-problem:'.$id.'"'), 'no Explain button after the failed test');
+    $source = collect(app()->tagged('simplify.problems'))->first(fn ($source) => $source instanceof EggUpdatesProblems);
+    must($source !== null, 'the problem source is not tagged simplify.problems');
+    $other = User::factory()->create();
+    must($source->canExplainProblem($id, $admin) && ! $source->canExplainProblem($id, $other), 'the problem source does not check the user');
+    must(! $source->canExplainProblem('simplify-eggupdates:test:0', $admin) && ! $source->canExplainProblem('simplify:install:'.$tested->id, $admin), 'the problem source takes an id that is not its own');
+    $problem = $source->explainProblem($id, $admin);
+    must(($problem['lines'] ?? null) === ['[Server] Starting Smoke', 'Error: Unable to access jarfile server.jar'] && str_contains($problem['title'], 'Smoke Tested'), 'the problem source does not give the console: '.json_encode($problem));
+    must($source->explainProblem($id, $other) === null, 'the console goes to a user who is not a root admin');
+    $other->delete();
+});
 step('a test server\'s page is locked: only Force kill and Retry, for root admins, and nobody can join it (EULA)', function () use ($admin, $tested, $leftovers) {
     EggTester::queue($tested->fresh());
     $test = EggTest::query()->where('egg_id', $tested->id)->firstOrFail();
@@ -532,22 +548,6 @@ step('a test server\'s page is locked: only Force kill and Retry, for root admin
     $state = EggUpdate::query()->find($tested->id);
     must($state->test_ok === false && str_contains((string) $state->test_reason, __('simplify-eggupdates::egg-updates.tests.killed')), 'Force kill is not remembered as a stopped test: '.$state->test_reason);
     must($leftovers() === 0, 'left behind after Force kill: '.$leftovers());
-});
-step('Explain\'s button sits after "Last test failed" and gets the console, only for root admins', function () use ($admin, $tested) {
-    $id = 'simplify-eggupdates:test:'.$tested->id;
-    // Stands in for Explain: it renders its button on this hook, with the problem id as scope.
-    FilamentView::registerRenderHook('simplify::problem.actions', fn (array $scopes = []) => '<i data-smoke-explain="'.e($scopes[1] ?? '').'"></i>');
-    $html = Livewire::actingAs($admin)->test(EggUpdatesWidget::class)->assertHasNoErrors()->html();
-    must(str_contains($html, 'data-smoke-explain="simplify-problem:'.$id.'"'), 'no Explain button after the failed test');
-    $source = collect(app()->tagged('simplify.problems'))->first(fn ($source) => $source instanceof EggUpdatesProblems);
-    must($source !== null, 'the problem source is not tagged simplify.problems');
-    $other = User::factory()->create();
-    must($source->canExplainProblem($id, $admin) && ! $source->canExplainProblem($id, $other), 'the problem source does not check the user');
-    must(! $source->canExplainProblem('simplify-eggupdates:test:0', $admin) && ! $source->canExplainProblem('simplify:install:'.$tested->id, $admin), 'the problem source takes an id that is not its own');
-    $problem = $source->explainProblem($id, $admin);
-    must(($problem['lines'] ?? null) === ['[Server] Starting Smoke', 'Error: Unable to access jarfile server.jar'] && str_contains($problem['title'], 'Smoke Tested'), 'the problem source does not give the console: '.json_encode($problem));
-    must($source->explainProblem($id, $other) === null, 'the console goes to a user who is not a root admin');
-    $other->delete();
 });
 step('only root admins see the Updates block and its buttons', function () use ($admin) {
     $other = User::factory()->create();
