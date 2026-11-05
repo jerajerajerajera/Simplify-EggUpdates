@@ -517,6 +517,8 @@ step('a test server\'s page is locked: only Force kill and Retry, for root admin
     }
     $stranger = User::factory()->create();
     Livewire::actingAs($stranger)->test(TestServerActions::class, ['server' => $server->uuid])->assertForbidden();
+    // Pelican refuses to delete the user who is logged in.
+    auth()->setUser($admin);
     $stranger->delete();
     // Retry: a fresh test server, the old one is gone.
     Livewire::actingAs($admin)->test(TestServerActions::class, ['server' => $server->uuid])->call('retry')->assertHasNoErrors()->assertRedirect();
