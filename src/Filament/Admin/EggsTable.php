@@ -53,7 +53,7 @@ final class EggsTable
         $columns = $table->getColumns();
         if (! array_key_exists(self::COLUMN, $columns)) {
             $column = UpdatesTable::statusColumn(self::COLUMN)->label(__('simplify-eggupdates::egg-updates.title'));
-            $table->columns([...array_values($columns), $column]);
+            $table->columns([...array_values($columns), $column, UpdatesTable::noteColumn(self::COLUMN.'_note')]);
             $actions = array_values(array_filter(
                 $table->getRecordActions(),
                 fn ($action) => ! self::isPelicansUpdate($action),

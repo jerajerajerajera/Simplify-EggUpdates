@@ -41,6 +41,11 @@ Simplify's add-on list.
 
 Pelican's scheduler must run (`php artisan schedule:run` every minute), as in Pelican's own installation guide.
 
+Many eggs show **Update available** right after they were imported. The published file is written in an older export
+format than the one Pelican makes of it at import, so the two differ; Pelican's own check sees the same. One
+**Update** (or **Update all**) brings the egg to the published version, and the row stays quiet until the egg really
+changes.
+
 Test first needs a node with room for 2 GB RAM, 8 GB disk and 200% CPU. The test server belongs to the first root
 admin and is named "Egg update test: <egg>". It listens on 127.0.0.1 only, so nobody can join it: for eggs with a
 EULA (such as Paper) the test server accepts it for the test, and the Test first confirmation says so. With Simplify
