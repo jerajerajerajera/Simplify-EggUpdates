@@ -141,6 +141,42 @@ function must(bool $ok, string $why): void
         throw new RuntimeException($why);
     }
 }
+/** Pelican's Eggs page, searched on "Smoke", while an egg that a server uses has an update link that keeps failing. */
+function eggsPageWithDeadLink(User $admin): string
+{
+    $egg = Egg::factory()->create(['name' => 'Smoke Dead Link']);
+    Server::factory()->create(['egg_id' => $egg->id]);
+    EggUpdate::for($egg->id)->forceFill(['link_failures' => EggUpdate::LINK_FAILURES, 'link_error' => '404 Not Found', 'link_failed_at' => now()])->save();
+    EggsTable::reset();
+    $html = Livewire::actingAs($admin)->test(EggsList::class)->searchTable('Smoke')->assertHasNoErrors()->html();
+    // As at the start of a request: the Updates block only shows while Pelican's table has no Egg Updates in it.
+    EggsTable::reset();
+    EggUpdate::query()->whereKey($egg->id)->delete();
+
+    return $html;
+}
+/**
+ * How often the text is in a table cell: outside a description, and inside one. Simplify's lists leave out every
+ * description.
+ *
+ * @return array{int, int}
+ */
+function inCells(string $html, string $text): array
+{
+    libxml_use_internal_errors(true);
+    $dom = new DOMDocument;
+    $dom->loadHTML('<?xml encoding="utf-8"?>'.$html);
+    $counts = [0, 0];
+    foreach ((new DOMXPath($dom))->query('//td//text()[contains(., "'.$text.'")]') as $node) {
+        $inside = 0;
+        for ($parent = $node->parentNode; $parent instanceof DOMElement; $parent = $parent->parentNode) {
+            $inside = preg_match('/-description( |$)/', $parent->getAttribute('class')) === 1 ? 1 : $inside;
+        }
+        $counts[$inside]++;
+    }
+
+    return $counts;
+}
 
 $admin = User::where('email', 'smoke-egg-updates@example.com')->first()
     ?? User::factory()->create(['email' => 'smoke-egg-updates@example.com']);
@@ -270,6 +306,11 @@ step('the settings save', function () use ($admin) {
     // Without Simplify the gear on the Eggs page opens the settings; with Simplify they are under Settings › Add-ons.
     $eggs = Livewire::actingAs($admin)->test(ListEggs::class);
     class_exists('Simplify\Core\Addons\Addon') ? $eggs->assertActionHidden('egg_updates_settings') : $eggs->assertActionVisible('egg_updates_settings');
+});
+step('without Simplify the reason of a dead update link stays under the badge, as in Pelican\'s own tables', function () use ($admin) {
+    if (! class_exists('Simplify\Core\Addons\Addon')) {
+        must(inCells(eggsPageWithDeadLink($admin), '404 Not Found') === [0, 1], 'the reason is not under the badge, once');
+    }
 });
 step('Simplify\'s setup asks when eggs are updated and saves it', function () use ($admin) {
     if (! class_exists('Simplify\Core\Addons\Addon')) {
@@ -519,6 +560,13 @@ step('Explain\'s button sits after "Last test failed" and gets the console, only
     must(($problem['lines'] ?? null) === ['[Server] Starting Smoke', 'Error: Unable to access jarfile server.jar'] && str_contains($problem['title'], 'Smoke Tested'), 'the problem source does not give the console: '.json_encode($problem));
     must($source->explainProblem($id, $other) === null, 'the console goes to a user who is not a root admin');
     $other->delete();
+});
+step('with Simplify the reason of a failed test and of a dead update link is a text in the egg\'s row, not a description, which Simplify\'s lists leave out (EU-B4)', function () use ($admin, $tested) {
+    // From the setup step on, Simplify's Addon class is there in every run: the real one, or the stub.
+    $html = eggsPageWithDeadLink($admin);
+    must(inCells($html, 'Last test failed') === [1, 0], 'why the test failed is not in the row once, outside a description: '.json_encode(inCells($html, 'Last test failed')));
+    must(inCells($html, '404 Not Found') === [1, 0], 'why the update link cannot be checked is not in the row once, outside a description: '.json_encode(inCells($html, '404 Not Found')));
+    must(substr_count($html, 'data-smoke-explain="simplify-problem:simplify-eggupdates:test:'.$tested->id.'"') === 1, 'not one Explain button after the failed test');
 });
 step('a test server\'s page is locked: only Force kill and Retry, for root admins, and nobody can join it (EULA)', function () use ($admin, $tested, $leftovers) {
     EggTester::queue($tested->fresh());

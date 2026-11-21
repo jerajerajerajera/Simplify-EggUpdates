@@ -104,6 +104,8 @@ final class UpdatesTable
                     ->visibleFrom('sm'),
                 self::statusColumn('status')
                     ->visibleFrom('sm'),
+                self::noteColumn('note')
+                    ->visibleFrom('sm'),
                 TextColumn::make('since')
                     ->label(__('simplify-eggupdates::egg-updates.page.since'))
                     ->state(fn (Egg $egg) => self::since($egg))
@@ -117,8 +119,9 @@ final class UpdatesTable
     }
 
     /**
-     * The status of an egg as a badge, with why its last test failed or its update link cannot be checked. In Pelican's
-     * Eggs table it stays empty for eggs Egg Updates has nothing to say about.
+     * The status of an egg as a badge, with under it why its last test failed or its update link cannot be checked
+     * (with Simplify that is noteColumn). In Pelican's Eggs table it stays empty for eggs Egg Updates has nothing to
+     * say about.
      */
     public static function statusColumn(string $name): TextColumn
     {
@@ -127,8 +130,24 @@ final class UpdatesTable
             ->badge()
             ->state(fn (Egg $egg) => self::rowStatus($egg))
             ->formatStateUsing(fn (?string $state) => $state === null ? null : __('simplify-eggupdates::egg-updates.status.'.$state))
-            ->description(fn (Egg $egg) => self::note($egg) === null ? null : new HtmlString(e(self::note($egg)).' '.self::explain($egg)?->toHtml()))
+            ->description(fn (Egg $egg) => self::withSimplify() ? null : self::reason($egg))
+            // In Simplify's rows the status keeps its width next to a long reason.
+            ->extraCellAttributes(['style' => 'flex-shrink: 0;'])
             ->color(fn (?string $state) => $state === null ? null : self::color($state));
+    }
+
+    /**
+     * With Simplify: why the last test failed or the update link cannot be checked, as a short text in the egg's row.
+     * Simplify draws a list as rows and leaves out every description, so under the badge nobody would see it. A long
+     * reason goes on to a next line, so Explain's button after it is never cut off.
+     */
+    public static function noteColumn(string $name): TextColumn
+    {
+        return TextColumn::make($name)
+            ->label('')
+            ->state(fn (Egg $egg) => self::reason($egg))
+            ->wrap()
+            ->visible(fn () => self::withSimplify());
     }
 
     /**
@@ -262,7 +281,7 @@ final class UpdatesTable
                 ->tooltip(fn () => __('simplify-eggupdates::egg-updates.settings.title'))
                 ->icon('tabler-settings')
                 ->color('gray')
-                ->visible(fn () => self::canManage() && ! class_exists(Addon::class))
+                ->visible(fn () => self::canManage() && ! self::withSimplify())
                 ->url(fn () => EggUpdates::getUrl(panel: 'admin')),
         ];
     }
@@ -345,6 +364,19 @@ final class UpdatesTable
         }
 
         return __('simplify-eggupdates::egg-updates.tests.failed_short', ['reason' => $state->test_reason]);
+    }
+
+    /** The note of an egg with Explain's button after it, or null for an egg without a note. */
+    private static function reason(Egg $egg): ?Htmlable
+    {
+        $note = self::note($egg);
+
+        return $note === null ? null : new HtmlString(e($note).' '.self::explain($egg)?->toHtml());
+    }
+
+    private static function withSimplify(): bool
+    {
+        return class_exists(Addon::class);
     }
 
     /**
