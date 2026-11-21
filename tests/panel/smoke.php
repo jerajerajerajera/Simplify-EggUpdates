@@ -22,6 +22,7 @@ use App\Models\User;
 use App\Services\Eggs\Sharing\EggExporterService;
 use App\Services\Eggs\Sharing\EggImporterService;
 use App\Services\Servers\ServerDeletionService;
+use Filament\Actions\Action;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Filament\Support\Facades\FilamentView;
@@ -247,6 +248,11 @@ step('Pelican\'s Eggs table shows the update in one list, with Egg Updates\' but
     $name = collect($names)->first(fn (string $name) => str_contains($name, 'eggs-list') || str_contains($name, 'list-eggs'));
     must($name !== null, 'no snapshot of the Eggs page: '.implode(', ', $names));
     must($name === 'simplify-eggupdates.eggs-list', 'a click on the Eggs page would reach Pelican\'s own page: '.$name);
+    // EU-B5: Update and Update all have their own icon; the download icon is Pelican's Export, in the same row.
+    $icons = collect([...UpdatesTable::recordActions(true), ...UpdatesTable::headerActions()])
+        ->filter(fn ($action) => $action instanceof Action && (str_ends_with((string) $action->getName(), 'update') || str_ends_with((string) $action->getName(), 'update_all')))
+        ->map(fn (Action $action) => $action->getIcon())->values()->all();
+    must($icons === ['tabler-circle-arrow-up', 'tabler-circle-arrow-up'], 'Update shares its icon with Pelican\'s Export: '.json_encode($icons));
     // The buttons in the row are checked in the last step: a page made by hand upsets Livewire's tests after it.
 });
 step('without its place in Pelican\'s table the Updates block comes back, so nothing is lost', function () use ($admin) {
@@ -472,6 +478,13 @@ $leftovers = function () use ($portsBefore) {
 
     return $servers + $ports + $copies + EggTest::query()->count();
 };
+// The same by kind, for the message of a check that failed.
+$leftoverNames = fn (): string => (string) json_encode([
+    'servers' => Server::query()->where('external_id', 'like', EggTester::MARK.'%')->pluck('name')->all(),
+    'ports' => Allocation::query()->whereBetween('port', EggTester::PORTS)->whereNotIn('id', $portsBefore)->pluck('port')->all(),
+    'copies' => Egg::query()->where('name', 'like', '%(update test)')->pluck('name')->all(),
+    'tests' => EggTest::query()->pluck('egg_id')->all(),
+]);
 step('Test first on the page makes a test server on a test port from a copy', function () use ($admin, $tested, $node) {
     Settings::saveForm(['mode' => 'ask']);
     Runner::run(true);
@@ -568,7 +581,7 @@ step('with Simplify the reason of a failed test and of a dead update link is a t
     must(inCells($html, '404 Not Found') === [1, 0], 'why the update link cannot be checked is not in the row once, outside a description: '.json_encode(inCells($html, '404 Not Found')));
     must(substr_count($html, 'data-smoke-explain="simplify-problem:simplify-eggupdates:test:'.$tested->id.'"') === 1, 'not one Explain button after the failed test');
 });
-step('a test server\'s page is locked: only Force kill and Retry, for root admins, and nobody can join it (EULA)', function () use ($admin, $tested, $leftovers) {
+step('a test server\'s page is locked: only Force kill and Retry, for root admins, and nobody can join it (EULA)', function () use ($admin, $tested, $leftovers, $leftoverNames) {
     EggTester::queue($tested->fresh());
     $test = EggTest::query()->where('egg_id', $tested->id)->firstOrFail();
     $server = Server::query()->findOrFail($test->server_id);
@@ -588,7 +601,7 @@ step('a test server\'s page is locked: only Force kill and Retry, for root admin
     Livewire::actingAs($admin)->test(TestServerActions::class, ['server' => $server->uuid])->call('retry')->assertHasNoErrors()->assertRedirect();
     $retried = EggTest::query()->where('egg_id', $tested->id)->firstOrFail();
     must($retried->server_id !== null && (int) $retried->server_id !== (int) $server->id && Server::query()->find($server->id) === null, 'Retry did not start again on a fresh test server');
-    must($leftovers() === 4, 'Retry left the old test behind: '.$leftovers());
+    must($leftovers() === 4, 'Retry left the old test behind: '.$leftoverNames());
     // Force kill: the test stops as failed, the egg keeps its version and nothing is left.
     $fresh = Server::query()->findOrFail($retried->server_id);
     Livewire::actingAs($admin)->test(TestServerActions::class, ['server' => $fresh->uuid])->call('kill')->assertHasNoErrors()->assertRedirect();

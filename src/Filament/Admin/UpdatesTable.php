@@ -35,6 +35,9 @@ use Simplify\EggUpdates\Services\UpdateChecker;
  */
 final class UpdatesTable
 {
+    /** Update and Update all: an arrow up in a circle. */
+    public const UPDATE_ICON = 'tabler-circle-arrow-up';
+
     /** Only root admins see and use Egg Updates. */
     public static function canManage(): bool
     {
@@ -175,7 +178,8 @@ final class UpdatesTable
                 ->action(fn (Egg $egg) => self::send(EggTester::queue($egg))),
             Action::make($prefix.'update')
                 ->label(__('simplify-eggupdates::egg-updates.actions.update'))
-                ->icon('tabler-download')
+                // Not Pelican's download icon: Export has that one, in the same row.
+                ->icon(self::UPDATE_ICON)
                 ->button()
                 ->labeledFrom('sm')
                 ->visible(fn (Egg $egg) => in_array(self::status($egg), ['available', 'held'], true))
@@ -265,7 +269,7 @@ final class UpdatesTable
                 }),
             Action::make('egg_updates_update_all')
                 ->label(fn () => __('simplify-eggupdates::egg-updates.actions.update_all'))
-                ->icon('tabler-download')
+                ->icon(self::UPDATE_ICON)
                 ->visible(fn () => self::canManage() && self::available()->count() > 1)
                 ->requiresConfirmation()
                 ->modalHeading(fn () => __('simplify-eggupdates::egg-updates.actions.update_all_heading', ['count' => self::available()->count()]))
