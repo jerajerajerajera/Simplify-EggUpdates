@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.0.0-beta.15
+
 - With Simplify, an egg's row now says why its last test failed or why its update link cannot be checked, with
   Explain's button after it. Before, the row only showed "Update available" or "Can't check": the reason sat in a
   description, which Simplify's lists leave out. Without Simplify the reason stays under the badge.
